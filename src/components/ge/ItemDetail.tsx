@@ -31,6 +31,7 @@ export function ItemDetail({
   bankroll = 0,
   flipMode = "safe",
   chartTall = false,
+  fullPage = false,
 }: {
   item: CatalogItem;
   onClose: () => void;
@@ -38,12 +39,16 @@ export function ItemDetail({
   flipMode?: FlipMode;
   /** Wider desktop pane — taller price graph */
   chartTall?: boolean;
+  /** Full-page layout: chart takes majority of the view */
+  fullPage?: boolean;
 }) {
   const [lookback, setLookback] = useState<Lookback>("24h");
   const watchlist = useWatchlist();
   const watched = watchlist.ids.includes(item.id);
   const flip = bankroll > 0 ? computeFlip(item, bankroll, flipMode) : null;
   const isHot = flipMode === "hot";
+  const chartSize = fullPage ? "full" : chartTall ? "tall" : "normal";
+  const showChartFirst = fullPage || chartTall;
 
   const history = useQuery({
     queryKey: ["history", item.id, lookback],
@@ -62,17 +67,70 @@ export function ItemDetail({
   const taxOnSell = flipSell != null ? geTax(flipSell) : 0;
   const lastMargin = flipMargin(item.high, item.low);
 
+  const chartBlock = (
+    <div className={cn(fullPage && "min-w-0 flex-1")}>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-medium text-fg">Price history</h3>
+        <div className="flex gap-1 rounded-md border border-border bg-surface-2 p-0.5">
+          {LOOKBACKS.map((lb) => (
+            <button
+              key={lb}
+              type="button"
+              onClick={() => setLookback(lb)}
+              className={cn(
+                "rounded-sm px-2.5 py-1 text-xs font-medium transition-colors",
+                lookback === lb
+                  ? "bg-surface-3 text-fg"
+                  : "text-muted hover:text-fg",
+              )}
+            >
+              {lb}
+            </button>
+          ))}
+        </div>
+      </div>
+      {history.isLoading ? (
+        <Skeleton
+          className={cn(
+            "w-full rounded-lg",
+            fullPage ? "h-[min(62vh,36rem)]" : chartTall ? "h-80" : "h-48",
+          )}
+        />
+      ) : history.isError ? (
+        <p className="text-sm text-loss">Could not load history.</p>
+      ) : (
+        <PriceChart
+          points={history.data?.points ?? []}
+          lookback={lookback}
+          size={chartSize}
+        />
+      )}
+    </div>
+  );
+
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-start gap-3 border-b border-border p-4 sm:p-5">
+    <div className={cn("flex h-full flex-col", fullPage && "bg-surface")}>
+      <div
+        className={cn(
+          "flex items-start gap-3 border-b border-border p-4 sm:p-5",
+          fullPage && "shrink-0 bg-surface pad-top-safe",
+        )}
+      >
         <ItemIcon icon={item.icon} name={item.name} size="lg" />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h2 className="truncate text-lg font-semibold tracking-tight text-fg">
+              <h2
+                className={cn(
+                  "font-semibold tracking-tight text-fg",
+                  fullPage ? "text-xl sm:text-2xl" : "truncate text-lg",
+                )}
+              >
                 {item.name}
               </h2>
-              <p className="mt-0.5 line-clamp-2 text-xs text-muted">{item.examine}</p>
+              <p className="mt-0.5 line-clamp-2 text-xs text-muted sm:text-sm">
+                {item.examine}
+              </p>
             </div>
             <Button
               variant="ghost"
@@ -119,45 +177,15 @@ export function ItemDetail({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
-        {/* Chart first on tall desktop so recent sales are easy to read */}
-        {chartTall && (
-          <div>
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-medium text-fg">Price history</h3>
-              <div className="flex gap-1 rounded-md border border-border bg-surface-2 p-0.5">
-                {LOOKBACKS.map((lb) => (
-                  <button
-                    key={lb}
-                    type="button"
-                    onClick={() => setLookback(lb)}
-                    className={cn(
-                      "rounded-sm px-2.5 py-1 text-xs font-medium transition-colors",
-                      lookback === lb
-                        ? "bg-surface-3 text-fg"
-                        : "text-muted hover:text-fg",
-                    )}
-                  >
-                    {lb}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {history.isLoading ? (
-              <Skeleton className="h-80 w-full rounded-lg" />
-            ) : history.isError ? (
-              <p className="text-sm text-loss">Could not load history.</p>
-            ) : (
-              <PriceChart
-                points={history.data?.points ?? []}
-                lookback={lookback}
-                tall
-              />
-            )}
-          </div>
+      <div
+        className={cn(
+          "flex-1 overflow-y-auto p-4 sm:p-5",
+          fullPage ? "space-y-6" : "space-y-5",
         )}
+      >
+        {showChartFirst && chartBlock}
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className={cn("grid gap-3", fullPage ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-2")}>
           <Stat
             label="Flip buy (low)"
             value={formatGp(flipBuy)}
@@ -317,38 +345,7 @@ export function ItemDetail({
           </p>
         </div>
 
-        {/* Chart below on mobile / compact panes */}
-        {!chartTall && (
-          <div>
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-medium text-fg">Price history</h3>
-              <div className="flex gap-1 rounded-md border border-border bg-surface-2 p-0.5">
-                {LOOKBACKS.map((lb) => (
-                  <button
-                    key={lb}
-                    type="button"
-                    onClick={() => setLookback(lb)}
-                    className={cn(
-                      "rounded-sm px-2.5 py-1 text-xs font-medium transition-colors",
-                      lookback === lb
-                        ? "bg-surface-3 text-fg"
-                        : "text-muted hover:text-fg",
-                    )}
-                  >
-                    {lb}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {history.isLoading ? (
-              <Skeleton className="h-48 w-full rounded-lg" />
-            ) : history.isError ? (
-              <p className="text-sm text-loss">Could not load history.</p>
-            ) : (
-              <PriceChart points={history.data?.points ?? []} lookback={lookback} />
-            )}
-          </div>
-        )}
+        {!showChartFirst && chartBlock}
 
         <div className="flex gap-2">
           <Button

@@ -6,7 +6,6 @@ import {
   TrendingUp,
   Star,
   Flame,
-  ArrowUpDown,
   X,
   Coins,
   LineChart,
@@ -16,6 +15,16 @@ import { fetchCatalog, type CatalogItem } from "@/lib/osrs/api";
 import { useWatchlist } from "@/lib/osrs/watchlist";
 import { useBankroll } from "@/lib/osrs/bankroll";
 import { parseGpInput, rankFlips, type FlipMode } from "@/lib/osrs/flip";
+import {
+  EMPTY_FILTERS,
+  filterCatalogItems,
+  filterFlips,
+  nextSortState,
+  sortCatalogItems,
+  type ItemSortKey,
+  type ListFilterState,
+  type SortDir,
+} from "@/lib/osrs/listFilters";
 import { BRAND } from "@/lib/branding";
 import { useDisplayMode, isPhoneLayout } from "@/hooks/useDisplayMode";
 import { useIosKeyboardReset } from "@/hooks/useVisualViewport";
@@ -29,11 +38,13 @@ import { FlipBoard } from "./FlipBoard";
 import { InvestBoard } from "./InvestBoard";
 import { AppLogo } from "./AppLogo";
 import { ThemeButton, ThemePicker } from "./ThemePicker";
+import { ListFilters } from "./ListFilters";
+import { SearchDropdown } from "./SearchDropdown";
+import { SortableTh } from "./SortableTh";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/osrs/format";
 
 type Tab = "flips" | "hot" | "invest" | "watch" | "volume" | "search";
-type SortKey = "volume" | "margin" | "price" | "name";
 
 const NAV: {
   id: Exclude<Tab, "search">;
@@ -65,9 +76,13 @@ export function GeApp() {
 
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<Tab>("flips");
-  const [sort, setSort] = useState<SortKey>("volume");
+  const [itemSortKey, setItemSortKey] = useState<ItemSortKey | null>("volume");
+  const [itemSortDir, setItemSortDir] = useState<SortDir>("desc");
+  const [filters, setFilters] = useState<ListFilterState>({ ...EMPTY_FILTERS });
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  const [fullPageOpen, setFullPageOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
 
   const items = catalog.data?.items ?? [];
@@ -78,18 +93,19 @@ export function GeApp() {
   }, [items]);
 
   const safeFlips = useMemo(
-    () => rankFlips(items, bankroll, 40, "safe"),
-    [items, bankroll],
+    () => filterFlips(rankFlips(items, bankroll, 40, "safe"), filters),
+    [items, bankroll, filters],
   );
   const hotFlips = useMemo(
-    () => rankFlips(items, bankroll, 40, "hot"),
-    [items, bankroll],
+    () => filterFlips(rankFlips(items, bankroll, 40, "hot"), filters),
+    [items, bankroll, filters],
   );
 
   const flipMode: FlipMode = tab === "hot" ? "hot" : "safe";
   const activeFlips = tab === "hot" ? hotFlips : safeFlips;
 
-  const searchResults = useMemo(() => {
+  /** Typeahead matches for the search dropdown (desktop + mobile). */
+  const searchSuggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
     const scored: { item: CatalogItem; score: number }[] = [];
@@ -104,39 +120,39 @@ export function GeApp() {
       scored.push({ item: it, score });
     }
     scored.sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name));
-    return scored.slice(0, 80).map((s) => s.item);
+    return scored.slice(0, 24).map((s) => s.item);
+  }, [items, query]);
+
+  /** Mobile-only search tab list (more results, still filterable/sortable). */
+  const searchListItems = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    const scored: CatalogItem[] = [];
+    for (const it of items) {
+      if (it.name.toLowerCase().includes(q)) scored.push(it);
+    }
+    return scored.slice(0, 80);
   }, [items, query]);
 
   const listItems = useMemo(() => {
     let list: CatalogItem[] = [];
     if (tab === "search") {
-      list = searchResults;
+      list = searchListItems;
     } else if (tab === "watch") {
       list = watchlist.ids
         .map((id) => byId.get(id))
         .filter((x): x is CatalogItem => Boolean(x));
     } else if (tab === "volume") {
-      list = items
-        .filter((i) => i.volume1h > 0 && i.high != null)
-        .slice()
-        .sort((a, b) => b.volume1h - a.volume1h)
-        .slice(0, 60);
+      list = items.filter((i) => i.volume1h > 0 && i.high != null).slice(0, 120);
     } else {
       return [];
     }
 
-    if (tab === "watch" || tab === "search") {
-      const sorted = list.slice();
-      sorted.sort((a, b) => {
-        if (sort === "name") return a.name.localeCompare(b.name);
-        if (sort === "price") return (b.high ?? 0) - (a.high ?? 0);
-        if (sort === "margin") return (b.margin ?? -Infinity) - (a.margin ?? -Infinity);
-        return b.volume1h - a.volume1h;
-      });
-      return sorted;
-    }
-    return list;
-  }, [tab, searchResults, watchlist.ids, byId, items, sort]);
+    list = filterCatalogItems(list, filters);
+    const key = itemSortKey ?? (tab === "volume" ? "volume" : "name");
+    const dir = itemSortKey ? itemSortDir : tab === "volume" ? "desc" : "asc";
+    return sortCatalogItems(list, key, dir);
+  }, [tab, searchListItems, watchlist.ids, byId, items, filters, itemSortKey, itemSortDir]);
 
   const selected = useMemo(() => {
     if (selectedId != null) {
@@ -159,10 +175,33 @@ export function GeApp() {
     if (isPhoneLayout()) setMobileDetailOpen(true);
   }, []);
 
+  /** Search dropdown selection → full-page item view on desktop. */
+  const onSelectFromSearch = useCallback((item: CatalogItem) => {
+    setSelectedId(item.id);
+    setQuery("");
+    setSearchOpen(false);
+    if (isPhoneLayout()) {
+      setMobileDetailOpen(true);
+      setTab("search");
+    } else {
+      setFullPageOpen(true);
+    }
+  }, []);
+
   const goTab = useCallback((id: Exclude<Tab, "search">) => {
     setTab(id);
     setQuery("");
+    setSearchOpen(false);
+    setFullPageOpen(false);
   }, []);
+
+  const onItemSort = useCallback((key: ItemSortKey) => {
+    setItemSortKey((prev) => {
+      const next = nextSortState(prev, itemSortDir, key);
+      setItemSortDir(next.dir);
+      return next.key;
+    });
+  }, [itemSortDir]);
 
   const lastTradeAge =
     catalog.data?.priceTimestamp != null
@@ -215,30 +254,47 @@ export function GeApp() {
           <CapitalBar className="min-w-0 w-full" />
 
           <div className="relative min-w-0 w-full">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-subtle" />
             <Input
               value={query}
               onChange={(e) => {
-                setQuery(e.target.value);
-                if (e.target.value.trim()) setTab("search");
+                const v = e.target.value;
+                setQuery(v);
+                setSearchOpen(Boolean(v.trim()));
+                // Mobile: keep a results list tab. Desktop: dropdown only (no live list swap).
+                if (v.trim() && isPhoneLayout()) setTab("search");
+              }}
+              onFocus={() => {
+                if (query.trim()) setSearchOpen(true);
               }}
               placeholder="Search any item…"
               className="w-full min-w-0 pl-10 pr-10"
               aria-label="Search items"
+              aria-autocomplete="list"
+              aria-expanded={searchOpen}
+              autoComplete="off"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => {
                   setQuery("");
+                  setSearchOpen(false);
                   if (tab === "search") setTab("flips");
                 }}
-                className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-subtle hover:bg-surface-3 hover:text-fg"
+                className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-subtle hover:bg-surface-3 hover:text-fg"
                 aria-label="Clear search"
               >
                 <X className="h-4 w-4" />
               </button>
             )}
+            <SearchDropdown
+              open={searchOpen}
+              query={query}
+              results={searchSuggestions}
+              onSelect={onSelectFromSearch}
+              onClose={() => setSearchOpen(false)}
+            />
           </div>
 
           <div className="hidden min-w-0 items-center gap-1 lg:flex">
@@ -268,52 +324,16 @@ export function GeApp() {
                     </button>
                   );
                 })}
-                {tab === "search" && (
-                  <span className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg">
-                    <Search className="h-3.5 w-3.5" />
-                    Results · {searchResults.length}
-                  </span>
-                )}
               </div>
             </div>
-            {(tab === "watch" || tab === "search") && (
-              <div className="ml-2 flex shrink-0 items-center gap-1">
-                <ArrowUpDown className="h-3.5 w-3.5 text-subtle" />
-                <select
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value as SortKey)}
-                  className="h-10 rounded-md border border-border bg-surface-2 px-2 text-base text-fg sm:h-8 sm:text-xs"
-                  aria-label="Sort by"
-                >
-                  <option value="volume">Volume</option>
-                  <option value="margin">Margin</option>
-                  <option value="price">Price</option>
-                  <option value="name">Name</option>
-                </select>
-              </div>
-            )}
           </div>
 
           {tab === "search" && (
             <div className="flex items-center gap-2 text-xs text-muted lg:hidden">
               <Search className="h-3.5 w-3.5" />
               <span>
-                {searchResults.length} result{searchResults.length === 1 ? "" : "s"}
+                {listItems.length} result{listItems.length === 1 ? "" : "s"}
               </span>
-              <div className="ml-auto flex items-center gap-1">
-                <ArrowUpDown className="h-3.5 w-3.5 text-subtle" />
-                <select
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value as SortKey)}
-                  className="h-10 rounded-md border border-border bg-surface-2 px-2 text-base text-fg"
-                  aria-label="Sort by"
-                >
-                  <option value="volume">Volume</option>
-                  <option value="margin">Margin</option>
-                  <option value="price">Price</option>
-                  <option value="name">Name</option>
-                </select>
-              </div>
             </div>
           )}
         </div>
@@ -346,13 +366,16 @@ export function GeApp() {
                 Could not load live prices. Try refresh.
               </div>
             ) : showFlipBoard ? (
-              <FlipBoard
-                flips={activeFlips}
-                selectedId={activeId}
-                onSelect={onSelectId}
-                bankroll={bankroll}
-                mode={flipMode}
-              />
+              <>
+                <ListFilters value={filters} onChange={setFilters} />
+                <FlipBoard
+                  flips={activeFlips}
+                  selectedId={activeId}
+                  onSelect={onSelectId}
+                  bankroll={bankroll}
+                  mode={flipMode}
+                />
+              </>
             ) : tab === "invest" ? (
               <InvestBoard
                 items={items}
@@ -364,29 +387,16 @@ export function GeApp() {
               />
             ) : showItemList ? (
               <>
-                {(tab === "watch" || tab === "volume") && (
+                <ListFilters value={filters} onChange={setFilters} />
+                {(tab === "watch" || tab === "volume" || tab === "search") && (
                   <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
                     <p className="text-xs font-medium uppercase tracking-wide text-subtle">
                       {tab === "watch"
                         ? `Watchlist · ${listItems.length}`
-                        : "Highest 1h volume"}
+                        : tab === "volume"
+                          ? `Highest 1h volume · ${listItems.length}`
+                          : `Results · ${listItems.length}`}
                     </p>
-                    {tab === "watch" && (
-                      <div className="flex items-center gap-1 lg:hidden">
-                        <ArrowUpDown className="h-3.5 w-3.5 text-subtle" />
-                        <select
-                          value={sort}
-                          onChange={(e) => setSort(e.target.value as SortKey)}
-                          className="h-10 rounded-md border border-border bg-surface-2 px-2 text-base text-fg"
-                          aria-label="Sort by"
-                        >
-                          <option value="volume">Volume</option>
-                          <option value="margin">Margin</option>
-                          <option value="price">Price</option>
-                          <option value="name">Name</option>
-                        </select>
-                      </div>
-                    )}
                   </div>
                 )}
                 <div
@@ -396,22 +406,66 @@ export function GeApp() {
                   )}
                 >
                   <div />
-                  <div className="text-[11px] font-medium uppercase tracking-wide text-subtle">
-                    Item
-                  </div>
-                  <div className="text-right text-[11px] font-medium uppercase tracking-wide text-subtle">
-                    Buy
-                  </div>
-                  <div className="text-right text-[11px] font-medium uppercase tracking-wide text-subtle">
-                    Sell
-                  </div>
-                  <div className="text-right text-[11px] font-medium uppercase tracking-wide text-subtle">
-                    Margin
-                  </div>
-                  <div className="text-right text-[11px] font-medium uppercase tracking-wide text-subtle">
-                    1h vol
-                  </div>
+                  <SortableTh
+                    label="Item"
+                    align="left"
+                    active={itemSortKey === "name"}
+                    dir={itemSortDir}
+                    onClick={() => onItemSort("name")}
+                  />
+                  <SortableTh
+                    label="Buy"
+                    active={itemSortKey === "buy"}
+                    dir={itemSortDir}
+                    onClick={() => onItemSort("buy")}
+                  />
+                  <SortableTh
+                    label="Sell"
+                    active={itemSortKey === "sell"}
+                    dir={itemSortDir}
+                    onClick={() => onItemSort("sell")}
+                  />
+                  <SortableTh
+                    label="Margin"
+                    active={itemSortKey === "margin"}
+                    dir={itemSortDir}
+                    onClick={() => onItemSort("margin")}
+                  />
+                  <SortableTh
+                    label="1h vol"
+                    active={itemSortKey === "volume"}
+                    dir={itemSortDir}
+                    onClick={() => onItemSort("volume")}
+                  />
                   <div />
+                </div>
+                {/* Mobile numeric sort chips */}
+                <div className="flex flex-wrap gap-1 border-b border-border px-2 py-2 sm:hidden">
+                  {(
+                    [
+                      ["volume", "Vol"],
+                      ["margin", "Margin"],
+                      ["buy", "Buy"],
+                      ["sell", "Sell"],
+                      ["limit", "Limit"],
+                      ["potential", "Potential"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => onItemSort(key)}
+                      className={cn(
+                        "rounded-md border px-2 py-1 text-[11px] font-medium",
+                        itemSortKey === key
+                          ? "border-border-strong bg-surface-2 text-fg"
+                          : "border-border bg-surface text-muted",
+                      )}
+                    >
+                      {label}
+                      {itemSortKey === key ? (itemSortDir === "asc" ? " ↑" : " ↓") : ""}
+                    </button>
+                  ))}
                 </div>
                 <div className="space-y-0.5 p-2 sm:p-3">
                   {listItems.length === 0 ? (
@@ -512,6 +566,23 @@ export function GeApp() {
               />
             </div>
             <div className="home-indicator-pad" aria-hidden />
+          </div>
+        </div>
+      )}
+
+      {/* Desktop full-page item view (search selection) — graph-major */}
+      {fullPageOpen && selected && (
+        <div className="fixed inset-0 z-50 hidden overflow-hidden bg-bg lg:block">
+          <div className="flex h-full min-h-0 flex-col">
+            <ItemDetail
+              item={selected}
+              bankroll={bankroll}
+              flipMode={showFlipBoard ? flipMode : "safe"}
+              fullPage
+              onClose={() => {
+                setFullPageOpen(false);
+              }}
+            />
           </div>
         </div>
       )}

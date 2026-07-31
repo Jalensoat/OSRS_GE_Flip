@@ -23,12 +23,23 @@ export function PriceChart({
   points,
   lookback,
   tall,
+  size = "normal",
 }: {
   points: TimeseriesPoint[];
   lookback: string;
   /** Desktop detail pane — larger chart for recent prints */
   tall?: boolean;
+  /** full = majority of viewport (search item page) */
+  size?: "normal" | "tall" | "full";
 }) {
+  const resolved: "normal" | "tall" | "full" = size !== "normal" ? size : tall ? "tall" : "normal";
+  const heightClass =
+    resolved === "full"
+      ? "h-[min(62vh,36rem)] min-h-[18rem] lg:h-[min(68vh,40rem)]"
+      : resolved === "tall"
+        ? "h-80 min-h-[20rem] lg:h-[22rem]"
+        : "h-56 min-h-[14rem]";
+
   const data = points
     .filter((p) => p.avgHighPrice != null || p.avgLowPrice != null)
     .map((p) => ({
@@ -47,7 +58,7 @@ export function PriceChart({
       <div
         className={cn(
           "flex items-center justify-center rounded-lg border border-border bg-surface text-sm text-muted",
-          tall ? "h-80" : "h-56",
+          heightClass,
         )}
       >
         Not enough trade history for this range.
@@ -56,7 +67,7 @@ export function PriceChart({
   }
 
   return (
-    <div className={cn("w-full", tall ? "h-80 min-h-[20rem] lg:h-[22rem]" : "h-56 min-h-[14rem]")}>
+    <div className={cn("w-full", heightClass)}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
           <defs>

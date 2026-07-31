@@ -1,7 +1,15 @@
+import { useMemo, useState } from "react";
 import type { FlipMode, FlipOpportunity } from "@/lib/osrs/flip";
 import { formatQty } from "@/lib/osrs/flip";
 import { formatGp, formatPercent, formatVolume } from "@/lib/osrs/format";
+import {
+  nextSortState,
+  sortFlips,
+  type FlipSortKey,
+  type SortDir,
+} from "@/lib/osrs/listFilters";
 import { ItemIcon } from "./ItemIcon";
+import { SortableTh } from "./SortableTh";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Timer, Coins, ShieldCheck, Activity, Flame } from "lucide-react";
@@ -20,6 +28,19 @@ export function FlipBoard({
   mode?: FlipMode;
 }) {
   const isHot = mode === "hot";
+  const [sortKey, setSortKey] = useState<FlipSortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const sorted = useMemo(() => {
+    if (!sortKey) return flips;
+    return sortFlips(flips, sortKey, sortDir);
+  }, [flips, sortKey, sortDir]);
+
+  const onSort = (key: FlipSortKey) => {
+    const next = nextSortState(sortKey, sortDir, key);
+    setSortKey(next.key);
+    setSortDir(next.dir);
+  };
 
   if (bankroll <= 0) {
     return (
@@ -47,7 +68,7 @@ export function FlipBoard({
     );
   }
 
-  const best = flips[0]!;
+  const best = sorted[0]!;
 
   return (
     <div className="min-w-0 w-full max-w-full space-y-3 overflow-x-hidden p-2 sm:p-3">
@@ -98,24 +119,89 @@ export function FlipBoard({
             Prices use <span className="text-fg">1h / 5m trade averages</span>, not the last single
             offer — so one pump trade can't invent a fake margin. Ranked by{" "}
             <span className="text-fg">GP/hour × volume confidence</span>. Min{" "}
-            <span className="text-fg">12 trades/side/hour</span> required.
+            <span className="text-fg">12 trades/side/hour</span> required. Click column headers to
+            sort.
           </>
         )}
       </div>
 
-      <div className="hidden min-w-0 lg:grid grid-cols-[2rem_minmax(0,1.5fr)_repeat(6,minmax(0,1fr))] gap-2 border-b border-border px-2.5 pb-2 text-[11px] font-medium uppercase tracking-wide text-subtle">
+      {/* Mobile sort chips for numeric columns */}
+      <div className="flex flex-wrap gap-1 lg:hidden">
+        {(
+          [
+            ["gpHour", "GP/hour"],
+            ["sold1h", "Sold 1h"],
+            ["margin", "Margin"],
+            ["roi", "ROI"],
+            ["qty", "Qty"],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onSort(key)}
+            className={cn(
+              "rounded-md border px-2 py-1 text-[11px] font-medium",
+              sortKey === key
+                ? "border-border-strong bg-surface-2 text-fg"
+                : "border-border bg-surface text-muted",
+            )}
+          >
+            {label}
+            {sortKey === key ? (sortDir === "asc" ? " ↑" : " ↓") : ""}
+          </button>
+        ))}
+      </div>
+
+      <div className="hidden min-w-0 lg:grid grid-cols-[2rem_minmax(0,1.5fr)_repeat(6,minmax(0,1fr))] gap-2 border-b border-border px-2.5 pb-2">
         <div />
-        <div>Item</div>
-        <div className="text-right">Sold 1h</div>
-        <div className="text-right">Buy → sell</div>
-        <div className="text-right">Qty</div>
-        <div className="text-right">GP / hour</div>
-        <div className="text-right">ROI</div>
-        <div className="text-right">{isHot ? "Risk" : "Trust"}</div>
+        <SortableTh
+          label="Item"
+          align="left"
+          active={sortKey === "name"}
+          dir={sortDir}
+          onClick={() => onSort("name")}
+        />
+        <SortableTh
+          label="Sold 1h"
+          active={sortKey === "sold1h"}
+          dir={sortDir}
+          onClick={() => onSort("sold1h")}
+        />
+        <SortableTh
+          label="Buy → sell"
+          active={sortKey === "buy"}
+          dir={sortDir}
+          onClick={() => onSort("buy")}
+        />
+        <SortableTh
+          label="Qty"
+          active={sortKey === "qty"}
+          dir={sortDir}
+          onClick={() => onSort("qty")}
+        />
+        <SortableTh
+          label="GP / hour"
+          active={sortKey === "gpHour"}
+          dir={sortDir}
+          onClick={() => onSort("gpHour")}
+        />
+        <SortableTh
+          label="ROI"
+          active={sortKey === "roi"}
+          dir={sortDir}
+          onClick={() => onSort("roi")}
+        />
+        <SortableTh
+          label={isHot ? "Risk" : "Trust"}
+          active={sortKey === "trust"}
+          dir={sortDir}
+          onClick={() => onSort("trust")}
+        />
       </div>
 
       <div className="min-w-0 space-y-0.5">
-        {flips.map((f, i) => (
+        {sorted.map((f, i) => (
           <FlipRow
             key={f.item.id}
             rank={i + 1}
