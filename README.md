@@ -37,19 +37,13 @@ npm run build
 | `public/site.webmanifest` | Home Screen manifest |
 | `src/lib/osrs/*` | Prices API, flip math, intel/polls |
 | `src/components/ge/*` | Flip board, detail, chart, invest, themes |
-| `IOS_FOOTER_BUG.md` | iOS Home Screen footer gap — **fixed**; keep as regression notes |
+| `IOS_FOOTER_BUG.md` | iOS Home Screen footer gap — **fixed** (PC); regression notes |
 
-## iOS Home Screen layout — FIXED
+## iOS Home Screen layout — fixed
 
-**Status:** Fixed by **Grok Build on PC** (2026-07-31, commit `3e10ba1`). User confirmed.
+Fixed by **Grok Build on PC** (2026-07-31, `3e10ba1`). User confirmed on device.
 
-**Was:** Large black band under bottom tabs in standalone Home Screen PWA only.
-
-**Root cause:** Dual height systems — JS `--app-height` pixel lock on `.app` fought `position: fixed; bottom: 0` on the tab bar; mismatch painted content `bg` under the tabs. `theme-color` also used `bg`, so residual chrome looked like a void.
-
-**Fix summary:** No pixel height lock; shell/chrome use **surface**; tab bar fixed bottom + surface underlay; keyboard hook only resets scroll. Full write-up: [`IOS_FOOTER_BUG.md`](./IOS_FOOTER_BUG.md).
-
-**Do not reintroduce** `--app-height` / visualViewport height pins or set `theme-color` to content `bg`.
+Root cause and full fix table live in [`IOS_FOOTER_BUG.md`](./IOS_FOOTER_BUG.md) (written with the fix — dual height lock vs fixed tab bar; shell/theme-color use **surface**). Do not reintroduce `--app-height` pixel locks or set `theme-color` to content `bg`.
 
 ## Product features (working)
 
@@ -60,7 +54,7 @@ npm run build
 - **Starting GP** — k/m/b presets, profit/hour after tax  
 - **Themes + logo** — PWA icons in `public/`  
 - **Desktop** — wide detail drawer + chart; **mobile** — bottom tabs + sheet  
-- **iOS Home Screen PWA** — tab bar flush to bottom (see above)
+- **iOS Home Screen PWA** — tab bar flush to bottom  
 
 ## License
 
