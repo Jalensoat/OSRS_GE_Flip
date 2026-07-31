@@ -51,7 +51,6 @@ export function ItemDetail({
   const watched = watchlist.ids.includes(item.id);
   const isHot = flipMode === "hot";
   const dense = fullPage || sheet;
-  const chartSize = fullPage ? "full" : chartTall ? "tall" : "normal";
 
   const history = useQuery({
     queryKey: ["history", item.id, lookback],
@@ -80,22 +79,33 @@ export function ItemDetail({
       : (item.high ?? item.low);
   const taxOnSell = flipSell != null ? geTax(flipSell) : 0;
   const lastMargin = flipMargin(item.high, item.low);
+  const g = (id: string) => METRIC_BY_ID[id];
+  const s = insights.standouts;
 
+  const bottleneckLabel = flip
+    ? flip.bottleneck === "none"
+      ? "None"
+      : flip.bottleneck === "buy_limit"
+        ? "Buy limit"
+        : flip.bottleneck === "volume"
+          ? "Market trades"
+          : "Your cash"
+    : "—";
+
+  /* ── Chart ── */
   const chartBlock = (
-    <div className={cn(fullPage && "min-w-0")}>
+    <div className="min-w-0 rounded-xl border border-border bg-surface-2/30 p-3">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-medium text-fg">Price history</h3>
-        <div className="flex gap-1 rounded-md border border-border bg-surface-2 p-0.5">
+        <h3 className="text-xs font-semibold text-fg">Price history</h3>
+        <div className="flex gap-1 rounded-md border border-border bg-surface p-0.5">
           {LOOKBACKS.map((lb) => (
             <button
               key={lb}
               type="button"
               onClick={() => setLookback(lb)}
               className={cn(
-                "rounded-sm px-2.5 py-1 text-xs font-medium transition-colors",
-                lookback === lb
-                  ? "bg-surface-3 text-fg"
-                  : "text-muted hover:text-fg",
+                "rounded-sm px-2 py-0.5 text-[11px] font-medium transition-colors",
+                lookback === lb ? "bg-surface-3 text-fg" : "text-muted hover:text-fg",
               )}
             >
               {lb}
@@ -107,7 +117,7 @@ export function ItemDetail({
         <Skeleton
           className={cn(
             "w-full rounded-lg",
-            fullPage ? "h-[min(52vh,32rem)]" : chartTall ? "h-80" : "h-48",
+            fullPage ? "h-[min(36vh,280px)]" : chartTall ? "h-72" : "h-48",
           )}
         />
       ) : history.isError ? (
@@ -116,103 +126,123 @@ export function ItemDetail({
         <PriceChart
           points={history.data?.points ?? []}
           lookback={lookback}
-          size={chartSize}
+          size={fullPage ? "tall" : chartTall ? "tall" : "normal"}
         />
       )}
-      {(insights.midChangePct != null || insights.volatilityPct != null) && (
-        <div className="mt-1.5 flex flex-wrap gap-3 text-[11px] text-subtle">
-          {insights.midChangePct != null && (
-            <span className="tabular">
-              Mid Δ {formatPercent(insights.midChangePct)}
-            </span>
-          )}
-          {insights.volatilityPct != null && (
-            <span className="tabular">
-              σ {formatPercent(insights.volatilityPct).replace(/^\+/, "")}
-            </span>
-          )}
-          <span className="text-muted">Lookback: {lookback}</span>
-        </div>
-      )}
+      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-subtle">
+        {insights.midChangePct != null && (
+          <span className="tabular" title="How much the middle price moved over this chart">
+            Mid moved {formatPercent(insights.midChangePct)}
+          </span>
+        )}
+        {insights.volatilityPct != null && (
+          <span
+            className="tabular"
+            title="How much prices typically wobble — compare to your profit %"
+          >
+            Wobble ±{formatPercent(insights.volatilityPct).replace(/^\+/, "")}
+          </span>
+        )}
+      </div>
     </div>
   );
 
-  const g = (id: string) => METRIC_BY_ID[id];
-  const s = insights.standouts;
+  /* ── Price rail (PC full page) ── */
+  const priceRail = (
+    <aside className="flex flex-col justify-center gap-4 rounded-xl border border-border bg-surface-2/40 p-4">
+      <PriceBlock
+        label="Buy now (low)"
+        value={formatGpExact(flipBuy)}
+        tip="Last price someone paid to sell instantly — often your entry if you buy sitting"
+        tone="gain"
+      />
+      <PriceBlock
+        label="Sell now (high)"
+        value={formatGpExact(flipSell)}
+        tip="Last price someone paid to buy instantly — often your exit if you sell sitting"
+      />
+      <div className="space-y-1.5 border-t border-border pt-3">
+        <MiniLine
+          label="Profit / item"
+          value={formatGpExact(lastMargin)}
+          tip="Sell now − tax − buy now"
+        />
+        <MiniLine
+          label="Tax if you sell"
+          value={`−${formatGpExact(taxOnSell)}`}
+          tip="2% of sell price, max 5m per item"
+        />
+      </div>
+    </aside>
+  );
 
-  const decisionStrip = (
-    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-6">
-      <Mini
-        label="Net spread"
+  /* ── Hero decision cards (big numbers) ── */
+  const heroCards = (
+    <div
+      className={cn(
+        "grid gap-3",
+        fullPage ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-2 sm:grid-cols-3",
+      )}
+    >
+      <HeroCard
+        label="Profit / item"
         value={formatGp(insights.netSpread)}
-        sub={
+        hint={
           insights.netSpreadPct != null
             ? `${formatPercent(insights.netSpreadPct).replace(/^\+/, "")} after tax`
-            : "After tax"
+            : "After GE tax"
         }
-        tone={
-          insights.netSpread != null && insights.netSpread > 0 ? "gain" : "loss"
-        }
+        tone={insights.netSpread != null && insights.netSpread > 0 ? "gain" : "loss"}
         standout={s.netSpread}
         why={g("netSpread")}
       />
-      <Mini
-        label="Fill score"
+      <HeroCard
+        label="How easy fills"
         value={String(insights.fillScore)}
-        sub={insights.fillDetail}
-        tone={
+        unit="/100"
+        hint={
           insights.fillScore >= 70
-            ? "gain"
+            ? "Both sides look workable"
             : insights.fillScore < 45
-              ? "warn"
-              : undefined
+              ? "Stuck-inventory risk"
+              : "Size carefully"
+        }
+        tone={
+          insights.fillScore >= 70 ? "gain" : insights.fillScore < 45 ? "warn" : "sky"
         }
         standout={s.fillScore}
         why={g("fillScore")}
       />
-      <Mini
-        label="Est. GP / hour"
+      <HeroCard
+        label="GP per hour"
         value={flip ? formatGp(flip.profitPerHour) : "—"}
-        sub={flip ? `${formatPercent(flip.roiPct)} ROI` : "Set bankroll"}
+        hint={flip ? `${formatPercent(flip.roiPct)} per cycle` : "Set starting GP"}
         tone={flip && flip.profitPerHour > 0 ? "gain" : undefined}
         standout={s.gpHour}
         why={g("gpHour")}
       />
-      <Mini
-        label="Flip qty"
-        value={flip ? formatQty(flip.qty) : "—"}
-        sub={flip ? `${formatGp(flip.capitalUsed)} capital` : "—"}
-        why={g("gpHour")}
-      />
-      <Mini
-        label="1h volume"
-        value={formatVolume(item.volume1h)}
-        sub={`↑${formatVolume(insights.volHigh1h)} ↓${formatVolume(insights.volLow1h)} · min ${formatVolume(insights.volMin1h)}`}
-        standout={s.volume}
-        why={g("regime")}
-      />
-      <Mini
-        label="Bottleneck"
-        value={
+      <HeroCard
+        label="What limits you"
+        value={bottleneckLabel}
+        hint={
           flip
-            ? flip.bottleneck === "none"
-              ? "None"
-              : flip.bottleneck === "buy_limit"
-                ? "Buy limit"
-                : flip.bottleneck === "volume"
-                  ? "Volume"
-                  : "Capital"
-            : "—"
+            ? `Stack ${formatQty(flip.qty)} · ${formatGp(flip.capitalUsed)} in`
+            : item.limit != null
+              ? `Buy limit ${formatQty(item.limit)}`
+              : "—"
         }
-        sub={item.limit != null ? `Limit ${formatQty(item.limit)}` : "No limit data"}
         standout={s.bottleneck}
         why={g("bottleneck")}
       />
     </div>
   );
 
+  /* ── Chips ── */
   const chipRow = (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
+        Signals
+      </span>
       {insights.chips.map((c) => {
         const guide = c.guideId ? METRIC_BY_ID[c.guideId] : undefined;
         const tip = [c.detail, guide ? `Why: ${guide.why}` : "", guide ? `Read: ${guide.howToRead}` : ""]
@@ -223,16 +253,15 @@ export function ItemDetail({
             key={c.id}
             title={tip}
             className={cn(
-              "inline-flex max-w-full cursor-help items-center rounded-md border px-2 py-0.5 text-[11px] font-medium",
-              c.tone === "gain" && "border-gain/30 bg-gain/10 text-gain",
-              c.tone === "loss" && "border-loss/30 bg-loss/10 text-loss",
-              c.tone === "warn" && "border-warn/30 bg-warn/10 text-warn",
-              c.tone === "accent" && "border-accent/30 bg-accent/10 text-accent",
-              c.tone === "muted" && "border-border bg-surface-2 text-muted",
-              c.standout && "ring-2 ring-accent/50 shadow-sm",
+              "inline-flex cursor-help items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
+              c.tone === "gain" && "bg-gain/10 text-gain ring-gain/25",
+              c.tone === "loss" && "bg-loss/10 text-loss ring-loss/25",
+              c.tone === "warn" && "bg-warn/10 text-warn ring-warn/25",
+              c.tone === "accent" && "bg-accent/10 text-accent ring-accent/25",
+              c.tone === "muted" && "bg-surface-2 text-muted ring-border",
+              c.standout && "ring-2",
             )}
           >
-            {c.standout && <span className="mr-1 text-[9px] opacity-80">●</span>}
             {c.label}
           </span>
         );
@@ -240,15 +269,16 @@ export function ItemDetail({
     </div>
   );
 
+  /* ── What to check ── */
   const checks = (
-    <div className="rounded-md border border-border bg-surface-2/40 px-2.5 py-2">
-      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-subtle">
-        What to check
-      </div>
-      <ul className="space-y-1 text-[11px] leading-snug text-muted">
+    <div className="rounded-xl border border-border bg-surface-2/30 p-4">
+      <h3 className="mb-2.5 text-[10px] font-semibold uppercase tracking-wider text-subtle">
+        What to check in-game
+      </h3>
+      <ul className="space-y-2">
         {insights.checks.map((c, i) => (
-          <li key={i} className="flex gap-1.5">
-            <span className="text-subtle">•</span>
+          <li key={i} className="flex gap-2 text-sm leading-snug text-fg/90">
+            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
             <span>{c}</span>
           </li>
         ))}
@@ -256,213 +286,327 @@ export function ItemDetail({
     </div>
   );
 
-  const denseTable = (
-    <div className="overflow-hidden rounded-md border border-border">
-      <table className="w-full text-left text-[11px]">
-        <tbody className="divide-y divide-border">
-          <Row k="Flip buy / sell" v={`${formatGpExact(flipBuy)} → ${formatGpExact(flipSell)}`} />
-          <Row k="Tax on sell" v={`−${formatGpExact(taxOnSell)}`} />
-          <Row k="Net margin / item" v={formatGpExact(lastMargin)} />
-          <Row
-            k="1h avg L / H"
-            v={`${formatGp(item.avgLow1h)} / ${formatGp(item.avgHigh1h)}`}
+  /* ── Secondary details (2-col cards, not full-width rows) ── */
+  const details = (
+    <div className="rounded-xl border border-border bg-surface-2/30 p-4">
+      <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-subtle">
+        More numbers
+      </h3>
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+        <Detail
+          label="Hourly trades"
+          value={formatVolume(item.volume1h)}
+          tip="Trades in the last hour (both sides)"
+        />
+        <Detail
+          label="Last 5 min trades"
+          value={formatVolume(item.volume5m)}
+          tip="How many trades just happened — not a full hour total. Quiet last 5 min means slow fills right now even if the hour looked fine."
+          standout={insights.volumePace === "cooling" || insights.volumePace === "hot"}
+        />
+        <Detail
+          label="Buy / sell trades"
+          value={`↑${formatVolume(insights.volHigh1h)} ↓${formatVolume(insights.volLow1h)}`}
+          tip="↑ people paying top (insta-buy) · ↓ people dumping (insta-sell)"
+        />
+        <Detail
+          label="Weak side (min)"
+          value={formatVolume(insights.volMin1h)}
+          tip="The slower of the two sides — this is your real flip capacity"
+        />
+        <Detail
+          label="1h avg buy / sell"
+          value={`${formatGp(item.avgLow1h)} / ${formatGp(item.avgHigh1h)}`}
+          tip="Smoothed prices over the hour — less noisy than last print"
+        />
+        <Detail
+          label="Data age"
+          value={`Buy ${formatAgeSec(insights.highAgeSec)} · Sell ${formatAgeSec(insights.lowAgeSec)}`}
+          tip="How old the last instant-buy and instant-sell trades are"
+        />
+        {flip && (
+          <>
+            <Detail
+              label="Suggested prices"
+              value={`${formatGp(flip.buyPrice)} → ${formatGp(flip.sellPrice)}`}
+              tip="What the bankroll model uses (may use averages, not last print)"
+            />
+            <Detail
+              label="One cycle · day est."
+              value={`${formatGp(flip.profitOnce)} · ${formatGp(flip.profitPerDay)}/d`}
+              tip="One full buy+sell profit, and rough daily if you keep cycling"
+            />
+            <Detail
+              label="Stack size"
+              value={formatQty(flip.qty)}
+              tip="How many the model sizes for your bankroll and limits"
+            />
+          </>
+        )}
+        {item.limit != null && (
+          <Detail
+            label="Buy limit / 4h"
+            value={formatQty(item.limit)}
+            tip="GE buy limit window — starts on your first buy of this item"
           />
-          <Row
-            k="5m volume"
-            v={`${formatVolume(item.volume5m)} (${formatVolume(item.volHigh5m)}↑ ${formatVolume(item.volLow5m)}↓)`}
-          />
-          <Row
-            k="Print age"
-            v={`H ${formatAgeSec(insights.highAgeSec)} · L ${formatAgeSec(insights.lowAgeSec)}`}
-          />
-          {flip && (
-            <>
-              <Row k="Model prices" v={`${formatGp(flip.buyPrice)} → ${formatGp(flip.sellPrice)} (${flip.priceSource})`} />
-              <Row k="Once / day est." v={`${formatGp(flip.profitOnce)} · ${formatGp(flip.profitPerDay)}/d`} />
-            </>
-          )}
-        </tbody>
-      </table>
+        )}
+      </dl>
     </div>
   );
 
+  /* ── Sheet / compact (mobile) uses same heroes, stacked ── */
+  if (!fullPage) {
+    return (
+      <div className={cn(sheet ? "flex flex-col bg-surface" : "flex h-full min-h-0 flex-col")}>
+        <Header
+          item={item}
+          watched={watched}
+          isHot={isHot}
+          flip={flip}
+          fillScore={insights.fillScore}
+          onClose={onClose}
+          onToggleWatch={() => watchlist.toggle(item.id)}
+          fullPage={false}
+        />
+        <div
+          className={cn(
+            "space-y-3 p-3",
+            sheet ? "" : "min-h-0 flex-1 overflow-y-auto overscroll-contain",
+          )}
+        >
+          {dense && (
+            <>
+              <FlipGuidePanel defaultOpen={false} />
+              {heroCards}
+              {chipRow}
+            </>
+          )}
+          {(chartTall || sheet) && chartBlock}
+          {dense && (
+            <>
+              {checks}
+              {details}
+            </>
+          )}
+          {!dense && chartBlock}
+          <Actions
+            watched={watched}
+            itemId={item.id}
+            onToggle={() => watchlist.toggle(item.id)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  /* ── PC full-page: scannable hierarchy ── */
+  return (
+    <div className="flex h-full min-h-0 flex-col bg-surface">
+      <Header
+        item={item}
+        watched={watched}
+        isHot={isHot}
+        flip={flip}
+        fillScore={insights.fillScore}
+        onClose={onClose}
+        onToggleWatch={() => watchlist.toggle(item.id)}
+        fullPage
+      />
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 sm:p-5">
+        {/* 1) Big decision numbers first */}
+        {heroCards}
+
+        {/* 2) Signals */}
+        {chipRow}
+
+        {/* 3) Chart + live prices side by side */}
+        <section className="grid gap-3 lg:grid-cols-[1fr_200px]">
+          {chartBlock}
+          {priceRail}
+        </section>
+
+        {/* 4) Checklist + more numbers */}
+        <section className="grid gap-3 lg:grid-cols-2">
+          {checks}
+          {details}
+        </section>
+
+        <FlipGuidePanel defaultOpen={false} />
+
+        <Actions
+          watched={watched}
+          itemId={item.id}
+          onToggle={() => watchlist.toggle(item.id)}
+        />
+      </div>
+
+      {/* Sticky plan footer */}
+      <footer className="shrink-0 border-t border-border bg-surface/95 px-4 py-2.5 backdrop-blur sm:px-5">
+        <p className="text-sm text-muted">
+          <span className="text-subtle">Plan · </span>
+          buy{" "}
+          <span className="font-semibold tabular text-fg">
+            {formatGp(flip?.buyPrice ?? flipBuy)}
+          </span>
+          {" · "}sell{" "}
+          <span className="font-semibold tabular text-fg">
+            {formatGp(flip?.sellPrice ?? flipSell)}
+          </span>
+          {flip && (
+            <>
+              {" · "}qty{" "}
+              <span className="font-semibold tabular text-fg">≤{formatQty(flip.qty)}</span>
+              {" · "}
+              <span className="font-semibold tabular text-gain">
+                {formatGp(flip.profitPerHour)}/h
+              </span>
+            </>
+          )}
+        </p>
+      </footer>
+    </div>
+  );
+}
+
+function Header({
+  item,
+  watched,
+  isHot,
+  flip,
+  fillScore,
+  onClose,
+  onToggleWatch,
+  fullPage,
+}: {
+  item: CatalogItem;
+  watched: boolean;
+  isHot: boolean;
+  flip: ReturnType<typeof computeItemInsights>["flip"];
+  fillScore: number;
+  onClose: () => void;
+  onToggleWatch: () => void;
+  fullPage: boolean;
+}) {
   return (
     <div
       className={cn(
-        sheet ? "flex flex-col bg-surface" : "flex h-full min-h-0 flex-col",
-        fullPage && "bg-surface",
+        "flex shrink-0 items-start gap-3 border-b border-border p-3 sm:p-4",
+        fullPage && "pad-top-safe",
       )}
     >
-      <div
-        className={cn(
-          "flex items-start gap-3 border-b border-border p-3 sm:p-4",
-          fullPage && "shrink-0 pad-top-safe",
-          sheet && "shrink-0",
-        )}
-      >
-        <ItemIcon icon={item.icon} name={item.name} size="lg" />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <h2
-                className={cn(
-                  "font-semibold tracking-tight text-fg",
-                  fullPage ? "text-xl sm:text-2xl" : "truncate text-lg",
-                )}
-              >
-                {item.name}
-              </h2>
-              <p className="mt-0.5 line-clamp-2 text-xs text-muted">{item.examine}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={onClose}
-              aria-label="Close"
-              className="shrink-0"
+      <ItemIcon icon={item.icon} name={item.name} size="lg" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h2
+              className={cn(
+                "font-semibold tracking-tight text-fg",
+                fullPage ? "text-xl sm:text-2xl" : "truncate text-lg",
+              )}
             >
-              <X className="h-4 w-4" />
-            </Button>
+              {item.name}
+            </h2>
+            <p className="mt-0.5 line-clamp-2 text-xs text-muted">{item.examine}</p>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            {item.members ? (
-              <Badge variant="accent">
-                <Users className="mr-1 h-3 w-3" />
-                Members
-              </Badge>
-            ) : (
-              <Badge>F2P</Badge>
-            )}
-            {item.limit != null && (
-              <Badge>
-                <Package className="mr-1 h-3 w-3" />
-                Limit {item.limit.toLocaleString()}
-              </Badge>
-            )}
-            {isHot ? (
-              <Badge variant="warn">Hot model</Badge>
-            ) : flip ? (
-              <Badge
-                variant={
-                  flip.confidenceLabel === "High" || flip.confidenceLabel === "Solid"
-                    ? "gain"
-                    : flip.confidenceLabel === "OK"
-                      ? "accent"
-                      : "warn"
-                }
-              >
-                {flip.confidenceLabel} trust
-              </Badge>
-            ) : null}
-            <Badge className="tabular">ID {item.id}</Badge>
+          <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          {item.members ? (
+            <Badge variant="accent">
+              <Users className="mr-1 h-3 w-3" />
+              Members
+            </Badge>
+          ) : (
+            <Badge>F2P</Badge>
+          )}
+          {item.limit != null && (
+            <Badge>
+              <Package className="mr-1 h-3 w-3" />
+              Limit {item.limit.toLocaleString()} / 4h
+            </Badge>
+          )}
+          {isHot ? (
+            <Badge variant="warn">Hot model</Badge>
+          ) : flip ? (
             <Badge
               variant={
-                insights.fillScore >= 70
+                flip.confidenceLabel === "High" || flip.confidenceLabel === "Solid"
                   ? "gain"
-                  : insights.fillScore < 45
-                    ? "warn"
-                    : "default"
+                  : flip.confidenceLabel === "OK"
+                    ? "accent"
+                    : "warn"
               }
             >
-              Fill {insights.fillScore}
+              {flip.confidenceLabel} trust
             </Badge>
-          </div>
-        </div>
-      </div>
-
-      <div
-        className={cn(
-          "p-3 sm:p-4",
-          dense ? "space-y-3" : "space-y-5",
-          sheet ? "" : "min-h-0 flex-1 overflow-y-auto overscroll-contain",
-        )}
-      >
-        {/* Dense intelligence first on full page / sheet */}
-        {(fullPage || sheet) && (
-          <>
-            <FlipGuidePanel defaultOpen={false} />
-            <p className="text-[10px] text-subtle">
-              Ringed tiles / ● chips = stand-out good or risk signals. Hover chips for why they
-              matter.
-            </p>
-            {decisionStrip}
-            {chipRow}
-            {checks}
-          </>
-        )}
-
-        {/* Chart dominates full page */}
-        {(fullPage || chartTall) && chartBlock}
-
-        {!(fullPage || sheet) && (
-          <div className="grid grid-cols-2 gap-3">
-            <Stat label="Flip buy (low)" value={formatGp(flipBuy)} sub="Entry" tone="gain" />
-            <Stat label="Flip sell (high)" value={formatGp(flipSell)} sub="Exit" />
-            <Stat
-              label="1h avg L/H"
-              value={`${formatGp(item.avgLow1h)} / ${formatGp(item.avgHigh1h)}`}
-            />
-            <Stat
-              label="Sold 1h"
-              value={formatVolume(item.volume1h)}
-              sub={`${formatVolume(item.volHigh1h)}↑ ${formatVolume(item.volLow1h)}↓`}
-            />
-          </div>
-        )}
-
-        {(fullPage || sheet) && denseTable}
-
-        {!(fullPage || chartTall) && chartBlock}
-
-        {!(fullPage || sheet) && bankroll > 0 && flip && (
-          <div className="rounded-lg border border-border bg-surface p-3 space-y-2">
-            <div className="text-xs font-medium uppercase tracking-wide text-muted">
-              {isHot ? "Hot" : "Safe"} model · {formatGp(bankroll)}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Stat label="GP / hour" value={formatGp(flip.profitPerHour)} tone="gain" />
-              <Stat label="Qty" value={formatQty(flip.qty)} />
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          <Button
-            variant={watched ? "secondary" : "default"}
-            className="flex-1"
-            onClick={() => watchlist.toggle(item.id)}
+          ) : null}
+          <Badge
+            variant={
+              fillScore >= 70 ? "gain" : fillScore < 45 ? "warn" : "default"
+            }
+            title={METRIC_BY_ID.fillScore?.short}
           >
-            <Star className={cn("h-4 w-4", watched && "fill-current text-warn")} />
+            Fill {fillScore}
+          </Badge>
+          <button
+            type="button"
+            onClick={onToggleWatch}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-0.5 text-[11px] text-muted hover:text-fg"
+          >
+            <Star className={cn("h-3 w-3", watched && "fill-current text-warn")} />
             {watched ? "Watching" : "Watch"}
-          </Button>
-          <Button variant="secondary" asChild>
-            <a
-              href={`https://prices.runescape.wiki/osrs/item/${item.id}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Wiki
-            </a>
-          </Button>
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-function Mini({
+function Actions({
+  watched,
+  itemId,
+  onToggle,
+}: {
+  watched: boolean;
+  itemId: number;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="flex gap-2">
+      <Button variant={watched ? "secondary" : "default"} className="flex-1" onClick={onToggle}>
+        <Star className={cn("h-4 w-4", watched && "fill-current text-warn")} />
+        {watched ? "Watching" : "Watch"}
+      </Button>
+      <Button variant="secondary" asChild>
+        <a
+          href={`https://prices.runescape.wiki/osrs/item/${itemId}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <ExternalLink className="h-4 w-4" />
+          Wiki
+        </a>
+      </Button>
+    </div>
+  );
+}
+
+function HeroCard({
   label,
   value,
-  sub,
+  unit,
+  hint,
   tone,
   standout,
   why,
 }: {
   label: string;
   value: string;
-  sub?: string;
-  tone?: "gain" | "loss" | "warn";
+  unit?: string;
+  hint?: string;
+  tone?: "gain" | "loss" | "warn" | "sky";
   standout?: boolean;
   why?: { title: string; short: string; why: string; howToRead: string };
 }) {
@@ -473,70 +617,104 @@ function Mini({
     <div
       title={title}
       className={cn(
-        "min-w-0 cursor-help rounded-md border bg-surface-2/50 px-2 py-1.5",
+        "cursor-help rounded-xl border px-4 py-3 transition-colors",
         standout
           ? tone === "warn" || tone === "loss"
-            ? "border-warn/50 ring-2 ring-warn/40"
-            : "border-accent/50 ring-2 ring-accent/40"
-          : "border-border",
+            ? "border-warn/40 bg-warn/5 ring-2 ring-warn/30"
+            : "border-accent/40 bg-accent/5 ring-2 ring-accent/30"
+          : "border-border bg-surface-2/40 hover:border-border-strong",
       )}
     >
-      <div className="truncate text-[10px] font-medium uppercase tracking-wide text-subtle">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
         {label}
-        {standout ? " ·" : ""}
       </div>
-      <div
-        className={cn(
-          "truncate text-sm font-semibold tabular tracking-tight",
-          tone === "gain" && "text-gain",
-          tone === "loss" && "text-loss",
-          tone === "warn" && "text-warn",
-          !tone && "text-fg",
-        )}
-      >
-        {value}
+      <div className="mt-1 flex items-baseline gap-1.5">
+        <span
+          className={cn(
+            "text-2xl font-semibold tabular tracking-tight xl:text-3xl",
+            tone === "gain" && "text-gain",
+            tone === "loss" && "text-loss",
+            tone === "warn" && "text-warn",
+            tone === "sky" && "text-accent",
+            !tone && "text-fg",
+          )}
+        >
+          {value}
+        </span>
+        {unit && <span className="text-xs text-subtle">{unit}</span>}
       </div>
-      {sub && <div className="line-clamp-2 text-[10px] leading-tight text-muted">{sub}</div>}
+      {hint && (
+        <div className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted">{hint}</div>
+      )}
     </div>
   );
 }
 
-function Row({ k, v }: { k: string; v: string }) {
-  return (
-    <tr className="bg-surface/40">
-      <th className="w-[40%] px-2.5 py-1.5 font-medium text-muted">{k}</th>
-      <td className="px-2.5 py-1.5 tabular text-fg">{v}</td>
-    </tr>
-  );
-}
-
-function Stat({
+function PriceBlock({
   label,
   value,
-  sub,
+  tip,
   tone,
 }: {
   label: string;
   value: string;
-  sub?: string;
-  tone?: "gain" | "loss";
+  tip?: string;
+  tone?: "gain";
 }) {
   return (
-    <div className="rounded-lg border border-border bg-surface-2/50 px-3 py-2.5">
-      <div className="text-[11px] font-medium uppercase tracking-wide text-subtle">
+    <div title={tip} className="cursor-help">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
         {label}
       </div>
       <div
         className={cn(
-          "mt-0.5 text-base font-semibold tabular",
-          tone === "gain" && "text-gain",
-          tone === "loss" && "text-loss",
-          !tone && "text-fg",
+          "mt-0.5 text-2xl font-semibold tabular tracking-tight",
+          tone === "gain" ? "text-gain" : "text-fg",
         )}
       >
         {value}
       </div>
-      {sub && <div className="mt-0.5 text-[11px] text-muted">{sub}</div>}
+    </div>
+  );
+}
+
+function MiniLine({
+  label,
+  value,
+  tip,
+}: {
+  label: string;
+  value: string;
+  tip?: string;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-2" title={tip}>
+      <span className="text-[10px] uppercase tracking-wide text-subtle">{label}</span>
+      <span className="text-sm font-medium tabular text-fg">{value}</span>
+    </div>
+  );
+}
+
+function Detail({
+  label,
+  value,
+  tip,
+  standout,
+}: {
+  label: string;
+  value: string;
+  tip?: string;
+  standout?: boolean;
+}) {
+  return (
+    <div
+      className={cn("min-w-0", standout && "rounded-md ring-1 ring-accent/40 px-1.5 py-0.5")}
+      title={tip}
+    >
+      <dt className="truncate text-[10px] font-medium uppercase tracking-wide text-subtle">
+        {label}
+      </dt>
+      <dd className="text-sm font-semibold tabular tracking-tight text-fg">{value}</dd>
     </div>
   );
 }

@@ -239,10 +239,18 @@ export function computeItemInsights(
         : "High risk of stuck inventory or phantom margin";
 
   const chips: InsightChip[] = [];
+  const regimeLabel: Record<RegimeLabel, string> = {
+    thick: "Busy market",
+    mixed: "OK activity",
+    thin: "Quiet market",
+    spike: "Trade rush",
+    drying: "Trades drying up",
+    unknown: "Activity unclear",
+  };
   chips.push({
     id: "regime",
     guideId: "regime",
-    label: `Liquidity: ${regime}`,
+    label: regimeLabel[regime],
     detail: regimeDetail,
     tone:
       regime === "thick"
@@ -257,16 +265,16 @@ export function computeItemInsights(
     guideId: "trend",
     label:
       trend === "range"
-        ? "Trend: range"
+        ? "Sideways"
         : trend === "up"
-          ? "Trend: up"
+          ? "Climbing"
           : trend === "down"
-            ? "Trend: down"
-            : "Trend: ?",
+            ? "Falling"
+            : "Direction ?",
     detail:
       midChangePct != null
-        ? `Mid path over chart lookback: ${midChangePct >= 0 ? "+" : ""}${midChangePct.toFixed(1)}%`
-        : "Need more history points for slope",
+        ? `Price mid moved ${midChangePct >= 0 ? "+" : ""}${midChangePct.toFixed(1)}% over the chart window`
+        : "Need more history for direction",
     tone: trend === "down" ? "warn" : trend === "up" ? "accent" : "muted",
     standout: trend === "down" || trend === "range",
   });
@@ -274,8 +282,8 @@ export function computeItemInsights(
     chips.push({
       id: "stale",
       guideId: "fresh",
-      label: "Stale prints",
-      detail: `High age ${highAgeSec != null ? Math.round(highAgeSec / 60) + "m" : "?"} · low age ${lowAgeSec != null ? Math.round(lowAgeSec / 60) + "m" : "?"}`,
+      label: "Prices outdated",
+      detail: `Last buy-now trade ${highAgeSec != null ? Math.round(highAgeSec / 60) + "m" : "?"} ago · sell-now ${lowAgeSec != null ? Math.round(lowAgeSec / 60) + "m" : "?"} ago`,
       tone: "warn",
       standout: true,
     });
@@ -283,8 +291,8 @@ export function computeItemInsights(
     chips.push({
       id: "fresh",
       guideId: "fresh",
-      label: "Prints fresh",
-      detail: "Recent high and low trades — spread more trustworthy",
+      label: "Prices recent",
+      detail: "Last buy-now and sell-now trades are under about an hour — numbers more trustworthy",
       tone: "gain",
       standout: false,
     });
@@ -293,11 +301,11 @@ export function computeItemInsights(
     chips.push({
       id: "imbalance",
       guideId: "imbalance",
-      label: volImbalance > 0 ? "More insta-buys" : "More insta-sells",
+      label: volImbalance > 0 ? "Buy pressure" : "Sell pressure",
       detail:
         volImbalance > 0
-          ? "Sell leg easier; buy leg may wait or need aggression"
-          : "Buy leg easier; sell leg is the inventory risk",
+          ? "More people paying top prices — selling is easier; buying may wait"
+          : "More people dumping — buying is easier; selling is the hard part",
       tone: "warn",
       standout: Math.abs(volImbalance) > 0.45,
     });
@@ -306,7 +314,7 @@ export function computeItemInsights(
     chips.push({
       id: "spike",
       guideId: "spike",
-      label: "Vs 1h avg",
+      label: "Off hourly avg",
       detail: spikeDetail,
       tone: "warn",
       standout: true,
@@ -315,12 +323,19 @@ export function computeItemInsights(
   chips.push({
     id: "edge",
     guideId: "edge",
-    label: `Edge vs vol: ${edgeVsVol}`,
+    label:
+      edgeVsVol === "strong"
+        ? "Margin beats noise"
+        : edgeVsVol === "weak"
+          ? "Noise > margin"
+          : edgeVsVol === "ok"
+            ? "Margin OK vs noise"
+            : "Edge unclear",
     detail:
       netSpreadPct != null
-        ? `Net spread ~${netSpreadPct.toFixed(1)}%` +
-          (volatilityPct != null ? ` · local mid σ ~${volatilityPct.toFixed(1)}%` : "")
-        : "No net spread",
+        ? `Profit ~${netSpreadPct.toFixed(1)}% after tax` +
+          (volatilityPct != null ? ` · typical wobble ~${volatilityPct.toFixed(1)}%` : "")
+        : "No profit figure",
     tone:
       edgeVsVol === "strong" ? "gain" : edgeVsVol === "weak" ? "warn" : "muted",
     standout: edgeVsVol === "strong" || edgeVsVol === "weak",
@@ -328,8 +343,15 @@ export function computeItemInsights(
   chips.push({
     id: "pace",
     guideId: "pace",
-    label: `5m pace: ${volumePace}`,
-    detail: `${item.volume5m} trades/5m vs ~${Math.round(item.volume1h / 12)} expected from 1h`,
+    label:
+      volumePace === "hot"
+        ? "Last 5m: busy"
+        : volumePace === "cooling"
+          ? "Last 5m: quiet"
+          : volumePace === "stable"
+            ? "Last 5m: steady"
+            : "Last 5m: ?",
+    detail: `${item.volume5m} trades in the last 5 minutes (about ${Math.round(item.volume1h / 12)} would be a normal slice of the hour)`,
     tone: volumePace === "cooling" ? "warn" : volumePace === "hot" ? "accent" : "muted",
     standout: volumePace === "cooling" || volumePace === "hot",
   });

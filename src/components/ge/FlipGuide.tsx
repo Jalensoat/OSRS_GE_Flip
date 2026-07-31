@@ -117,9 +117,15 @@ function FlipGuideModal({ onClose }: { onClose: () => void }) {
         </div>
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-3 text-xs leading-relaxed text-muted">
           <p>
-            Rank items by <span className="text-fg">realizable edge</span> — post-tax spread × chance
-            both legs fill × capital velocity — not by raw high−low. Highlighted tiles and chips on an
-            item are stand-outs (good or risky).
+            Rank items by <span className="text-fg">real profit you can actually complete</span>: after
+            tax, both buy and sell fills, and how fast your GP recycles — not by a big raw price gap.
+            Ringed cards and highlighted chips are stand-outs (good or risky). Hover anything for more.
+          </p>
+          <p className="rounded-md border border-border bg-bg/50 px-2.5 py-2 text-[11px]">
+            <span className="font-medium text-fg">Last 5 min trades</span> = how many real GE trades
+            happened in the last five minutes (not a special “5m volume” GE setting). The hour can look
+            busy while the last five minutes went quiet — that means fills feel slow{" "}
+            <em>right now</em>.
           </p>
           <div>
             <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-subtle">
