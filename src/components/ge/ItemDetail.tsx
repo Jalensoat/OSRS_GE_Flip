@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Star, X, ExternalLink, Users, Package } from "lucide-react";
 import {
@@ -13,7 +14,8 @@ import {
   geTax,
   flipMargin,
 } from "@/lib/osrs/format";
-import { computeFlip, formatQty, type FlipMode } from "@/lib/osrs/flip";
+import { formatQty, type FlipMode } from "@/lib/osrs/flip";
+import { computeItemInsights } from "@/lib/osrs/itemInsights";
 import { useWatchlist } from "@/lib/osrs/watchlist";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +23,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ItemIcon } from "./ItemIcon";
 import { PriceChart } from "./PriceChart";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 const LOOKBACKS: Lookback[] = ["6h", "24h", "7d", "30d"];
 
@@ -32,27 +33,22 @@ export function ItemDetail({
   flipMode = "safe",
   chartTall = false,
   fullPage = false,
-  /** Mobile bottom sheet: flow layout, parent scrolls (avoids iOS nested scroll trap) */
   sheet = false,
 }: {
   item: CatalogItem;
   onClose: () => void;
   bankroll?: number;
   flipMode?: FlipMode;
-  /** Wider desktop pane — taller price graph */
   chartTall?: boolean;
-  /** Full-page layout: chart takes majority of the view */
   fullPage?: boolean;
   sheet?: boolean;
 }) {
   const [lookback, setLookback] = useState<Lookback>("24h");
   const watchlist = useWatchlist();
   const watched = watchlist.ids.includes(item.id);
-  const flip = bankroll > 0 ? computeFlip(item, bankroll, flipMode) : null;
   const isHot = flipMode === "hot";
+  const dense = fullPage || sheet;
   const chartSize = fullPage ? "full" : chartTall ? "tall" : "normal";
-  // Full/aside: chart first. Sheet keeps chart below stats — parent owns scroll.
-  const showChartFirst = fullPage || chartTall;
 
   const history = useQuery({
     queryKey: ["history", item.id, lookback],
@@ -60,6 +56,17 @@ export function ItemDetail({
     staleTime: 60_000,
   });
 
+  const insights = useMemo(
+    () =>
+      computeItemInsights(item, {
+        bankroll,
+        flipMode,
+        history: history.data?.points ?? [],
+      }),
+    [item, bankroll, flipMode, history.data?.points],
+  );
+
+  const flip = insights.flip;
   const flipBuy =
     item.low != null && item.high != null
       ? Math.min(item.low, item.high)
@@ -72,8 +79,8 @@ export function ItemDetail({
   const lastMargin = flipMargin(item.high, item.low);
 
   const chartBlock = (
-    <div className={cn(fullPage && "min-w-0 flex-1")}>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <div className={cn(fullPage && "min-w-0")}>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-medium text-fg">Price history</h3>
         <div className="flex gap-1 rounded-md border border-border bg-surface-2 p-0.5">
           {LOOKBACKS.map((lb) => (
@@ -97,7 +104,7 @@ export function ItemDetail({
         <Skeleton
           className={cn(
             "w-full rounded-lg",
-            fullPage ? "h-[min(62vh,36rem)]" : chartTall ? "h-80" : "h-48",
+            fullPage ? "h-[min(52vh,32rem)]" : chartTall ? "h-80" : "h-48",
           )}
         />
       ) : history.isError ? (
@@ -109,22 +116,161 @@ export function ItemDetail({
           size={chartSize}
         />
       )}
+      {(insights.midChangePct != null || insights.volatilityPct != null) && (
+        <div className="mt-1.5 flex flex-wrap gap-3 text-[11px] text-subtle">
+          {insights.midChangePct != null && (
+            <span className="tabular">
+              Mid Δ {insights.midChangePct >= 0 ? "+" : ""}
+              {insights.midChangePct.toFixed(1)}%
+            </span>
+          )}
+          {insights.volatilityPct != null && (
+            <span className="tabular">σ {insights.volatilityPct.toFixed(2)}%</span>
+          )}
+          <span className="text-muted">Lookback: {lookback}</span>
+        </div>
+      )}
+    </div>
+  );
+
+  const decisionStrip = (
+    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
+      <Mini
+        label="Net spread"
+        value={formatGp(insights.netSpread)}
+        sub={
+          insights.netSpreadPct != null
+            ? `${insights.netSpreadPct.toFixed(2)}% after tax`
+            : "After tax"
+        }
+        tone={
+          insights.netSpread != null && insights.netSpread > 0 ? "gain" : "loss"
+        }
+      />
+      <Mini
+        label="Fill score"
+        value={`${insights.fillScore}`}
+        sub={insights.fillDetail}
+        tone={
+          insights.fillScore >= 70
+            ? "gain"
+            : insights.fillScore < 45
+              ? "warn"
+              : undefined
+        }
+      />
+      <Mini
+        label="Est. GP / hour"
+        value={flip ? formatGp(flip.profitPerHour) : "—"}
+        sub={flip ? `${formatPercent(flip.roiPct)} ROI` : "Set bankroll"}
+        tone="gain"
+      />
+      <Mini
+        label="Flip qty"
+        value={flip ? formatQty(flip.qty) : "—"}
+        sub={flip ? `${formatGp(flip.capitalUsed)} capital` : "—"}
+      />
+      <Mini
+        label="1h volume"
+        value={formatVolume(item.volume1h)}
+        sub={`${formatVolume(insights.volHigh1h)}↑ ${formatVolume(insights.volLow1h)}↓ · min ${formatVolume(insights.volMin1h)}`}
+      />
+      <Mini
+        label="Bottleneck"
+        value={
+          flip
+            ? flip.bottleneck === "none"
+              ? "None"
+              : flip.bottleneck === "buy_limit"
+                ? "Buy limit"
+                : flip.bottleneck === "volume"
+                  ? "Volume"
+                  : "Capital"
+            : "—"
+        }
+        sub={item.limit != null ? `Limit ${formatQty(item.limit)}` : "No limit data"}
+      />
+    </div>
+  );
+
+  const chipRow = (
+    <div className="flex flex-wrap gap-1.5">
+      {insights.chips.map((c) => (
+        <span
+          key={c.id}
+          title={c.detail}
+          className={cn(
+            "inline-flex max-w-full items-center rounded-md border px-2 py-0.5 text-[11px] font-medium",
+            c.tone === "gain" && "border-gain/30 bg-gain/10 text-gain",
+            c.tone === "loss" && "border-loss/30 bg-loss/10 text-loss",
+            c.tone === "warn" && "border-warn/30 bg-warn/10 text-warn",
+            c.tone === "accent" && "border-accent/30 bg-accent/10 text-accent",
+            c.tone === "muted" && "border-border bg-surface-2 text-muted",
+          )}
+        >
+          {c.label}
+        </span>
+      ))}
+    </div>
+  );
+
+  const checks = (
+    <div className="rounded-md border border-border bg-surface-2/40 px-2.5 py-2">
+      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-subtle">
+        What to check
+      </div>
+      <ul className="space-y-1 text-[11px] leading-snug text-muted">
+        {insights.checks.map((c, i) => (
+          <li key={i} className="flex gap-1.5">
+            <span className="text-subtle">•</span>
+            <span>{c}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  const denseTable = (
+    <div className="overflow-hidden rounded-md border border-border">
+      <table className="w-full text-left text-[11px]">
+        <tbody className="divide-y divide-border">
+          <Row k="Flip buy / sell" v={`${formatGpExact(flipBuy)} → ${formatGpExact(flipSell)}`} />
+          <Row k="Tax on sell" v={`−${formatGpExact(taxOnSell)}`} />
+          <Row k="Net margin / item" v={formatGpExact(lastMargin)} />
+          <Row
+            k="1h avg L / H"
+            v={`${formatGp(item.avgLow1h)} / ${formatGp(item.avgHigh1h)}`}
+          />
+          <Row
+            k="5m volume"
+            v={`${formatVolume(item.volume5m)} (${formatVolume(item.volHigh5m)}↑ ${formatVolume(item.volLow5m)}↓)`}
+          />
+          <Row
+            k="Print age"
+            v={`H ${insights.highAgeSec != null ? `${Math.round(insights.highAgeSec / 60)}m` : "—"} · L ${insights.lowAgeSec != null ? `${Math.round(insights.lowAgeSec / 60)}m` : "—"}`}
+          />
+          {flip && (
+            <>
+              <Row k="Model prices" v={`${formatGp(flip.buyPrice)} → ${formatGp(flip.sellPrice)} (${flip.priceSource})`} />
+              <Row k="Once / day est." v={`${formatGp(flip.profitOnce)} · ${formatGp(flip.profitPerDay)}/d`} />
+            </>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 
   return (
     <div
       className={cn(
-        sheet
-          ? "flex flex-col bg-surface"
-          : "flex h-full min-h-0 flex-col",
+        sheet ? "flex flex-col bg-surface" : "flex h-full min-h-0 flex-col",
         fullPage && "bg-surface",
       )}
     >
       <div
         className={cn(
-          "flex items-start gap-3 border-b border-border p-4 sm:p-5",
-          fullPage && "shrink-0 bg-surface pad-top-safe",
+          "flex items-start gap-3 border-b border-border p-3 sm:p-4",
+          fullPage && "shrink-0 pad-top-safe",
           sheet && "shrink-0",
         )}
       >
@@ -140,9 +286,7 @@ export function ItemDetail({
               >
                 {item.name}
               </h2>
-              <p className="mt-0.5 line-clamp-2 text-xs text-muted sm:text-sm">
-                {item.examine}
-              </p>
+              <p className="mt-0.5 line-clamp-2 text-xs text-muted">{item.examine}</p>
             </div>
             <Button
               variant="ghost"
@@ -185,181 +329,71 @@ export function ItemDetail({
               </Badge>
             ) : null}
             <Badge className="tabular">ID {item.id}</Badge>
+            <Badge
+              variant={
+                insights.fillScore >= 70
+                  ? "gain"
+                  : insights.fillScore < 45
+                    ? "warn"
+                    : "default"
+              }
+            >
+              Fill {insights.fillScore}
+            </Badge>
           </div>
         </div>
       </div>
 
       <div
         className={cn(
-          "p-4 sm:p-5",
-          fullPage ? "space-y-6" : "space-y-5",
-          // Nested scroll only for aside/full shells — sheet parent owns scrolling
+          "p-3 sm:p-4",
+          dense ? "space-y-3" : "space-y-5",
           sheet ? "" : "min-h-0 flex-1 overflow-y-auto overscroll-contain",
         )}
       >
-        {showChartFirst && chartBlock}
+        {/* Dense intelligence first on full page / sheet */}
+        {(fullPage || sheet) && (
+          <>
+            {decisionStrip}
+            {chipRow}
+            {checks}
+          </>
+        )}
 
-        <div className={cn("grid gap-3", fullPage ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-2")}>
-          <Stat
-            label="Flip buy (low)"
-            value={formatGp(flipBuy)}
-            sub="Your entry bid side"
-            tone="gain"
-          />
-          <Stat
-            label="Flip sell (high)"
-            value={formatGp(flipSell)}
-            sub="Your exit offer side"
-          />
-          <Stat
-            label="1h avg low / high"
-            value={
-              item.avgHigh1h != null || item.avgLow1h != null
-                ? `${formatGp(item.avgLow1h)} / ${formatGp(item.avgHigh1h)}`
-                : "—"
-            }
-            sub="Buy avg · sell avg"
-          />
-          <Stat
-            label="Sold last hour"
-            value={formatVolume(item.volume1h)}
-            sub={`${formatVolume(item.volHigh1h)} high · ${formatVolume(item.volLow1h)} low`}
-          />
-        </div>
+        {/* Chart dominates full page */}
+        {(fullPage || chartTall) && chartBlock}
 
-        <div className="rounded-lg border border-border bg-surface p-3 sm:p-4 space-y-2">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted">
-            Trade flow
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div>
-              <div className="text-[11px] text-subtle">1h total</div>
-              <div className="text-sm tabular font-semibold text-fg">
-                {formatVolume(item.volume1h)}
-              </div>
-            </div>
-            <div>
-              <div className="text-[11px] text-subtle">5m total</div>
-              <div className="text-sm tabular font-semibold text-fg">
-                {formatVolume(item.volume5m)}
-              </div>
-            </div>
-            <div>
-              <div className="text-[11px] text-subtle">Buy limit</div>
-              <div className="text-sm tabular font-semibold text-fg">
-                {item.limit != null ? formatQty(item.limit) : "—"}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {bankroll > 0 && (
-          <div className="rounded-lg border border-border bg-surface p-3 sm:p-4 space-y-2">
-            <div className="text-xs font-medium uppercase tracking-wide text-muted">
-              {isHot ? "Hot flip model" : "Safe flip model"} · {formatGp(bankroll)} bankroll
-            </div>
-            {flip ? (
-              <>
-                <div className="grid grid-cols-2 gap-3 pt-1">
-                  <Stat
-                    label="Buy → sell"
-                    value={`${formatGp(flip.buyPrice)} → ${formatGp(flip.sellPrice)}`}
-                    sub={
-                      flip.priceSource === "last_trade"
-                        ? "Last trade prints"
-                        : flip.priceSource === "blended"
-                          ? "1h + 5m averages"
-                          : flip.priceSource === "1h_avg"
-                            ? "1h trade averages"
-                            : "5m averages"
-                    }
-                  />
-                  <Stat
-                    label="Margin / item"
-                    value={formatGp(flip.marginPerItem)}
-                    sub="After 2% tax"
-                    tone="gain"
-                  />
-                  <Stat
-                    label="Flip qty"
-                    value={formatQty(flip.qty)}
-                    sub={`${formatVolume(flip.soldTotal1h)} sold/h market`}
-                  />
-                  <Stat
-                    label="Est. GP / hour"
-                    value={formatGp(flip.profitPerHour)}
-                    sub={`${formatPercent(flip.roiPct)} ROI / fill`}
-                    tone="gain"
-                  />
-                </div>
-                {flip.spikeRisk && (
-                  <p className="text-[11px] text-warn leading-relaxed">
-                    {isHot
-                      ? "Last trade looks spiky vs 1h averages — fills may not hold. Check sold volume before committing."
-                      : "Last single trade looks spiky vs averages — safe model ignored it."}
-                  </p>
-                )}
-                <p className="text-[11px] text-subtle leading-relaxed">
-                  Est. once:{" "}
-                  <span className="tabular text-gain font-medium">
-                    {formatGp(flip.profitOnce)}
-                  </span>
-                  {" · "}
-                  day:{" "}
-                  <span className="tabular text-gain font-medium">
-                    {formatGp(flip.profitPerDay)}
-                  </span>
-                  .
-                </p>
-              </>
-            ) : (
-              <p className="text-xs text-muted py-2">
-                {isHot
-                  ? "No positive last-trade margin for this bankroll right now."
-                  : "Not recommended on the safe model — needs stable average margin and solid two-sided volume."}
-              </p>
-            )}
+        {!(fullPage || sheet) && (
+          <div className="grid grid-cols-2 gap-3">
+            <Stat label="Flip buy (low)" value={formatGp(flipBuy)} sub="Entry" tone="gain" />
+            <Stat label="Flip sell (high)" value={formatGp(flipSell)} sub="Exit" />
+            <Stat
+              label="1h avg L/H"
+              value={`${formatGp(item.avgLow1h)} / ${formatGp(item.avgHigh1h)}`}
+            />
+            <Stat
+              label="Sold 1h"
+              value={formatVolume(item.volume1h)}
+              sub={`${formatVolume(item.volHigh1h)}↑ ${formatVolume(item.volLow1h)}↓`}
+            />
           </div>
         )}
 
-        <div className="rounded-lg border border-border bg-surface p-3 sm:p-4 space-y-2 text-sm">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted mb-1">
-            Last-trade snapshot
-          </div>
-          <div className="flex justify-between gap-2">
-            <span className="text-muted">Wiki last low (flip buy)</span>
-            <span className="tabular text-fg">{formatGpExact(item.low)}</span>
-          </div>
-          <div className="flex justify-between gap-2">
-            <span className="text-muted">Wiki last high (flip sell)</span>
-            <span className="tabular text-fg">{formatGpExact(item.high)}</span>
-          </div>
-          <div className="flex justify-between gap-2">
-            <span className="text-muted">Tax on flip sell</span>
-            <span className="tabular text-loss">−{formatGpExact(taxOnSell)}</span>
-          </div>
-          <div className="flex justify-between gap-2">
-            <span className="text-muted">Net margin / item</span>
-            <span
-              className={cn(
-                "tabular font-medium",
-                lastMargin != null && lastMargin > 0
-                  ? "text-gain"
-                  : lastMargin != null && lastMargin < 0
-                    ? "text-loss"
-                    : "text-fg",
-              )}
-            >
-              {formatGpExact(lastMargin)}
-            </span>
-          </div>
-          <p className="pt-1 text-[11px] text-subtle leading-relaxed">
-            Buy column = lower price (your entry). Sell column = higher price (your exit).
-            Tax is 2% on the sell, capped at 5m.
-          </p>
-        </div>
+        {(fullPage || sheet) && denseTable}
 
-        {!showChartFirst && chartBlock}
+        {!(fullPage || chartTall) && chartBlock}
+
+        {!(fullPage || sheet) && bankroll > 0 && flip && (
+          <div className="rounded-lg border border-border bg-surface p-3 space-y-2">
+            <div className="text-xs font-medium uppercase tracking-wide text-muted">
+              {isHot ? "Hot" : "Safe"} model · {formatGp(bankroll)}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Stat label="GP / hour" value={formatGp(flip.profitPerHour)} tone="gain" />
+              <Stat label="Qty" value={formatQty(flip.qty)} />
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-2">
           <Button
@@ -383,6 +417,47 @@ export function ItemDetail({
         </div>
       </div>
     </div>
+  );
+}
+
+function Mini({
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: "gain" | "loss" | "warn";
+}) {
+  return (
+    <div className="min-w-0 rounded-md border border-border bg-surface-2/50 px-2 py-1.5">
+      <div className="truncate text-[10px] font-medium uppercase tracking-wide text-subtle">
+        {label}
+      </div>
+      <div
+        className={cn(
+          "truncate text-sm font-semibold tabular",
+          tone === "gain" && "text-gain",
+          tone === "loss" && "text-loss",
+          tone === "warn" && "text-warn",
+          !tone && "text-fg",
+        )}
+      >
+        {value}
+      </div>
+      {sub && <div className="line-clamp-2 text-[10px] leading-tight text-muted">{sub}</div>}
+    </div>
+  );
+}
+
+function Row({ k, v }: { k: string; v: string }) {
+  return (
+    <tr className="bg-surface/40">
+      <th className="w-[40%] px-2.5 py-1.5 font-medium text-muted">{k}</th>
+      <td className="px-2.5 py-1.5 tabular text-fg">{v}</td>
+    </tr>
   );
 }
 

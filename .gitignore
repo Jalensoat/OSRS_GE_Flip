@@ -40,3 +40,5 @@ screenshots/
 *.db
 *.sqlite
 data/
+.vercel
+.env*

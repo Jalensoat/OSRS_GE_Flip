@@ -27,8 +27,10 @@ This app is a single React codebase with responsive + PWA behavior. There is no 
 
 | Surface | Detection | Primary chrome |
 |--------|-----------|----------------|
-| **PC / desktop** | `min-width: 1024px` (`lg:`) | Top tabs, split list + detail aside, optional full-page item |
+| **PC / desktop** | `min-width: 1024px` (`lg:`) | Top tabs, **full-width list**, full-page item on click (no always-on aside) |
 | **Mobile / iOS** | `< 1024px` + bottom `.bottom-nav` | Bottom tabs, bottom sheets, safe-area padding |
+
+Item intelligence metrics: `docs/ITEM_INTELLIGENCE.md` + `src/lib/osrs/itemInsights.ts`.
 
 Helpers: `useDisplayMode()`, `isPhoneLayout()` in `src/hooks/useDisplayMode.ts`.
 
