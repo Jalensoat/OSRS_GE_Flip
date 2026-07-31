@@ -21,10 +21,12 @@ export const KEY_DECISION_METRICS: MetricGuide[] = [
   },
   {
     id: "netSpread",
-    title: "Profit / item",
-    short: "GP left after GE tax if you buy low and sell high at last prices.",
-    why: "Tax is 2% on the sell (capped at 5m GP). Many “green” pre-tax gaps are zero after tax.",
-    howToRead: "Must stay clearly positive after tax. Tiny % on a bouncy chart = easy to lose money.",
+    title: "Flip profit / item",
+    short:
+      "Same-day flip edge after tax. The big number uses hour averages (like the main table). Last GE prints can look worse — that’s “instant edge,” not the table model.",
+    why: "Tax is 2% on the sell (capped at 5m GP). Instant last trades can be red while average-based flips (the list) stay green — sit offers instead of forcing instants.",
+    howToRead:
+      "Green flip profit + OK fill = classic same-day play. Red instant edge alone ≠ skip if model is green. Also check Hold / turnaround for dip-buys.",
   },
   {
     id: "regime",

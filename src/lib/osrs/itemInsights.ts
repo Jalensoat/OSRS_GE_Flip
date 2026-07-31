@@ -5,11 +5,18 @@
  */
 import type { CatalogItem, TimeseriesPoint } from "./api";
 import { geTax, flipMargin } from "./format";
-import { computeFlip, type FlipMode, type FlipOpportunity } from "./flip";
+import {
+  computeFlip,
+  modelFlipEdge,
+  type FlipMode,
+  type FlipOpportunity,
+} from "./flip";
 
 export type RegimeLabel = "thick" | "mixed" | "thin" | "spike" | "drying" | "unknown";
 export type TrendLabel = "range" | "up" | "down" | "unknown";
 export type ChipTone = "gain" | "loss" | "warn" | "muted" | "accent";
+/** Suggested play style at a glance */
+export type HoldStyle = "quick_flip" | "dip_buy" | "momentum" | "mixed" | "avoid";
 
 export type InsightChip = {
   id: string;
@@ -23,9 +30,26 @@ export type InsightChip = {
 };
 
 export type ItemInsights = {
-  /** Instant-print proxy spread after tax on sell side */
+  /** Instant-print proxy spread after tax (last GE trades — can disagree with table) */
   netSpread: number | null;
   netSpreadPct: number | null;
+  /**
+   * Average-based flip edge (same idea as Safe main table).
+   * Prefer this for “quick flip” heroes so green list ≠ red drawer.
+   */
+  modelMargin: number | null;
+  modelMarginPct: number | null;
+  modelBuy: number | null;
+  modelSell: number | null;
+  /** Last mid vs 1h avg mid (%). Negative = trading under the hour. */
+  vsHourAvgPct: number | null;
+  /**
+   * Rough per-item GP if mid climbs back to the 1h average
+   * (buy near last low, sell near avg mid after tax). Speculative.
+   */
+  recoverToAvgGp: number | null;
+  holdStyle: HoldStyle;
+  holdThesis: string;
   /** Seconds since last high / low print */
   highAgeSec: number | null;
   lowAgeSec: number | null;
@@ -59,6 +83,8 @@ export type ItemInsights = {
   standouts: {
     fillScore: boolean;
     netSpread: boolean;
+    modelMargin: boolean;
+    hold: boolean;
     gpHour: boolean;
     volume: boolean;
     bottleneck: boolean;
@@ -155,6 +181,13 @@ export function computeItemInsights(
   const netSpreadPct =
     netSpread != null && mid != null && mid > 0 ? (netSpread / mid) * 100 : null;
 
+  // Model edge (table-aligned) vs last-print edge
+  const model = modelFlipEdge(item);
+  const modelMargin = model?.margin ?? null;
+  const modelMarginPct = model?.marginPct ?? null;
+  const modelBuy = model?.buy ?? null;
+  const modelSell = model?.sell ?? null;
+
   const highAgeSec = ageSec(item.highTime);
   const lowAgeSec = ageSec(item.lowTime);
   const printFresh =
@@ -188,19 +221,27 @@ export function computeItemInsights(
 
   const { trend, midChangePct, volatilityPct } = trendFromHistory(history);
 
-  // Spike: last-trade mid vs 1h avg mid
+  // Spike / turnaround: last-trade mid vs 1h avg mid
   const avgMid = midOf(item.avgHigh1h, item.avgLow1h);
   const lastMid = mid;
+  let vsHourAvgPct: number | null = null;
+  let recoverToAvgGp: number | null = null;
   let spikeVsAvg = false;
   let spikeDetail: string | null = null;
   if (lastMid != null && avgMid != null && avgMid > 0) {
-    const pct = ((lastMid - avgMid) / avgMid) * 100;
-    if (Math.abs(pct) >= 4) {
+    vsHourAvgPct = ((lastMid - avgMid) / avgMid) * 100;
+    if (Math.abs(vsHourAvgPct) >= 4) {
       spikeVsAvg = true;
       spikeDetail =
-        pct > 0
-          ? `Last prints ~${pct.toFixed(1)}% above 1h avg mid — FOMO/spike risk`
-          : `Last prints ~${Math.abs(pct).toFixed(1)}% below 1h avg mid — dump/panic risk`;
+        vsHourAvgPct > 0
+          ? `Last prints ~${vsHourAvgPct.toFixed(1)}% above 1h avg mid — FOMO/spike risk`
+          : `Last prints ~${Math.abs(vsHourAvgPct).toFixed(1)}% below 1h avg mid — dump/panic risk`;
+    }
+    // Speculative: buy near last low, exit if mid returns to hour average
+    if (buy != null && lastMid < avgMid) {
+      const exit = avgMid;
+      const raw = exit - geTax(exit) - buy;
+      recoverToAvgGp = raw > 0 ? Math.round(raw) : null;
     }
   }
 
@@ -240,6 +281,41 @@ export function computeItemInsights(
       : fillScore >= 45
         ? "Possible fills — size carefully; watch the slower side"
         : "High risk of stuck items or fake-looking profit";
+
+  // Longer-horizon play style (after fillScore so rules can use it)
+  let holdStyle: HoldStyle = "mixed";
+  let holdThesis = "No strong hold signal — treat as a same-day flip or skip.";
+  const chartDown = trend === "down" || (midChangePct != null && midChangePct <= -2);
+  const chartUp = trend === "up" || (midChangePct != null && midChangePct >= 2);
+  if (
+    netSpread != null &&
+    netSpread <= 0 &&
+    (modelMargin == null || modelMargin <= 0) &&
+    fillScore < 45
+  ) {
+    holdStyle = "avoid";
+    holdThesis = "Weak instant edge, weak model edge, and hard fills — pass or size tiny.";
+  } else if (vsHourAvgPct != null && vsHourAvgPct <= -2 && !chartDown) {
+    holdStyle = "dip_buy";
+    holdThesis =
+      recoverToAvgGp != null
+        ? `Trading under the hour average — possible turnaround if it climbs back (~${recoverToAvgGp.toLocaleString()} gp/item rough, after tax). Higher risk than a same-day flip.`
+        : "Trading under the hour average — possible dip-buy if you accept hold risk.";
+  } else if (vsHourAvgPct != null && vsHourAvgPct >= 1.5 && chartUp) {
+    holdStyle = "momentum";
+    holdThesis =
+      "Above the hour average and climbing on the chart — momentum hold, not a classic buy-low flip.";
+  } else if (modelMargin != null && modelMargin > 0 && fillScore >= 45) {
+    holdStyle = "quick_flip";
+    holdThesis =
+      netSpread != null && netSpread <= 0
+        ? "Same-day flip looks fine on average prices (like the main table). Last prints look worse — sit offers, don’t force instant buy/sell."
+        : "Same-day flip: sit both sides using model prices. Main table ranking matches this story.";
+  } else if (chartDown && vsHourAvgPct != null && vsHourAvgPct < 0) {
+    holdStyle = "avoid";
+    holdThesis =
+      "Price is sliding on the chart and under the hour average — don’t catch a falling knife unless you mean to hold.";
+  }
 
   const chips: InsightChip[] = [];
   const regimeLabel: Record<RegimeLabel, string> = {
@@ -418,10 +494,16 @@ export function computeItemInsights(
 
   const standouts = {
     fillScore: fillScore >= 70 || fillScore < 45,
+    // Instant edge: only scream when model is also bad (avoids green table / red drawer)
     netSpread:
-      (netSpread != null && netSpread <= 0) ||
-      (netSpreadPct != null && netSpreadPct >= 3) ||
-      edgeVsVol === "weak",
+      (netSpread != null &&
+        netSpread <= 0 &&
+        (modelMargin == null || modelMargin <= 0)) ||
+      (netSpreadPct != null && netSpreadPct >= 3 && (modelMargin == null || modelMargin <= 0)),
+    modelMargin:
+      (modelMargin != null && modelMargin > 0 && fillScore >= 50) ||
+      (modelMargin != null && modelMargin <= 0),
+    hold: holdStyle === "dip_buy" || holdStyle === "momentum" || holdStyle === "avoid",
     gpHour: flip != null && flip.profitPerHour > 0 && fillScore >= 60,
     volume: regime === "thin" || regime === "thick" || regime === "drying",
     bottleneck: flip != null && flip.bottleneck !== "none",
@@ -430,6 +512,14 @@ export function computeItemInsights(
   return {
     netSpread,
     netSpreadPct,
+    modelMargin,
+    modelMarginPct,
+    modelBuy,
+    modelSell,
+    vsHourAvgPct,
+    recoverToAvgGp,
+    holdStyle,
+    holdThesis,
     highAgeSec,
     lowAgeSec,
     printFresh,

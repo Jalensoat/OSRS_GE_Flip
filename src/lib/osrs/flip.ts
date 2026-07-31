@@ -334,6 +334,35 @@ export function computeFlip(
   return mode === "hot" ? computeHotFlip(item, bankroll) : computeSafeFlip(item, bankroll);
 }
 
+/**
+ * Same average-based buy/sell the Safe table uses — works without bankroll.
+ * Prefer this over last-print margin when explaining “why is the list green?”
+ */
+export function modelFlipEdge(item: CatalogItem): {
+  buy: number;
+  sell: number;
+  margin: number;
+  marginPct: number;
+  source: Exclude<FlipOpportunity["priceSource"], "last_trade">;
+} | null {
+  const prices = stableFlipPrices(item);
+  if (!prices || prices.buy <= 0 || prices.sell <= prices.buy) return null;
+  let { buy, sell, source } = prices;
+  const spreadPct = ((sell - buy) / buy) * 100;
+  if (spreadPct > MAX_SPREAD_PCT) {
+    sell = Math.round(buy * (1 + MAX_SPREAD_PCT / 100));
+  }
+  const margin = marginAfterTax(buy, sell);
+  if (margin <= 0) return null;
+  return {
+    buy,
+    sell,
+    margin,
+    marginPct: (margin / buy) * 100,
+    source,
+  };
+}
+
 export function rankFlips(
   items: CatalogItem[],
   bankroll: number,

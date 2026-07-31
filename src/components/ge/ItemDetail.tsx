@@ -147,115 +147,282 @@ export function ItemDetail({
     </div>
   );
 
-  /* ── Trade ticket: big buy / sell / edge side-by-side ── */
-  const tradeTicket = (
-    <div
-      className={cn(
-        "grid grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-surface-2/40",
-        !insights.printFresh && "ring-1 ring-warn/30",
-      )}
-      title={
-        !insights.printFresh
-          ? "Prices may be outdated — re-check in the GE"
-          : undefined
-      }
-    >
-      <TicketCell
-        label="Buy now"
-        sub="sit / undercut"
-        value={formatGpExact(flipBuy)}
-        tip="Last price for an instant sell — often what you pay if you sit a buy"
-        tone="gain"
-        size={fullPage ? "lg" : "sm"}
-      />
-      <TicketCell
-        label="Sell now"
-        sub="sit sell"
-        value={formatGpExact(flipSell)}
-        tip="Last price for an instant buy — often what you aim for if you sit a sell"
-        size={fullPage ? "lg" : "sm"}
-      />
-      <TicketCell
-        label="Edge after tax"
-        sub={`Tax −${formatGpExact(taxOnSell)}`}
-        value={formatGpExact(lastMargin)}
-        tip="Sell now − 2% GE tax − buy now. Must be clearly positive."
-        tone={lastMargin != null && lastMargin > 0 ? "gain" : "loss"}
-        size={fullPage ? "lg" : "sm"}
-      />
+  /** Quick-flip profit that matches the main table (model), not last panic print */
+  const flipProfitGp = flip?.marginPerItem ?? insights.modelMargin ?? insights.netSpread;
+  const flipProfitPct = flip?.roiPct ?? insights.modelMarginPct ?? insights.netSpreadPct;
+  const modelDisagreesInstant =
+    insights.modelMargin != null &&
+    insights.modelMargin > 0 &&
+    insights.netSpread != null &&
+    insights.netSpread <= 0;
+
+  const holdStyleLabel: Record<typeof insights.holdStyle, string> = {
+    quick_flip: "Same-day flip",
+    dip_buy: "Dip / turnaround",
+    momentum: "Momentum hold",
+    mixed: "Mixed signal",
+    avoid: "Skip / tiny size",
+  };
+
+  /* ── Dual horizon: short-term flip vs longer hold (primary highlights) ── */
+  const heroCards = (
+    <div className={cn("grid gap-3", fullPage ? "lg:grid-cols-2" : "")}>
+      {/* SHORT TERM */}
+      <section className="rounded-xl border border-border bg-surface-2/40 p-3 sm:p-3.5">
+        <div className="mb-2.5 flex items-baseline justify-between gap-2">
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-fg">
+            Quick flip · same day
+          </h3>
+          <span className="text-[10px] text-subtle">Matches main table</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <HeroCard
+            label="Flip profit / item"
+            value={formatGp(flipProfitGp)}
+            hint={
+              flipProfitGp != null && flipProfitGp <= 0
+                ? "No model edge after tax"
+                : flipProfitPct != null
+                  ? `${formatPercent(flipProfitPct).replace(/^\+/, "")} · avg prices`
+                  : "After tax · model"
+            }
+            tone={flipProfitGp != null && flipProfitGp > 0 ? "gain" : "loss"}
+            standout={s.modelMargin}
+            why={g("netSpread")}
+            size={fullPage ? "primary" : "sheet"}
+          />
+          <HeroCard
+            label="Will it fill?"
+            value={String(insights.fillScore)}
+            unit="/100"
+            hint={
+              insights.fillScore >= 70
+                ? "Both sides look workable"
+                : insights.fillScore < 45
+                  ? "Stuck-inventory risk"
+                  : "Size carefully"
+            }
+            tone={
+              insights.fillScore >= 70
+                ? "gain"
+                : insights.fillScore < 45
+                  ? "warn"
+                  : "sky"
+            }
+            standout={s.fillScore}
+            why={g("fillScore")}
+            size={fullPage ? "primary" : "sheet"}
+          />
+          <HeroCard
+            label="GP per hour"
+            value={flip ? formatGp(flip.profitPerHour) : "—"}
+            hint={
+              flip
+                ? `${formatPercent(flip.roiPct)} per cycle`
+                : "Set starting GP"
+            }
+            tone={flip && flip.profitPerHour > 0 ? "gain" : undefined}
+            standout={s.gpHour}
+            why={g("gpHour")}
+            size="secondary"
+          />
+          <HeroCard
+            label="What's stopping you"
+            value={bottleneckLabel}
+            hint={
+              flip
+                ? `Stack ${formatQty(flip.qty)} · ${formatGp(flip.capitalUsed)} in`
+                : item.limit != null
+                  ? `Buy limit ${formatQty(item.limit)}`
+                  : "—"
+            }
+            standout={s.bottleneck}
+            why={g("bottleneck")}
+            size="secondary"
+          />
+        </div>
+        {modelDisagreesInstant && (
+          <p className="mt-2 text-[11px] leading-snug text-muted">
+            Last GE prints look worse than the table model —{" "}
+            <span className="text-fg">sit both sides</span>, don’t force instant
+            buy/sell. Instant edge:{" "}
+            <span className="tabular text-loss">{formatGp(insights.netSpread)}</span>
+          </p>
+        )}
+      </section>
+
+      {/* LONGER TERM */}
+      <section
+        className={cn(
+          "rounded-xl border p-3 sm:p-3.5",
+          s.hold
+            ? insights.holdStyle === "avoid"
+              ? "border-warn/40 bg-warn/5"
+              : "border-accent/40 bg-accent/5"
+            : "border-border bg-surface-2/40",
+        )}
+      >
+        <div className="mb-2.5 flex items-baseline justify-between gap-2">
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-fg">
+            Hold / turnaround · longer
+          </h3>
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset",
+              insights.holdStyle === "avoid" && "bg-warn/10 text-warn ring-warn/25",
+              insights.holdStyle === "dip_buy" && "bg-accent/10 text-accent ring-accent/25",
+              insights.holdStyle === "momentum" && "bg-gain/10 text-gain ring-gain/25",
+              (insights.holdStyle === "quick_flip" || insights.holdStyle === "mixed") &&
+                "bg-surface-2 text-muted ring-border",
+            )}
+          >
+            {holdStyleLabel[insights.holdStyle]}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <HeroCard
+            label="Vs hour average"
+            value={
+              insights.vsHourAvgPct != null
+                ? formatPercent(insights.vsHourAvgPct)
+                : "—"
+            }
+            hint={
+              insights.vsHourAvgPct == null
+                ? "Need 1h averages"
+                : insights.vsHourAvgPct <= -2
+                  ? "Under hour mid · dip zone"
+                  : insights.vsHourAvgPct >= 1.5
+                    ? "Above hour mid · hot"
+                    : "Near hour average"
+            }
+            tone={
+              insights.vsHourAvgPct != null && insights.vsHourAvgPct <= -2
+                ? "sky"
+                : insights.vsHourAvgPct != null && insights.vsHourAvgPct >= 4
+                  ? "warn"
+                  : undefined
+            }
+            standout={insights.spikeVsAvg}
+            size={fullPage ? "primary" : "sheet"}
+          />
+          <HeroCard
+            label="Chart mid move"
+            value={
+              insights.midChangePct != null
+                ? formatPercent(insights.midChangePct)
+                : history.isLoading
+                  ? "…"
+                  : "—"
+            }
+            hint={
+              insights.trend === "up"
+                ? "Climbing on chart"
+                : insights.trend === "down"
+                  ? "Falling on chart"
+                  : insights.trend === "range"
+                    ? "Sideways · flip-friendly"
+                    : "Pick a lookback below"
+            }
+            tone={
+              insights.trend === "up"
+                ? "gain"
+                : insights.trend === "down"
+                  ? "loss"
+                  : undefined
+            }
+            size={fullPage ? "primary" : "sheet"}
+          />
+          <HeroCard
+            label="If back to hour avg"
+            value={
+              insights.recoverToAvgGp != null
+                ? formatGp(insights.recoverToAvgGp)
+                : "—"
+            }
+            hint={
+              insights.recoverToAvgGp != null
+                ? "Rough / item after tax · not guaranteed"
+                : "Only when trading under hour avg"
+            }
+            tone={
+              insights.recoverToAvgGp != null && insights.recoverToAvgGp > 0
+                ? "gain"
+                : undefined
+            }
+            standout={insights.holdStyle === "dip_buy"}
+            size="secondary"
+          />
+          <HeroCard
+            label="Hold wobble"
+            value={
+              insights.volatilityPct != null
+                ? `±${formatPercent(insights.volatilityPct).replace(/^\+/, "")}`
+                : "—"
+            }
+            hint={
+              insights.volatilityPct != null &&
+              insights.recoverToAvgGp != null &&
+              insights.modelMarginPct != null
+                ? "Compare to your edge"
+                : "Typical bounce on chart"
+            }
+            size="secondary"
+          />
+        </div>
+        <p className="mt-2 text-[11px] leading-snug text-muted">{insights.holdThesis}</p>
+      </section>
     </div>
   );
 
-  /* ── Hero decision cards (asymmetric on PC) ── */
-  const heroCards = (
+  /* ── Last GE prints (secondary — typing aids, not the main P&L story) ── */
+  const tradeTicket = (
     <div
       className={cn(
-        "grid gap-2.5",
-        fullPage
-          ? "grid-cols-2 lg:grid-cols-12"
-          : "grid-cols-2",
+        "rounded-xl border border-border/80 bg-surface/30 p-2.5 sm:p-3",
+        !insights.printFresh && "ring-1 ring-warn/25",
       )}
     >
-      <HeroCard
-        label="Profit / item"
-        value={formatGp(insights.netSpread)}
-        hint={
-          insights.netSpread != null && insights.netSpread <= 0
-            ? "No edge after tax"
-            : insights.netSpreadPct != null
-              ? `${formatPercent(insights.netSpreadPct).replace(/^\+/, "")} after tax`
-              : "After GE tax"
-        }
-        tone={insights.netSpread != null && insights.netSpread > 0 ? "gain" : "loss"}
-        standout={s.netSpread}
-        why={g("netSpread")}
-        size={fullPage ? "primary" : "sheet"}
-        className={fullPage ? "lg:col-span-4" : undefined}
-      />
-      <HeroCard
-        label="Will it fill?"
-        value={String(insights.fillScore)}
-        unit="/100"
-        hint={
-          insights.fillScore >= 70
-            ? "Both sides look workable"
-            : insights.fillScore < 45
-              ? "Stuck-inventory risk"
-              : "Size carefully"
-        }
-        tone={
-          insights.fillScore >= 70 ? "gain" : insights.fillScore < 45 ? "warn" : "sky"
-        }
-        standout={s.fillScore}
-        why={g("fillScore")}
-        size={fullPage ? "primary" : "sheet"}
-        className={fullPage ? "lg:col-span-4" : undefined}
-      />
-      <HeroCard
-        label="GP per hour"
-        value={flip ? formatGp(flip.profitPerHour) : "—"}
-        hint={flip ? `${formatPercent(flip.roiPct)} per cycle` : "Set starting GP"}
-        tone={flip && flip.profitPerHour > 0 ? "gain" : undefined}
-        standout={s.gpHour}
-        why={g("gpHour")}
-        size={fullPage ? "secondary" : "sheet"}
-        className={fullPage ? "lg:col-span-2" : undefined}
-      />
-      <HeroCard
-        label="What's stopping you"
-        value={bottleneckLabel}
-        hint={
-          flip
-            ? `Stack ${formatQty(flip.qty)} · ${formatGp(flip.capitalUsed)} in`
-            : item.limit != null
-              ? `Buy limit ${formatQty(item.limit)}`
-              : "—"
-        }
-        standout={s.bottleneck}
-        why={g("bottleneck")}
-        size={fullPage ? "secondary" : "sheet"}
-        className={fullPage ? "lg:col-span-2" : undefined}
-      />
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
+          Last GE prints · for typing offers
+        </h3>
+        <span className="text-[10px] text-subtle">
+          Not the same as table model when they disagree
+        </span>
+      </div>
+      <div className="grid grid-cols-3 divide-x divide-border overflow-hidden rounded-lg border border-border/60 bg-surface-2/30">
+        <TicketCell
+          label="Buy now"
+          sub="last low print"
+          value={formatGpExact(flipBuy)}
+          tip="Last price for an instant sell — often what you pay if you sit a buy"
+          size="sm"
+        />
+        <TicketCell
+          label="Sell now"
+          sub="last high print"
+          value={formatGpExact(flipSell)}
+          tip="Last price for an instant buy — often what you aim for if you sit a sell"
+          size="sm"
+        />
+        <TicketCell
+          label="Instant edge"
+          sub={`Tax −${formatGpExact(taxOnSell)}`}
+          value={formatGpExact(lastMargin)}
+          tip="Last-print sell − tax − buy. Can be red while the table is green — table uses hour averages."
+          tone={
+            lastMargin != null && lastMargin > 0
+              ? "gain"
+              : modelDisagreesInstant
+                ? undefined
+                : lastMargin != null && lastMargin <= 0
+                  ? "loss"
+                  : undefined
+          }
+          size="sm"
+        />
+      </div>
     </div>
   );
 
@@ -343,6 +510,23 @@ export function ItemDetail({
           label="1h avg buy / sell"
           value={`${formatGp(item.avgLow1h)} / ${formatGp(item.avgHigh1h)}`}
           tip="Smoothed prices over the hour — less noisy than last print"
+        />
+        <Detail
+          label="Model flip prices"
+          value={
+            insights.modelBuy != null && insights.modelSell != null
+              ? `${formatGp(insights.modelBuy)} → ${formatGp(insights.modelSell)}`
+              : "—"
+          }
+          tip="Average-based buy→sell the Safe table uses (after tax on the margin)"
+          standout={s.modelMargin}
+        />
+        <Detail
+          label="Instant edge"
+          value={formatGp(insights.netSpread)}
+          tip="Last-print profit after tax — can disagree with the table"
+          standout={s.netSpread}
+          warn={insights.netSpread != null && insights.netSpread <= 0}
         />
         <Detail
           label="Price freshness"
@@ -478,11 +662,11 @@ export function ItemDetail({
           <span className="text-subtle">Plan · </span>
           buy{" "}
           <span className="text-base font-semibold tabular text-fg">
-            {formatGp(flip?.buyPrice ?? flipBuy)}
+            {formatGp(flip?.buyPrice ?? insights.modelBuy ?? flipBuy)}
           </span>
           {" · "}sell{" "}
           <span className="text-base font-semibold tabular text-fg">
-            {formatGp(flip?.sellPrice ?? flipSell)}
+            {formatGp(flip?.sellPrice ?? insights.modelSell ?? flipSell)}
           </span>
           {flip && (
             <>
