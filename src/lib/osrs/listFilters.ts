@@ -1,6 +1,7 @@
 import type { CatalogItem } from "./api";
 import { parseGpInput } from "./flip";
 import type { FlipOpportunity } from "./flip";
+import { computeItemInsights } from "./itemInsights";
 
 /** Numeric range filter fields shared by item lists and flip boards. */
 export type ListFilterState = {
@@ -47,6 +48,8 @@ export type ItemSortKey =
   | "sell"
   | "margin"
   | "volume"
+  | "volume5m"
+  | "fill"
   | "limit"
   | "potential"
   | "marginVol";
@@ -59,6 +62,7 @@ export type FlipSortKey =
   | "qty"
   | "gpHour"
   | "roi"
+  | "fill"
   | "trust"
   | "margin";
 
@@ -190,6 +194,16 @@ export function sortCatalogItems(
       case "volume":
         r = cmpNum(a.volume1h, b.volume1h, dir);
         break;
+      case "volume5m":
+        r = cmpNum(a.volume5m, b.volume5m, dir);
+        break;
+      case "fill":
+        r = cmpNum(
+          computeItemInsights(a).fillScore,
+          computeItemInsights(b).fillScore,
+          dir,
+        );
+        break;
       case "limit":
         r = cmpNum(a.limit ?? null, b.limit ?? null, dir);
         break;
@@ -235,6 +249,13 @@ export function sortFlips(
         break;
       case "roi":
         r = cmpNum(a.roiPct, b.roiPct, dir);
+        break;
+      case "fill":
+        r = cmpNum(
+          computeItemInsights(a.item, { flipMode: a.mode }).fillScore,
+          computeItemInsights(b.item, { flipMode: b.mode }).fillScore,
+          dir,
+        );
         break;
       case "trust":
         r = cmpNum(a.confidence, b.confidence, dir);

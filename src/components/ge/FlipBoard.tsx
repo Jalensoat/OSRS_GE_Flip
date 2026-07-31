@@ -8,6 +8,8 @@ import {
   type FlipSortKey,
   type SortDir,
 } from "@/lib/osrs/listFilters";
+import { computeItemInsights } from "@/lib/osrs/itemInsights";
+import { METRIC_BY_ID } from "@/lib/osrs/metricGuide";
 import { ItemIcon } from "./ItemIcon";
 import { SortableTh } from "./SortableTh";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +25,13 @@ import {
   Info,
 } from "lucide-react";
 
+/** PC table grid: icon · name · sold · prices · qty · gp/h · margin · fill · trust */
+const FLIP_GRID =
+  "grid-cols-[2rem_minmax(0,1.4fr)_repeat(7,minmax(0,0.95fr))]";
+
 const MOBILE_SORTS: { key: FlipSortKey; label: string }[] = [
   { key: "gpHour", label: "GP/h" },
+  { key: "fill", label: "Fill" },
   { key: "sold1h", label: "Sold 1h" },
   { key: "margin", label: "Margin" },
   { key: "roi", label: "ROI" },
@@ -94,13 +101,14 @@ export function FlipBoard({
     <>
       <span className="text-warn font-medium">Higher risk. </span>
       Uses <span className="text-fg">latest high/low trades</span> so fast movers can appear —
-      a single print can reverse. Check <span className="text-fg">Sold 1h</span> and 5m volume
-      before filling.
+      a single print can reverse. Check <span className="text-fg">Will fill?</span>, sold/h, and
+      trades last 5m before filling.
     </>
   ) : (
     <>
       Prices use <span className="text-fg">1h / 5m trade averages</span>, not the last single
-      offer. Ranked by <span className="text-fg">GP/hour × volume confidence</span>. Min{" "}
+      offer. Ranked by <span className="text-fg">GP/hour × volume confidence</span>. Check{" "}
+      <span className="text-fg">Will fill?</span> (0–100) before full limits. Min{" "}
       <span className="text-fg">12 trades/side/hour</span>.
     </>
   );
@@ -194,7 +202,12 @@ export function FlipBoard({
         </div>
       </div>
 
-      <div className="hidden min-w-0 lg:grid grid-cols-[2rem_minmax(0,1.5fr)_repeat(6,minmax(0,1fr))] gap-2 border-b border-border px-2.5 pb-2">
+      <div
+        className={cn(
+          "hidden min-w-0 gap-2 border-b border-border px-2.5 pb-2 lg:grid",
+          FLIP_GRID,
+        )}
+      >
         <div />
         <SortableTh
           label="Item"
@@ -228,10 +241,17 @@ export function FlipBoard({
           onClick={() => onSort("gpHour")}
         />
         <SortableTh
-          label="ROI"
-          active={sortKey === "roi"}
+          label="Margin"
+          active={sortKey === "margin"}
           dir={sortDir}
-          onClick={() => onSort("roi")}
+          onClick={() => onSort("margin")}
+        />
+        <SortableTh
+          label="Will fill?"
+          title={METRIC_BY_ID.fillScore?.short}
+          active={sortKey === "fill"}
+          dir={sortDir}
+          onClick={() => onSort("fill")}
         />
         <SortableTh
           label={isHot ? "Risk" : "Trust"}
@@ -296,12 +316,18 @@ function FlipRow({
   isHot: boolean;
 }) {
   const { item } = flip;
+  const insights = useMemo(
+    () => computeItemInsights(item, { flipMode: isHot ? "hot" : "safe" }),
+    [item, isHot],
+  );
+  const fillScore = insights.fillScore;
+
   return (
     <button
       type="button"
       onClick={onSelect}
       className={cn(
-        "grid w-full min-w-0 max-w-full grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 overflow-hidden rounded-lg border px-2.5 py-2.5 text-left transition-colors lg:grid-cols-[2rem_minmax(0,1.5fr)_repeat(6,minmax(0,1fr))]",
+        "grid w-full min-w-0 max-w-full grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 overflow-hidden rounded-lg border px-2.5 py-2.5 text-left transition-colors lg:grid-cols-[2rem_minmax(0,1.4fr)_repeat(7,minmax(0,0.95fr))]",
         selected
           ? "border-border-strong bg-surface-2"
           : "border-transparent hover:border-border hover:bg-surface",
@@ -331,9 +357,11 @@ function FlipRow({
             {formatGp(flip.buyPrice)}→{formatGp(flip.sellPrice)}
           </span>
           <span className="tabular text-gain">{formatGp(flip.profitPerHour)}/h</span>
+          <FillScore value={fillScore} compact />
         </div>
       </div>
 
+      {/* Desktop columns */}
       <div className="hidden min-w-0 text-right lg:block">
         <div className="text-sm tabular font-medium text-fg">
           {formatVolume(flip.soldTotal1h)}
@@ -353,11 +381,16 @@ function FlipRow({
       </div>
       <div className="hidden min-w-0 text-right lg:block">
         <div className="text-sm tabular font-medium text-gain">{formatGp(flip.profitPerHour)}</div>
-        <div className="text-[11px] tabular text-subtle">{formatGp(flip.profitOnce)} / fill</div>
+        <div className="text-[11px] tabular text-subtle">{formatGp(flip.profitOnce)} / cycle</div>
       </div>
       <div className="hidden min-w-0 text-right lg:block">
-        <div className="text-sm tabular font-medium text-fg">{formatPercent(flip.roiPct)}</div>
-        <div className="text-[11px] text-subtle">/ fill</div>
+        <div className="text-sm tabular font-medium text-gain">
+          +{formatGp(flip.marginPerItem)}
+        </div>
+        <div className="text-[11px] tabular text-subtle">{formatPercent(flip.roiPct)} ROI</div>
+      </div>
+      <div className="hidden min-w-0 text-right lg:block">
+        <FillScore value={fillScore} />
       </div>
       <div className="hidden min-w-0 text-right lg:block">
         {isHot ? (
@@ -369,17 +402,36 @@ function FlipRow({
         )}
       </div>
 
+      {/* Mobile trailing: GP/h + fill */}
       <div className="min-w-0 shrink-0 text-right lg:hidden">
         <div className="text-sm tabular font-semibold text-gain">{formatGp(flip.profitPerHour)}</div>
-        {isHot ? (
-          <Badge variant={flip.spikeRisk ? "warn" : "accent"} className="mt-0.5 text-[10px]">
-            {flip.spikeRisk ? "Risky" : "Hot"}
-          </Badge>
-        ) : (
-          <ConfidencePill label={flip.confidenceLabel} score={flip.confidence} compact />
-        )}
+        <div className="mt-0.5">
+          <FillScore value={fillScore} compact />
+        </div>
       </div>
     </button>
+  );
+}
+
+/** Colored 0–100 “Will it fill?” score for list rows. */
+function FillScore({ value, compact }: { value: number; compact?: boolean }) {
+  const tone =
+    value >= 70 ? "text-gain" : value < 45 ? "text-warn" : "text-accent";
+  const tip = METRIC_BY_ID.fillScore
+    ? `${METRIC_BY_ID.fillScore.title}: ${METRIC_BY_ID.fillScore.short}\n${METRIC_BY_ID.fillScore.howToRead}`
+    : "Will both buy and sell complete?";
+  if (compact) {
+    return (
+      <span className={cn("tabular text-xs font-semibold", tone)} title={tip}>
+        Fill {value}
+      </span>
+    );
+  }
+  return (
+    <div className="flex flex-col items-end" title={tip}>
+      <div className={cn("text-sm tabular font-semibold", tone)}>{value}</div>
+      <div className="text-[10px] text-subtle">/100 fill</div>
+    </div>
   );
 }
 

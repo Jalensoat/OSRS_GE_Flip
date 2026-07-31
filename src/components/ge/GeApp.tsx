@@ -442,10 +442,24 @@ export function GeApp() {
                     onClick={() => onItemSort("margin")}
                   />
                   <SortableTh
-                    label="1h vol"
+                    label="1h trades"
                     active={itemSortKey === "volume"}
                     dir={itemSortDir}
                     onClick={() => onItemSort("volume")}
+                  />
+                  <SortableTh
+                    label="5m"
+                    title="Trades in the last 5 minutes — not 5 million GP"
+                    active={itemSortKey === "volume5m"}
+                    dir={itemSortDir}
+                    onClick={() => onItemSort("volume5m")}
+                  />
+                  <SortableTh
+                    label="Fill"
+                    title="Will it fill? 0–100 both buy and sell complete"
+                    active={itemSortKey === "fill"}
+                    dir={itemSortDir}
+                    onClick={() => onItemSort("fill")}
                   />
                   <div />
                 </div>
@@ -453,7 +467,9 @@ export function GeApp() {
                 <div className="flex flex-wrap gap-1 border-b border-border px-2 py-2 sm:hidden">
                   {(
                     [
+                      ["fill", "Fill"],
                       ["volume", "Vol"],
+                      ["volume5m", "5m"],
                       ["margin", "Margin"],
                       ["buy", "Buy"],
                       ["sell", "Sell"],
