@@ -14,7 +14,9 @@
     "preview": "vite preview --host 0.0.0.0 --port 8080",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "deploy": "vercel --prod --yes",
+    "deploy:preview": "vercel --yes"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.3",

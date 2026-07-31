@@ -9,7 +9,8 @@ Live wiki/RuneLite prices, volume-weighted “Best” vs aggressive “Hot” fl
 - React 19 + TypeScript
 - Vite 8 + TanStack Start / Router / Query
 - Tailwind CSS v4
-- Deploy target: Vercel (Nitro preset)
+- Deploy target: Vercel (Nitro preset)  
+- **Live site:** https://osrs-ge-flip.vercel.app
 
 ## Run locally
 
@@ -23,6 +24,16 @@ npm run dev
 npm run typecheck
 npm run build
 ```
+
+## Deploy (do this after every product change)
+
+```bash
+git push origin main
+npm run deploy   # vercel --prod --yes
+```
+
+Production: **https://osrs-ge-flip.vercel.app**  
+Agents must deploy after push so PC/iOS users don’t keep an old build.
 
 ## App structure (important files)
 

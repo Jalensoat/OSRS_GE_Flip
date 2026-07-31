@@ -2,6 +2,23 @@
 
 **Any agent working on this app must update both desktop and mobile experiences unless the user explicitly scopes a change to one surface.**
 
+## Deploy (required every time)
+
+After any code change that should reach the user:
+
+1. `git push origin main`
+2. **Deploy production** (do not skip):
+
+```bash
+npm run deploy
+# or: npx vercel --prod --yes
+```
+
+- **Production URL:** https://osrs-ge-flip.vercel.app  
+- **Vercel project:** `house-hold1390/osrs-ge-flip`  
+- GitHub is linked; still run `npm run deploy` after push if the live site is stale, or confirm the Vercel deployment for that commit succeeded.  
+- Push alone is **not** enough if the user still sees old UI (PWA/cache) — deploy + hard refresh / re-add Home Screen icon.
+
 This app is a single React codebase with responsive + PWA behavior. There is no separate iOS native project — “iOS” means phone Safari / Home Screen web app (`lg:` breakpoint and below, bottom tabs, sheets).
 
 ---

@@ -17,6 +17,7 @@ Non-negotiables:
 - Filters = same field set on PC and mobile (PC panel default open).
 - Mobile item sheet = **one** scroll container (do not nest `h-full` + dual `overflow-y-auto`).
 - iOS tab bar / safe-area: see `IOS_FOOTER_BUG.md`.
+- **Always deploy after shipping code:** `npm run deploy` (Vercel prod → https://osrs-ge-flip.vercel.app). Pushing `main` alone is not enough if the user still sees old UI.
 
 ---
 
