@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,20 +9,24 @@ import {
   type ListFilterState,
 } from "@/lib/osrs/listFilters";
 
+/**
+ * Wiki-style numeric range filters (min/max). Same fields on PC and mobile.
+ * PC defaults expanded so all options are visible without hunting.
+ */
 function RangeField({
   label,
   min,
   max,
   onMin,
   onMax,
-  placeholder = "e.g. 1m",
+  hint,
 }: {
   label: string;
   min: string;
   max: string;
   onMin: (v: string) => void;
   onMax: (v: string) => void;
-  placeholder?: string;
+  hint?: string;
 }) {
   return (
     <div className="min-w-0 space-y-1.5">
@@ -36,7 +40,7 @@ function RangeField({
           placeholder="Min"
           inputMode="decimal"
           aria-label={`${label} minimum`}
-          className="h-9 min-w-0 px-2 text-sm lg:h-8 lg:text-xs"
+          className="h-9 min-w-0 px-2 text-sm lg:h-9 lg:text-sm"
         />
         <span className="text-xs text-subtle">–</span>
         <Input
@@ -45,10 +49,10 @@ function RangeField({
           placeholder="Max"
           inputMode="decimal"
           aria-label={`${label} maximum`}
-          className="h-9 min-w-0 px-2 text-sm lg:h-8 lg:text-xs"
+          className="h-9 min-w-0 px-2 text-sm lg:h-9 lg:text-sm"
         />
       </div>
-      <p className="text-[10px] text-subtle">{placeholder}</p>
+      {hint ? <p className="text-[10px] text-subtle">{hint}</p> : null}
     </div>
   );
 }
@@ -57,13 +61,20 @@ export function ListFilters({
   value,
   onChange,
   className,
+  /** Desktop starts open so all wiki-style fields are obvious */
+  defaultOpen,
 }: {
   value: ListFilterState;
   onChange: (next: ListFilterState) => void;
   className?: string;
+  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(Boolean(defaultOpen));
   const active = countActiveFilters(value);
+
+  useEffect(() => {
+    if (defaultOpen) setOpen(true);
+  }, [defaultOpen]);
 
   const set = <K extends keyof ListFilterState>(key: K, v: ListFilterState[K]) => {
     onChange({ ...value, [key]: v });
@@ -71,7 +82,7 @@ export function ListFilters({
 
   return (
     <div className={cn("border-b border-border bg-bg", className)}>
-      <div className="flex items-center gap-2 px-3 py-2">
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2">
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
@@ -106,13 +117,13 @@ export function ListFilters({
             Clear
           </Button>
         )}
-        <span className="ml-auto hidden text-[11px] text-subtle sm:inline">
-          Min / max support k, m, b (e.g. 500k, 1.5m)
+        <span className="ml-auto text-[11px] text-subtle">
+          Min / max · k / m / b ok (e.g. 500k, 1.5m)
         </span>
       </div>
 
       {open && (
-        <div className="space-y-3 border-t border-border px-3 py-3">
+        <div className="space-y-4 border-t border-border px-3 py-4">
           <label className="flex cursor-pointer items-center gap-2 text-sm text-fg">
             <input
               type="checkbox"
@@ -123,14 +134,15 @@ export function ListFilters({
             Show only free-to-play items
           </label>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {/* Full wiki-style filter set — always the same fields PC + mobile */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <RangeField
               label="Buy limit"
               min={value.limitMin}
               max={value.limitMax}
               onMin={(v) => set("limitMin", v)}
               onMax={(v) => set("limitMax", v)}
-              placeholder="e.g. 8 – 10000"
+              hint="GE 4-hour buy limit"
             />
             <RangeField
               label="Buy price"
@@ -138,6 +150,7 @@ export function ListFilters({
               max={value.buyMax}
               onMin={(v) => set("buyMin", v)}
               onMax={(v) => set("buyMax", v)}
+              hint="Flip entry (lower print)"
             />
             <RangeField
               label="Sell price"
@@ -145,6 +158,7 @@ export function ListFilters({
               max={value.sellMax}
               onMin={(v) => set("sellMin", v)}
               onMax={(v) => set("sellMax", v)}
+              hint="Flip exit (higher print)"
             />
             <RangeField
               label="Margin"
@@ -152,15 +166,15 @@ export function ListFilters({
               max={value.marginMax}
               onMin={(v) => set("marginMin", v)}
               onMax={(v) => set("marginMax", v)}
-              placeholder="Net margin after tax"
+              hint="Net after 2% tax"
             />
             <RangeField
-              label="Volume (1h)"
+              label="Daily volume"
               min={value.volumeMin}
               max={value.volumeMax}
               onMin={(v) => set("volumeMin", v)}
               onMax={(v) => set("volumeMax", v)}
-              placeholder="Trades in last hour"
+              hint="Est. from 1h trades × 24"
             />
             <RangeField
               label="Potential profit"
@@ -168,7 +182,7 @@ export function ListFilters({
               max={value.potentialMax}
               onMin={(v) => set("potentialMin", v)}
               onMax={(v) => set("potentialMax", v)}
-              placeholder="Margin × min(limit, 1h vol)"
+              hint="Margin × min(limit, 1h vol)"
             />
             <RangeField
               label="Margin × volume"
@@ -176,7 +190,7 @@ export function ListFilters({
               max={value.marginVolMax}
               onMin={(v) => set("marginVolMin", v)}
               onMax={(v) => set("marginVolMax", v)}
-              placeholder="Margin × 1h volume"
+              hint="Margin × 1h volume"
             />
           </div>
         </div>

@@ -32,6 +32,8 @@ export function ItemDetail({
   flipMode = "safe",
   chartTall = false,
   fullPage = false,
+  /** Mobile bottom sheet: flow layout, parent scrolls (avoids iOS nested scroll trap) */
+  sheet = false,
 }: {
   item: CatalogItem;
   onClose: () => void;
@@ -41,6 +43,7 @@ export function ItemDetail({
   chartTall?: boolean;
   /** Full-page layout: chart takes majority of the view */
   fullPage?: boolean;
+  sheet?: boolean;
 }) {
   const [lookback, setLookback] = useState<Lookback>("24h");
   const watchlist = useWatchlist();
@@ -48,6 +51,7 @@ export function ItemDetail({
   const flip = bankroll > 0 ? computeFlip(item, bankroll, flipMode) : null;
   const isHot = flipMode === "hot";
   const chartSize = fullPage ? "full" : chartTall ? "tall" : "normal";
+  // Full/aside: chart first. Sheet keeps chart below stats — parent owns scroll.
   const showChartFirst = fullPage || chartTall;
 
   const history = useQuery({
@@ -109,11 +113,19 @@ export function ItemDetail({
   );
 
   return (
-    <div className={cn("flex h-full flex-col", fullPage && "bg-surface")}>
+    <div
+      className={cn(
+        sheet
+          ? "flex flex-col bg-surface"
+          : "flex h-full min-h-0 flex-col",
+        fullPage && "bg-surface",
+      )}
+    >
       <div
         className={cn(
           "flex items-start gap-3 border-b border-border p-4 sm:p-5",
           fullPage && "shrink-0 bg-surface pad-top-safe",
+          sheet && "shrink-0",
         )}
       >
         <ItemIcon icon={item.icon} name={item.name} size="lg" />
@@ -179,8 +191,10 @@ export function ItemDetail({
 
       <div
         className={cn(
-          "flex-1 overflow-y-auto p-4 sm:p-5",
+          "p-4 sm:p-5",
           fullPage ? "space-y-6" : "space-y-5",
+          // Nested scroll only for aside/full shells — sheet parent owns scrolling
+          sheet ? "" : "min-h-0 flex-1 overflow-y-auto overscroll-contain",
         )}
       >
         {showChartFirst && chartBlock}

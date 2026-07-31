@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Search,
@@ -84,6 +84,7 @@ export function GeApp() {
   const [fullPageOpen, setFullPageOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const searchAnchorRef = useRef<HTMLDivElement>(null);
 
   const items = catalog.data?.items ?? [];
   const byId = useMemo(() => {
@@ -175,14 +176,13 @@ export function GeApp() {
     if (isPhoneLayout()) setMobileDetailOpen(true);
   }, []);
 
-  /** Search dropdown selection → full-page item view on desktop. */
+  /** Search dropdown selection — both platforms (PC full page, mobile sheet). */
   const onSelectFromSearch = useCallback((item: CatalogItem) => {
     setSelectedId(item.id);
     setQuery("");
     setSearchOpen(false);
     if (isPhoneLayout()) {
       setMobileDetailOpen(true);
-      setTab("search");
     } else {
       setFullPageOpen(true);
     }
@@ -208,10 +208,11 @@ export function GeApp() {
       ? formatRelativeTime(catalog.data.priceTimestamp)
       : null;
 
-  const showItemList = tab === "watch" || tab === "volume" || tab === "search";
+  const showItemList = tab === "watch" || tab === "volume";
   const showDetailAside = tab !== "invest";
   const showFlipBoard = tab === "flips" || tab === "hot";
   const activeNav = tab === "search" ? null : tab;
+  const filtersDefaultOpen = display.isDesktop;
 
   return (
     <div
@@ -219,7 +220,7 @@ export function GeApp() {
       data-layout={display.isDesktop ? "desktop" : "mobile"}
       data-standalone={display.isStandalone ? "true" : "false"}
     >
-      <header className="z-20 w-full min-w-0 shrink-0 border-b border-border bg-surface pad-top-safe">
+      <header className="relative z-40 w-full min-w-0 shrink-0 overflow-visible border-b border-border bg-surface pad-top-safe">
         <div className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-col gap-2 px-4 pb-2.5 pt-2 sm:gap-3 sm:px-6 sm:pb-3 sm:pt-3">
           <div className="flex min-w-0 items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -253,7 +254,11 @@ export function GeApp() {
 
           <CapitalBar className="min-w-0 w-full" />
 
-          <div className="relative min-w-0 w-full">
+          {/*
+            Search typeahead: same dropdown on PC + mobile (portaled fixed panel).
+            Do not replace the main list while typing on either platform.
+          */}
+          <div ref={searchAnchorRef} className="relative z-30 min-w-0 w-full">
             <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-subtle" />
             <Input
               value={query}
@@ -261,8 +266,6 @@ export function GeApp() {
                 const v = e.target.value;
                 setQuery(v);
                 setSearchOpen(Boolean(v.trim()));
-                // Mobile: keep a results list tab. Desktop: dropdown only (no live list swap).
-                if (v.trim() && isPhoneLayout()) setTab("search");
               }}
               onFocus={() => {
                 if (query.trim()) setSearchOpen(true);
@@ -280,7 +283,6 @@ export function GeApp() {
                 onClick={() => {
                   setQuery("");
                   setSearchOpen(false);
-                  if (tab === "search") setTab("flips");
                 }}
                 className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-subtle hover:bg-surface-3 hover:text-fg"
                 aria-label="Clear search"
@@ -294,6 +296,7 @@ export function GeApp() {
               results={searchSuggestions}
               onSelect={onSelectFromSearch}
               onClose={() => setSearchOpen(false)}
+              anchorRef={searchAnchorRef}
             />
           </div>
 
@@ -328,14 +331,6 @@ export function GeApp() {
             </div>
           </div>
 
-          {tab === "search" && (
-            <div className="flex items-center gap-2 text-xs text-muted lg:hidden">
-              <Search className="h-3.5 w-3.5" />
-              <span>
-                {listItems.length} result{listItems.length === 1 ? "" : "s"}
-              </span>
-            </div>
-          )}
         </div>
       </header>
 
@@ -367,7 +362,11 @@ export function GeApp() {
               </div>
             ) : showFlipBoard ? (
               <>
-                <ListFilters value={filters} onChange={setFilters} />
+                <ListFilters
+                  value={filters}
+                  onChange={setFilters}
+                  defaultOpen={filtersDefaultOpen}
+                />
                 <FlipBoard
                   flips={activeFlips}
                   selectedId={activeId}
@@ -387,15 +386,17 @@ export function GeApp() {
               />
             ) : showItemList ? (
               <>
-                <ListFilters value={filters} onChange={setFilters} />
-                {(tab === "watch" || tab === "volume" || tab === "search") && (
+                <ListFilters
+                  value={filters}
+                  onChange={setFilters}
+                  defaultOpen={filtersDefaultOpen}
+                />
+                {(tab === "watch" || tab === "volume") && (
                   <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
                     <p className="text-xs font-medium uppercase tracking-wide text-subtle">
                       {tab === "watch"
                         ? `Watchlist · ${listItems.length}`
-                        : tab === "volume"
-                          ? `Highest 1h volume · ${listItems.length}`
-                          : `Results · ${listItems.length}`}
+                        : `Highest 1h volume · ${listItems.length}`}
                     </p>
                   </div>
                 )}
@@ -548,24 +549,29 @@ export function GeApp() {
       </nav>
 
       {mobileDetailOpen && selected && tab !== "invest" && (
-        <div className="fixed inset-0 z-40 overflow-hidden lg:hidden">
+        <div className="fixed inset-0 z-40 flex flex-col justify-end lg:hidden">
           <button
             type="button"
             className="absolute inset-0 bg-bg/70"
             aria-label="Close detail"
             onClick={() => setMobileDetailOpen(false)}
           />
-          <div className="absolute inset-x-0 bottom-0 max-h-[92%] w-full overflow-hidden rounded-t-xl border border-border bg-surface shadow-2xl">
-            <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-border-strong" />
-            <div className="max-h-[min(88dvh,100%)] overflow-x-hidden overflow-y-auto">
+          {/* Single scroll owner — min-h-0 flex-1 + overscroll so iOS can reach the graph */}
+          <div className="relative z-10 flex max-h-[min(92dvh,100%)] min-h-0 w-full flex-col overflow-hidden rounded-t-xl border border-border bg-surface shadow-2xl">
+            <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border-strong" />
+            <div
+              className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
               <ItemDetail
                 item={selected}
                 bankroll={bankroll}
                 flipMode={showFlipBoard ? flipMode : "safe"}
+                sheet
                 onClose={() => setMobileDetailOpen(false)}
               />
             </div>
-            <div className="home-indicator-pad" aria-hidden />
+            <div className="home-indicator-pad shrink-0" aria-hidden />
           </div>
         </div>
       )}

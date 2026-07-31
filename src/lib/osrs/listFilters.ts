@@ -107,6 +107,11 @@ export function marginTimesVolume(item: CatalogItem): number | null {
   return item.margin * item.volume1h;
 }
 
+/** Wiki-style “daily volume” estimate from 1h trade count. */
+export function dailyVolumeEst(item: CatalogItem): number {
+  return item.volume1h * 24;
+}
+
 export function filtersActive(f: ListFilterState): boolean {
   if (f.f2pOnly) return true;
   return Object.entries(f).some(
@@ -131,7 +136,8 @@ export function itemMatchesFilters(item: CatalogItem, f: ListFilterState): boole
   if (!inRange(buy, f.buyMin, f.buyMax)) return false;
   if (!inRange(sell, f.sellMin, f.sellMax)) return false;
   if (!inRange(item.margin, f.marginMin, f.marginMax)) return false;
-  if (!inRange(item.volume1h, f.volumeMin, f.volumeMax)) return false;
+  // volumeMin/Max are labeled “Daily volume” in UI → filter on 1h×24 estimate
+  if (!inRange(dailyVolumeEst(item), f.volumeMin, f.volumeMax)) return false;
   if (!inRange(potentialProfit(item), f.potentialMin, f.potentialMax)) return false;
   if (!inRange(marginTimesVolume(item), f.marginVolMin, f.marginVolMax)) return false;
   return true;

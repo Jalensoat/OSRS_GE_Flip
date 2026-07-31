@@ -1,5 +1,25 @@
 # App Builder Workspace
 
+## OSRS Flip Lab — dual platform (read first for product work)
+
+This repo is a **single** React PWA. “PC” and “iOS/app” are responsive surfaces of
+the **same** codebase, not two apps.
+
+**Rule: any UI/feature change must be designed and verified for both desktop
+(`lg:` / ≥1024px) and mobile/iOS (&lt;1024px + bottom tabs / Home Screen) unless
+the user explicitly scopes one side.**
+
+Full checklist and traps: **`docs/DUAL_PLATFORM.md`**.
+
+Non-negotiables:
+
+- Search = typeahead **dropdown on both** platforms (not live list swap on one only).
+- Filters = same field set on PC and mobile (PC panel default open).
+- Mobile item sheet = **one** scroll container (do not nest `h-full` + dual `overflow-y-auto`).
+- iOS tab bar / safe-area: see `IOS_FOOTER_BUG.md`.
+
+---
+
 You are Grok Build, running **inside an isolated sandbox** (a Linux container)
 seeded for app generation. Read this fully before writing code.
 

@@ -1,53 +1,97 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { CatalogItem } from "@/lib/osrs/api";
 import { formatGp, formatVolume } from "@/lib/osrs/format";
 import { flipBuyPrice, flipSellPrice } from "@/lib/osrs/listFilters";
 import { ItemIcon } from "./ItemIcon";
 import { cn } from "@/lib/utils";
 
+/**
+ * Typeahead results for PC and mobile. Portaled + fixed so header overflow /
+ * stacking never clips it on desktop.
+ */
 export function SearchDropdown({
   open,
   query,
   results,
   onSelect,
   onClose,
-  className,
+  anchorRef,
 }: {
   open: boolean;
   query: string;
   results: CatalogItem[];
   onSelect: (item: CatalogItem) => void;
   onClose: () => void;
-  className?: string;
+  /** Search field wrapper or input — used to position the panel */
+  anchorRef: React.RefObject<HTMLElement | null>;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(
+    null,
+  );
+
+  const updateBox = () => {
+    const el = anchorRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setBox({
+      top: r.bottom + 4,
+      left: r.left,
+      width: r.width,
+    });
+  };
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setBox(null);
+      return;
+    }
+    updateBox();
+    window.addEventListener("resize", updateBox);
+    window.addEventListener("scroll", updateBox, true);
+    return () => {
+      window.removeEventListener("resize", updateBox);
+      window.removeEventListener("scroll", updateBox, true);
+    };
+  }, [open, query, anchorRef]);
 
   useEffect(() => {
     if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) onClose();
+    const onDoc = (e: MouseEvent | TouchEvent) => {
+      const t = e.target as Node;
+      if (panelRef.current?.contains(t)) return;
+      if (anchorRef.current?.contains(t)) return;
+      onClose();
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
-    document.addEventListener("mousedown", onDoc);
+    // pointerdown so we don't race input focus handlers
+    document.addEventListener("pointerdown", onDoc, true);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("pointerdown", onDoc, true);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, onClose]);
+  }, [open, onClose, anchorRef]);
 
-  if (!open || !query.trim()) return null;
+  if (!open || !query.trim() || !box || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
-      ref={ref}
+      ref={panelRef}
       role="listbox"
       aria-label="Search results"
+      style={{
+        position: "fixed",
+        top: box.top,
+        left: box.left,
+        width: box.width,
+        zIndex: 200,
+      }}
       className={cn(
-        "absolute left-0 right-0 top-[calc(100%+4px)] z-50 max-h-[min(22rem,55vh)] overflow-y-auto rounded-lg border border-border bg-surface shadow-2xl",
-        className,
+        "max-h-[min(22rem,50vh)] overflow-y-auto rounded-lg border border-border bg-surface shadow-2xl",
       )}
     >
       {results.length === 0 ? (
@@ -65,6 +109,10 @@ export function SearchDropdown({
                   type="button"
                   role="option"
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-surface-2"
+                  onPointerDown={(e) => {
+                    // Prevent input blur-before-click losing the selection
+                    e.preventDefault();
+                  }}
                   onClick={() => onSelect(item)}
                 >
                   <ItemIcon icon={item.icon} name={item.name} size="sm" />
@@ -92,6 +140,7 @@ export function SearchDropdown({
           })}
         </ul>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }
