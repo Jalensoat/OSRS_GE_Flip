@@ -1,42 +1,44 @@
 # iOS Home Screen — black gap under bottom tabs
 
-## Priority
+## Status: fixed (council 2026-07-31)
 
-**P0 layout bug.** User reinstalled Home Screen icon multiple times. Desktop Safari and Grok live preview look OK; standalone PWA does not.
+**Root cause (3/3 council):** dual height / dual bottom — `.app` was height-locked via `100dvh` + JS `--app-height = Math.max(innerHeight, clientHeight)` while `.bottom-nav` used `position: fixed; bottom: 0`. Those coordinate systems diverge on iOS standalone; the mismatch painted as `#0a0b0d` (content **bg**) under the tab bar.
 
-## Reproduce
+**Secondary:** `theme-color` was set to **bg**, so any residual system strip looked like void black instead of tab chrome.
 
-1. Open the deployed app in iPhone Safari  
-2. Share → Add to Home Screen (Open as Web App = on)  
-3. Open from the home icon  
-4. Observe large black band under Best / Hot / Invest / Watch / Volume tabs  
+## Fix applied
 
-## Expected
+| Area | Change |
+|------|--------|
+| `.app` | `inset: 0` + `min-height` only (`100dvh` / `-webkit-fill-available`); **no** pixel `--app-height` lock; shell bg = **surface** |
+| `.bottom-nav` | Still fixed to bottom; safe-area padding; `::after` surface underlay below the bar |
+| `.app-main` | Content field bg = **bg**; pad for tab + safe-area |
+| Height JS | `useIosKeyboardReset` only resets scroll (no layout height writes) |
+| Root | Removed first-paint `--app-height` script |
+| Theme | `applyTheme` → `theme-color` = **surface**; header chrome `bg-surface` |
+| Manifest | `theme_color` / `background_color` = `#12141a` (already correct) |
 
-Tab bar flush to bottom of the display; only home-indicator safe-area padding under the icons (same feel as native / user’s Houseries todo app).
+## Surface vs bg (keep in sync)
 
-## Actual
+| Token | Obsidian default | Role |
+|-------|------------------|------|
+| `surface` | `#12141a` | Tab bar, header, theme-color, manifest, html/body, shell chrome |
+| `bg` | `#0a0b0d` | Main content field (`.app-main`) only |
 
-~50–80 CSS px (measured ~70px on IMG_9102) of empty black (`#0a0b0d`) **below** the entire tab bar. Tab bar floats above the gap.
+Files that must agree on default surface: `src/lib/theme.ts`, `src/styles.css` `@theme`, `src/routes/__root.tsx`, `public/site.webmanifest`.
 
-## Key files
+## Retest checklist (Home Screen)
 
-- `src/styles.css` — `.app`, `.bottom-nav`, `.app-main`, `.pad-top-safe`  
-- `src/components/ge/GeApp.tsx` — shell markup, `<nav className="bottom-nav">`  
-- `src/hooks/useVisualViewport.ts` — `--app-height` from `innerHeight`  
-- `src/routes/__root.tsx` — viewport / apple-mobile meta + first-paint height script  
-- `public/site.webmanifest`  
+1. Deploy / hard-refresh, then **remove** old Home Screen icon and re-add (PWA shell can cache meta/manifest).
+2. Open from Home Screen (standalone), not Safari tab.
+3. Tab bar flush to physical bottom; home-indicator strip is **surface**, not void black.
+4. Switch themes — under-bar / status chrome follow each theme’s **surface**.
+5. Rotate / notch: no black band under Best / Hot / Invest / Watch / Volume.
+6. Desktop `lg:`: top tabs work; bottom nav hidden.
+7. Inputs still 16px on phone (no focus zoom).
 
 ## Do not regress
 
-- Desktop top tabs still work (`lg:` breakpoints)  
-- 16px inputs on mobile (prevents focus zoom)  
-- Flip math, polls, detail drawer width  
-
-## Suggested fix directions
-
-1. Real-device Web Inspector on the Home Screen webview: measure `window.innerHeight`, `visualViewport.height`, `screen.height`, `getBoundingClientRect()` of `.app` and `.bottom-nav`, `env(safe-area-inset-bottom)`.  
-2. Try painting an always-on full-width footer layer with `bottom: 0; min-height: calc(tab + max(safe-area, 0))` and `background` that cannot collapse.  
-3. Test without `position: fixed` on `.app` (document flow only).  
-4. Test `height: 100svh` / `100lvh` / `100dvh` stack carefully — avoid visualViewport height pins (already proven harmful).  
-5. Align with Houseries / a minimal known-good iOS PWA tab bar.  
+- Flip math, API, board logic  
+- Desktop top-nav layout  
+- 16px mobile form controls  

@@ -180,7 +180,7 @@ export function GeApp() {
       data-layout={display.isDesktop ? "desktop" : "mobile"}
       data-standalone={display.isStandalone ? "true" : "false"}
     >
-      <header className="z-20 w-full min-w-0 shrink-0 border-b border-border bg-bg pad-top-safe">
+      <header className="z-20 w-full min-w-0 shrink-0 border-b border-border bg-surface pad-top-safe">
         <div className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-col gap-2 px-4 pb-2.5 pt-2 sm:gap-3 sm:px-6 sm:pb-3 sm:pt-3">
           <div className="flex min-w-0 items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -460,8 +460,9 @@ export function GeApp() {
       </footer>
 
       {/*
-        Bottom tabs — last flex child, shrink-0, flush to physical bottom.
-        Safe-area padding is on the nav itself so its bg fills the home-indicator strip.
+        Bottom tabs — fixed to physical bottom (.bottom-nav in styles.css).
+        Safe-area padding is on the nav so surface bg fills the home-indicator strip.
+        theme-color / html body also use surface so any residual system strip matches.
       */}
       <nav className="bottom-nav z-20 lg:hidden" aria-label="Main">
         <div className="mx-auto flex h-12 max-w-7xl items-stretch justify-around px-1">

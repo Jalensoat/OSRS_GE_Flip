@@ -28,7 +28,8 @@ export const Route = createRootRoute({
         content:
           "Find the most profitable OSRS Grand Exchange flips for your bankroll. Factor margin, volume, and buy limits. Track investments with live news and market trends.",
       },
-      // Match tab bar so iOS chrome / residual strips blend with footer
+      // Obsidian surface (tab bar chrome), not content bg — keep in sync with
+      // THEMES[obsidian].vars.surface, public/site.webmanifest, and applyTheme()
       { name: "theme-color", content: "#12141a" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -77,12 +78,8 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
     <html lang="en">
       <head>
         <HeadContent />
-        {/* Inline critical height lock so first paint on iOS isn't short */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var h=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);if(h)document.documentElement.style.setProperty('--app-height',h+'px');}catch(e){}})();`,
-          }}
-        />
+        {/* No --app-height first-paint lock: height-locking races with fixed
+            bottom-nav and paints a void under the tabs on iOS standalone. */}
       </head>
       <body>
         {children}

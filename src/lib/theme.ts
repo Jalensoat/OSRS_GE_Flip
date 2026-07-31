@@ -217,9 +217,13 @@ export function applyTheme(id: ThemeId) {
   r.style.colorScheme = v.scheme;
   r.dataset.theme = id;
 
-  // Safari / browser chrome
+  // Safari / PWA chrome: theme-color paints the system strip (and any residual
+  // under-tab gap). Must match tab-bar surface — NOT content bg — so a void
+  // under the bar looks like continuous chrome, not #0a0b0d black.
+  // html/body already use background: var(--color-surface) in styles.css;
+  // setting --color-surface above keeps them in sync across theme switches.
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", v.bg);
+  if (meta) meta.setAttribute("content", v.surface);
 }
 
 type ThemeState = {
