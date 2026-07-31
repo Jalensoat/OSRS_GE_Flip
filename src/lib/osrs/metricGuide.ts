@@ -80,9 +80,29 @@ export const KEY_DECISION_METRICS: MetricGuide[] = [
   {
     id: "spike",
     title: "Vs hour average",
-    short: "Last prices vs the last hour’s typical middle price — hype or dump check.",
-    why: "One panic or FOMO trade can fake a fat gap.",
-    howToRead: "Big gap from the hour average → size small or wait for prices to settle.",
+    short:
+      "Where the last mid price sits vs the last hour’s typical middle — under = dip zone, way over = hype.",
+    why: "One panic dump or FOMO print can fake a fat gap. The hour average is a calmer “fair” level for short holds.",
+    howToRead:
+      "Under ~2%+ → possible dip-buy / turnaround. Near 0 → fair. Way above → don’t chase; size small or wait.",
+  },
+  {
+    id: "recoverToAvg",
+    title: "If back to hour avg",
+    short:
+      "Rough GP per item after tax if you buy near last prices and mid only climbs back to the hour average.",
+    why: "This is a turnaround sketch, not a promise. Markets can keep falling or never reclaim the hour mid.",
+    howToRead:
+      "Only shows when trading under the hour avg. Compare to Hold wobble — if bounce is bigger than this edge, easy to lose. Always re-check in the GE.",
+  },
+  {
+    id: "holdStyle",
+    title: "Hold / turnaround style",
+    short:
+      "Suggested longer play: same-day flip, dip-buy, momentum hold, mixed, or skip — not the same as instant GE edge.",
+    why: "Quick flip and multi-hour holds need different risk. Sitting a classic flip is safer than catching a knife “for the rebound.”",
+    howToRead:
+      "Same-day flip = table model story. Dip / turnaround = under hour avg. Momentum = riding a climb. Skip = weak edges or falling hard.",
   },
   {
     id: "pace",

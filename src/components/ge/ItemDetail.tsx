@@ -163,6 +163,13 @@ export function ItemDetail({
     mixed: "Mixed signal",
     avoid: "Skip / tiny size",
   };
+  const holdGuide = g("holdStyle");
+  const holdStyleTip = holdGuide
+    ? `${holdGuide.title}\n\n${holdGuide.short}\n\nWhy: ${holdGuide.why}\n\nHow to read: ${holdGuide.howToRead}\n\nThis item: ${insights.holdThesis}`
+    : insights.holdThesis;
+  const holdThesisTip = holdGuide
+    ? `${holdGuide.title}\n\n${insights.holdThesis}\n\nWhy: ${holdGuide.why}\n\nHow to read: ${holdGuide.howToRead}`
+    : insights.holdThesis;
 
   /* ── Dual horizon: short-term flip vs longer hold (primary highlights) ── */
   const heroCards = (
@@ -267,8 +274,9 @@ export function ItemDetail({
             Hold / turnaround · longer
           </h3>
           <span
+            title={holdStyleTip}
             className={cn(
-              "rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset",
+              "cursor-help rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset",
               insights.holdStyle === "avoid" && "bg-warn/10 text-warn ring-warn/25",
               insights.holdStyle === "dip_buy" && "bg-accent/10 text-accent ring-accent/25",
               insights.holdStyle === "momentum" && "bg-gain/10 text-gain ring-gain/25",
@@ -304,6 +312,7 @@ export function ItemDetail({
                   : undefined
             }
             standout={insights.spikeVsAvg}
+            why={g("spike")}
             size={fullPage ? "primary" : "sheet"}
           />
           <HeroCard
@@ -331,6 +340,7 @@ export function ItemDetail({
                   ? "loss"
                   : undefined
             }
+            why={g("trend")}
             size={fullPage ? "primary" : "sheet"}
           />
           <HeroCard
@@ -351,6 +361,7 @@ export function ItemDetail({
                 : undefined
             }
             standout={insights.holdStyle === "dip_buy"}
+            why={g("recoverToAvg")}
             size="secondary"
           />
           <HeroCard
@@ -367,10 +378,16 @@ export function ItemDetail({
                 ? "Compare to your edge"
                 : "Typical bounce on chart"
             }
+            why={g("edge")}
             size="secondary"
           />
         </div>
-        <p className="mt-2 text-[11px] leading-snug text-muted">{insights.holdThesis}</p>
+        <p
+          className="mt-2 cursor-help text-[11px] leading-snug text-muted"
+          title={holdThesisTip}
+        >
+          {insights.holdThesis}
+        </p>
       </section>
     </div>
   );
@@ -850,7 +867,8 @@ function HeroCard({
     <div
       title={title}
       className={cn(
-        "min-w-0 cursor-help rounded-xl border transition-colors",
+        "min-w-0 rounded-xl border transition-colors",
+        title && "cursor-help",
         size === "primary" && "min-h-[88px] px-4 py-3.5",
         size === "secondary" && "min-h-[88px] px-3 py-3",
         size === "sheet" && "px-3 py-2.5",
