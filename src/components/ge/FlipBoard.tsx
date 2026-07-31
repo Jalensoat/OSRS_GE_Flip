@@ -12,7 +12,26 @@ import { ItemIcon } from "./ItemIcon";
 import { SortableTh } from "./SortableTh";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Timer, Coins, ShieldCheck, Activity, Flame } from "lucide-react";
+import {
+  Timer,
+  Coins,
+  ShieldCheck,
+  Activity,
+  Flame,
+  ChevronDown,
+  ArrowUpDown,
+  Info,
+} from "lucide-react";
+
+const MOBILE_SORTS: { key: FlipSortKey; label: string }[] = [
+  { key: "gpHour", label: "GP/h" },
+  { key: "sold1h", label: "Sold 1h" },
+  { key: "margin", label: "Margin" },
+  { key: "roi", label: "ROI" },
+  { key: "qty", label: "Qty" },
+  { key: "trust", label: "Trust" },
+  { key: "name", label: "Name" },
+];
 
 export function FlipBoard({
   flips,
@@ -30,6 +49,7 @@ export function FlipBoard({
   const isHot = mode === "hot";
   const [sortKey, setSortKey] = useState<FlipSortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [tipOpen, setTipOpen] = useState(false);
 
   const sorted = useMemo(() => {
     if (!sortKey) return flips;
@@ -70,87 +90,108 @@ export function FlipBoard({
 
   const best = sorted[0]!;
 
+  const tipBody = isHot ? (
+    <>
+      <span className="text-warn font-medium">Higher risk. </span>
+      Uses <span className="text-fg">latest high/low trades</span> so fast movers can appear —
+      a single print can reverse. Check <span className="text-fg">Sold 1h</span> and 5m volume
+      before filling.
+    </>
+  ) : (
+    <>
+      Prices use <span className="text-fg">1h / 5m trade averages</span>, not the last single
+      offer. Ranked by <span className="text-fg">GP/hour × volume confidence</span>. Min{" "}
+      <span className="text-fg">12 trades/side/hour</span>.
+    </>
+  );
+
   return (
-    <div className="min-w-0 w-full max-w-full space-y-3 overflow-x-hidden p-2 sm:p-3">
-      <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4">
+    <div className="min-w-0 w-full max-w-full space-y-2 overflow-x-hidden p-2 sm:space-y-3 sm:p-3">
+      {/* Compact summary strip — denser on phone so the flip list gets the page */}
+      <div className="grid min-w-0 grid-cols-4 gap-1 sm:gap-2">
         <SummaryCard
-          icon={isHot ? <Flame className="h-3.5 w-3.5" /> : <Coins className="h-3.5 w-3.5" />}
-          label="Best / hour"
+          icon={isHot ? <Flame className="h-3 w-3" /> : <Coins className="h-3 w-3" />}
+          label="Best /h"
           value={formatGp(best.profitPerHour)}
           sub={best.item.name}
         />
         <SummaryCard
-          icon={<Activity className="h-3.5 w-3.5" />}
-          label="1h trades (best)"
+          icon={<Activity className="h-3 w-3" />}
+          label="1h trades"
           value={formatVolume(best.soldTotal1h)}
-          sub={`${formatVolume(best.soldBuySide1h)} buy · ${formatVolume(best.soldSellSide1h)} sell`}
+          sub={`${formatVolume(best.soldBuySide1h)}/${formatVolume(best.soldSellSide1h)}`}
         />
         <SummaryCard
-          icon={isHot ? <Flame className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5" />}
-          label={isHot ? "Mode" : "Confidence"}
+          icon={isHot ? <Flame className="h-3 w-3" /> : <ShieldCheck className="h-3 w-3" />}
+          label={isHot ? "Mode" : "Trust"}
           value={isHot ? "Hot" : best.confidenceLabel}
-          sub={isHot ? "Last-trade prices" : `${best.confidence}/100 · avg prices`}
+          sub={isHot ? "Last trade" : `${best.confidence}/100`}
         />
         <SummaryCard
-          icon={<Timer className="h-3.5 w-3.5" />}
-          label="Best / day est."
+          icon={<Timer className="h-3 w-3" />}
+          label="Best /day"
           value={formatGp(best.profitPerDay)}
-          sub="Limit + volume capped"
+          sub="Capped"
         />
       </div>
 
+      {/* Collapsible pricing tip — collapsed by default (saves ~1/3 page on mobile) */}
       <div
         className={cn(
-          "min-w-0 rounded-md border px-3 py-2 text-xs leading-relaxed",
-          isHot
-            ? "border-warn/30 bg-warn/5 text-muted"
-            : "border-border bg-surface text-muted",
+          "min-w-0 rounded-md border",
+          isHot ? "border-warn/30 bg-warn/5" : "border-border bg-surface",
         )}
       >
-        {isHot ? (
-          <>
-            <span className="text-warn font-medium">Higher risk. </span>
-            Uses <span className="text-fg">latest high/low trades</span> (same style as before) so
-            fast movers like thin-margin pumps can appear — but a single print can reverse. Always
-            check <span className="text-fg">Sold 1h</span> and 5m volume before filling.
-          </>
-        ) : (
-          <>
-            Prices use <span className="text-fg">1h / 5m trade averages</span>, not the last single
-            offer — so one pump trade can't invent a fake margin. Ranked by{" "}
-            <span className="text-fg">GP/hour × volume confidence</span>. Min{" "}
-            <span className="text-fg">12 trades/side/hour</span> required. Click column headers to
-            sort.
-          </>
+        <button
+          type="button"
+          onClick={() => setTipOpen((o) => !o)}
+          className="flex w-full items-center gap-1.5 px-2.5 py-1.5 text-left text-[11px] font-medium text-muted"
+          aria-expanded={tipOpen}
+        >
+          <Info className="h-3.5 w-3.5 shrink-0 text-subtle" />
+          <span className="min-w-0 flex-1 truncate">
+            {isHot ? "How Hot prices work" : "How Safe prices work"}
+          </span>
+          <ChevronDown
+            className={cn(
+              "h-3.5 w-3.5 shrink-0 transition-transform",
+              tipOpen && "rotate-180",
+            )}
+          />
+        </button>
+        {tipOpen && (
+          <div className="border-t border-border/60 px-2.5 py-2 text-[11px] leading-relaxed text-muted">
+            {tipBody}
+          </div>
         )}
       </div>
 
-      {/* Mobile sort chips for numeric columns */}
-      <div className="flex flex-wrap gap-1 lg:hidden">
-        {(
-          [
-            ["gpHour", "GP/hour"],
-            ["sold1h", "Sold 1h"],
-            ["margin", "Margin"],
-            ["roi", "ROI"],
-            ["qty", "Qty"],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onSort(key)}
-            className={cn(
-              "rounded-md border px-2 py-1 text-[11px] font-medium",
-              sortKey === key
-                ? "border-border-strong bg-surface-2 text-fg"
-                : "border-border bg-surface text-muted",
-            )}
-          >
-            {label}
-            {sortKey === key ? (sortDir === "asc" ? " ↑" : " ↓") : ""}
-          </button>
-        ))}
+      {/* Mobile sort row — always visible on Best / Hot tabs */}
+      <div className="flex min-w-0 items-center gap-1.5 lg:hidden">
+        <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-subtle">
+          <ArrowUpDown className="h-3 w-3" />
+          Sort
+        </span>
+        <div className="scroll-x min-w-0 flex-1">
+          <div className="flex w-max items-center gap-1 pb-0.5">
+            {MOBILE_SORTS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onSort(key)}
+                className={cn(
+                  "shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors",
+                  sortKey === key
+                    ? "border-border-strong bg-surface-2 text-fg"
+                    : "border-border bg-surface text-muted active:bg-surface-2",
+                )}
+              >
+                {label}
+                {sortKey === key ? (sortDir === "asc" ? " ↑" : " ↓") : ""}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="hidden min-w-0 lg:grid grid-cols-[2rem_minmax(0,1.5fr)_repeat(6,minmax(0,1fr))] gap-2 border-b border-border px-2.5 pb-2">
@@ -228,15 +269,15 @@ function SummaryCard({
   sub: string;
 }) {
   return (
-    <div className="min-w-0 rounded-lg border border-border bg-surface p-3">
-      <div className="flex items-center gap-1.5 text-[11px] text-muted">
-        {icon}
+    <div className="min-w-0 rounded-md border border-border bg-surface px-1.5 py-1.5 sm:rounded-lg sm:p-3">
+      <div className="flex min-w-0 items-center gap-0.5 text-[9px] text-muted sm:gap-1.5 sm:text-[11px]">
+        <span className="hidden shrink-0 sm:inline">{icon}</span>
         <span className="truncate">{label}</span>
       </div>
-      <div className="mt-1 truncate text-base font-semibold tabular tracking-tight text-fg sm:text-lg">
+      <div className="mt-0.5 truncate text-[11px] font-semibold tabular tracking-tight text-fg sm:mt-1 sm:text-base sm:text-lg">
         {value}
       </div>
-      <div className="mt-0.5 truncate text-xs text-subtle">{sub}</div>
+      <div className="mt-0 truncate text-[9px] text-subtle sm:mt-0.5 sm:text-xs">{sub}</div>
     </div>
   );
 }
