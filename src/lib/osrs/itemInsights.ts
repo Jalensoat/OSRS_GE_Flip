@@ -16,6 +16,10 @@ export type InsightChip = {
   label: string;
   detail: string;
   tone: ChipTone;
+  /** Emphasize in UI (risk or opportunity stand-out) */
+  standout?: boolean;
+  /** Guide id for "why it matters" */
+  guideId?: string;
 };
 
 export type ItemInsights = {
@@ -51,6 +55,14 @@ export type ItemInsights = {
   flip: FlipOpportunity | null;
   chips: InsightChip[];
   checks: string[];
+  /** Which decision minis should ring/highlight */
+  standouts: {
+    fillScore: boolean;
+    netSpread: boolean;
+    gpHour: boolean;
+    volume: boolean;
+    bottleneck: boolean;
+  };
 };
 
 function nowSec() {
@@ -229,6 +241,7 @@ export function computeItemInsights(
   const chips: InsightChip[] = [];
   chips.push({
     id: "regime",
+    guideId: "regime",
     label: `Liquidity: ${regime}`,
     detail: regimeDetail,
     tone:
@@ -237,9 +250,11 @@ export function computeItemInsights(
         : regime === "thin" || regime === "drying"
           ? "warn"
           : "muted",
+    standout: regime === "thick" || regime === "thin" || regime === "drying" || regime === "spike",
   });
   chips.push({
     id: "trend",
+    guideId: "trend",
     label:
       trend === "range"
         ? "Trend: range"
@@ -253,57 +268,70 @@ export function computeItemInsights(
         ? `Mid path over chart lookback: ${midChangePct >= 0 ? "+" : ""}${midChangePct.toFixed(1)}%`
         : "Need more history points for slope",
     tone: trend === "down" ? "warn" : trend === "up" ? "accent" : "muted",
+    standout: trend === "down" || trend === "range",
   });
   if (!printFresh) {
     chips.push({
       id: "stale",
+      guideId: "fresh",
       label: "Stale prints",
       detail: `High age ${highAgeSec != null ? Math.round(highAgeSec / 60) + "m" : "?"} · low age ${lowAgeSec != null ? Math.round(lowAgeSec / 60) + "m" : "?"}`,
       tone: "warn",
+      standout: true,
     });
   } else {
     chips.push({
       id: "fresh",
+      guideId: "fresh",
       label: "Prints fresh",
       detail: "Recent high and low trades — spread more trustworthy",
       tone: "gain",
+      standout: false,
     });
   }
   if (volImbalance != null && Math.abs(volImbalance) > 0.35) {
     chips.push({
       id: "imbalance",
+      guideId: "imbalance",
       label: volImbalance > 0 ? "More insta-buys" : "More insta-sells",
       detail:
         volImbalance > 0
           ? "Sell leg easier; buy leg may wait or need aggression"
           : "Buy leg easier; sell leg is the inventory risk",
       tone: "warn",
+      standout: Math.abs(volImbalance) > 0.45,
     });
   }
   if (spikeVsAvg && spikeDetail) {
     chips.push({
       id: "spike",
+      guideId: "spike",
       label: "Vs 1h avg",
       detail: spikeDetail,
       tone: "warn",
+      standout: true,
     });
   }
   chips.push({
     id: "edge",
+    guideId: "edge",
     label: `Edge vs vol: ${edgeVsVol}`,
     detail:
       netSpreadPct != null
-        ? `Net spread ~${netSpreadPct.toFixed(2)}%` +
-          (volatilityPct != null ? ` · local mid σ ~${volatilityPct.toFixed(2)}%` : "")
+        ? `Net spread ~${netSpreadPct.toFixed(1)}%` +
+          (volatilityPct != null ? ` · local mid σ ~${volatilityPct.toFixed(1)}%` : "")
         : "No net spread",
     tone:
       edgeVsVol === "strong" ? "gain" : edgeVsVol === "weak" ? "warn" : "muted",
+    standout: edgeVsVol === "strong" || edgeVsVol === "weak",
   });
   chips.push({
     id: "pace",
+    guideId: "pace",
     label: `5m pace: ${volumePace}`,
     detail: `${item.volume5m} trades/5m vs ~${Math.round(item.volume1h / 12)} expected from 1h`,
     tone: volumePace === "cooling" ? "warn" : volumePace === "hot" ? "accent" : "muted",
+    standout: volumePace === "cooling" || volumePace === "hot",
   });
 
   const checks: string[] = [];
@@ -341,6 +369,17 @@ export function computeItemInsights(
     checks.push("No major red flags from public data — still verify in-game before full limit.");
   }
 
+  const standouts = {
+    fillScore: fillScore >= 70 || fillScore < 45,
+    netSpread:
+      (netSpread != null && netSpread <= 0) ||
+      (netSpreadPct != null && netSpreadPct >= 3) ||
+      edgeVsVol === "weak",
+    gpHour: flip != null && flip.profitPerHour > 0 && fillScore >= 60,
+    volume: regime === "thin" || regime === "thick" || regime === "drying",
+    bottleneck: flip != null && flip.bottleneck !== "none",
+  };
+
   return {
     netSpread,
     netSpreadPct,
@@ -365,5 +404,6 @@ export function computeItemInsights(
     flip,
     chips,
     checks,
+    standouts,
   };
 }

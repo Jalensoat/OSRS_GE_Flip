@@ -7,6 +7,7 @@ import {
   type Lookback,
 } from "@/lib/osrs/api";
 import {
+  formatAgeSec,
   formatGp,
   formatGpExact,
   formatPercent,
@@ -16,12 +17,14 @@ import {
 } from "@/lib/osrs/format";
 import { formatQty, type FlipMode } from "@/lib/osrs/flip";
 import { computeItemInsights } from "@/lib/osrs/itemInsights";
+import { METRIC_BY_ID } from "@/lib/osrs/metricGuide";
 import { useWatchlist } from "@/lib/osrs/watchlist";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ItemIcon } from "./ItemIcon";
 import { PriceChart } from "./PriceChart";
+import { FlipGuidePanel } from "./FlipGuide";
 import { cn } from "@/lib/utils";
 
 const LOOKBACKS: Lookback[] = ["6h", "24h", "7d", "30d"];
@@ -120,12 +123,13 @@ export function ItemDetail({
         <div className="mt-1.5 flex flex-wrap gap-3 text-[11px] text-subtle">
           {insights.midChangePct != null && (
             <span className="tabular">
-              Mid Δ {insights.midChangePct >= 0 ? "+" : ""}
-              {insights.midChangePct.toFixed(1)}%
+              Mid Δ {formatPercent(insights.midChangePct)}
             </span>
           )}
           {insights.volatilityPct != null && (
-            <span className="tabular">σ {insights.volatilityPct.toFixed(2)}%</span>
+            <span className="tabular">
+              σ {formatPercent(insights.volatilityPct).replace(/^\+/, "")}
+            </span>
           )}
           <span className="text-muted">Lookback: {lookback}</span>
         </div>
@@ -133,23 +137,28 @@ export function ItemDetail({
     </div>
   );
 
+  const g = (id: string) => METRIC_BY_ID[id];
+  const s = insights.standouts;
+
   const decisionStrip = (
-    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-6">
       <Mini
         label="Net spread"
         value={formatGp(insights.netSpread)}
         sub={
           insights.netSpreadPct != null
-            ? `${insights.netSpreadPct.toFixed(2)}% after tax`
+            ? `${formatPercent(insights.netSpreadPct).replace(/^\+/, "")} after tax`
             : "After tax"
         }
         tone={
           insights.netSpread != null && insights.netSpread > 0 ? "gain" : "loss"
         }
+        standout={s.netSpread}
+        why={g("netSpread")}
       />
       <Mini
         label="Fill score"
-        value={`${insights.fillScore}`}
+        value={String(insights.fillScore)}
         sub={insights.fillDetail}
         tone={
           insights.fillScore >= 70
@@ -158,22 +167,29 @@ export function ItemDetail({
               ? "warn"
               : undefined
         }
+        standout={s.fillScore}
+        why={g("fillScore")}
       />
       <Mini
         label="Est. GP / hour"
         value={flip ? formatGp(flip.profitPerHour) : "—"}
         sub={flip ? `${formatPercent(flip.roiPct)} ROI` : "Set bankroll"}
-        tone="gain"
+        tone={flip && flip.profitPerHour > 0 ? "gain" : undefined}
+        standout={s.gpHour}
+        why={g("gpHour")}
       />
       <Mini
         label="Flip qty"
         value={flip ? formatQty(flip.qty) : "—"}
         sub={flip ? `${formatGp(flip.capitalUsed)} capital` : "—"}
+        why={g("gpHour")}
       />
       <Mini
         label="1h volume"
         value={formatVolume(item.volume1h)}
-        sub={`${formatVolume(insights.volHigh1h)}↑ ${formatVolume(insights.volLow1h)}↓ · min ${formatVolume(insights.volMin1h)}`}
+        sub={`↑${formatVolume(insights.volHigh1h)} ↓${formatVolume(insights.volLow1h)} · min ${formatVolume(insights.volMin1h)}`}
+        standout={s.volume}
+        why={g("regime")}
       />
       <Mini
         label="Bottleneck"
@@ -189,28 +205,38 @@ export function ItemDetail({
             : "—"
         }
         sub={item.limit != null ? `Limit ${formatQty(item.limit)}` : "No limit data"}
+        standout={s.bottleneck}
+        why={g("bottleneck")}
       />
     </div>
   );
 
   const chipRow = (
     <div className="flex flex-wrap gap-1.5">
-      {insights.chips.map((c) => (
-        <span
-          key={c.id}
-          title={c.detail}
-          className={cn(
-            "inline-flex max-w-full items-center rounded-md border px-2 py-0.5 text-[11px] font-medium",
-            c.tone === "gain" && "border-gain/30 bg-gain/10 text-gain",
-            c.tone === "loss" && "border-loss/30 bg-loss/10 text-loss",
-            c.tone === "warn" && "border-warn/30 bg-warn/10 text-warn",
-            c.tone === "accent" && "border-accent/30 bg-accent/10 text-accent",
-            c.tone === "muted" && "border-border bg-surface-2 text-muted",
-          )}
-        >
-          {c.label}
-        </span>
-      ))}
+      {insights.chips.map((c) => {
+        const guide = c.guideId ? METRIC_BY_ID[c.guideId] : undefined;
+        const tip = [c.detail, guide ? `Why: ${guide.why}` : "", guide ? `Read: ${guide.howToRead}` : ""]
+          .filter(Boolean)
+          .join("\n\n");
+        return (
+          <span
+            key={c.id}
+            title={tip}
+            className={cn(
+              "inline-flex max-w-full cursor-help items-center rounded-md border px-2 py-0.5 text-[11px] font-medium",
+              c.tone === "gain" && "border-gain/30 bg-gain/10 text-gain",
+              c.tone === "loss" && "border-loss/30 bg-loss/10 text-loss",
+              c.tone === "warn" && "border-warn/30 bg-warn/10 text-warn",
+              c.tone === "accent" && "border-accent/30 bg-accent/10 text-accent",
+              c.tone === "muted" && "border-border bg-surface-2 text-muted",
+              c.standout && "ring-2 ring-accent/50 shadow-sm",
+            )}
+          >
+            {c.standout && <span className="mr-1 text-[9px] opacity-80">●</span>}
+            {c.label}
+          </span>
+        );
+      })}
     </div>
   );
 
@@ -247,7 +273,7 @@ export function ItemDetail({
           />
           <Row
             k="Print age"
-            v={`H ${insights.highAgeSec != null ? `${Math.round(insights.highAgeSec / 60)}m` : "—"} · L ${insights.lowAgeSec != null ? `${Math.round(insights.lowAgeSec / 60)}m` : "—"}`}
+            v={`H ${formatAgeSec(insights.highAgeSec)} · L ${formatAgeSec(insights.lowAgeSec)}`}
           />
           {flip && (
             <>
@@ -354,6 +380,11 @@ export function ItemDetail({
         {/* Dense intelligence first on full page / sheet */}
         {(fullPage || sheet) && (
           <>
+            <FlipGuidePanel defaultOpen={false} />
+            <p className="text-[10px] text-subtle">
+              Ringed tiles / ● chips = stand-out good or risk signals. Hover chips for why they
+              matter.
+            </p>
             {decisionStrip}
             {chipRow}
             {checks}
@@ -425,20 +456,38 @@ function Mini({
   value,
   sub,
   tone,
+  standout,
+  why,
 }: {
   label: string;
   value: string;
   sub?: string;
   tone?: "gain" | "loss" | "warn";
+  standout?: boolean;
+  why?: { title: string; short: string; why: string; howToRead: string };
 }) {
+  const title = why
+    ? `${why.title}\n\n${why.short}\n\nWhy: ${why.why}\n\nHow to read: ${why.howToRead}`
+    : undefined;
   return (
-    <div className="min-w-0 rounded-md border border-border bg-surface-2/50 px-2 py-1.5">
+    <div
+      title={title}
+      className={cn(
+        "min-w-0 cursor-help rounded-md border bg-surface-2/50 px-2 py-1.5",
+        standout
+          ? tone === "warn" || tone === "loss"
+            ? "border-warn/50 ring-2 ring-warn/40"
+            : "border-accent/50 ring-2 ring-accent/40"
+          : "border-border",
+      )}
+    >
       <div className="truncate text-[10px] font-medium uppercase tracking-wide text-subtle">
         {label}
+        {standout ? " ·" : ""}
       </div>
       <div
         className={cn(
-          "truncate text-sm font-semibold tabular",
+          "truncate text-sm font-semibold tabular tracking-tight",
           tone === "gain" && "text-gain",
           tone === "loss" && "text-loss",
           tone === "warn" && "text-warn",

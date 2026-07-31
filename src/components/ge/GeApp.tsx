@@ -40,6 +40,7 @@ import { ThemeButton, ThemePicker } from "./ThemePicker";
 import { ListFilters } from "./ListFilters";
 import { SearchDropdown } from "./SearchDropdown";
 import { SortableTh } from "./SortableTh";
+import { FlipGuideButton } from "./FlipGuide";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/osrs/format";
 
@@ -250,6 +251,7 @@ export function GeApp() {
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
+              <FlipGuideButton />
               <ThemeButton onClick={() => setThemeOpen(true)} />
               <Button
                 variant="secondary"
