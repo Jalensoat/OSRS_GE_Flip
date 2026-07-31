@@ -1,9 +1,8 @@
-import { useMemo, useState, useCallback, useRef } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Search,
   RefreshCw,
-  TrendingUp,
   Star,
   Flame,
   X,
@@ -166,27 +165,32 @@ export function GeApp() {
 
   const activeId = selected?.id ?? null;
 
-  const onSelect = useCallback((item: CatalogItem) => {
-    setSelectedId(item.id);
-    if (isPhoneLayout()) setMobileDetailOpen(true);
+  /** Open item: mobile sheet; desktop full-page (no permanent right drawer). */
+  const openItem = useCallback((id: number) => {
+    setSelectedId(id);
+    if (isPhoneLayout()) {
+      setMobileDetailOpen(true);
+      setFullPageOpen(false);
+    } else {
+      setFullPageOpen(true);
+      setMobileDetailOpen(false);
+    }
   }, []);
 
+  const onSelect = useCallback((item: CatalogItem) => {
+    openItem(item.id);
+  }, [openItem]);
+
   const onSelectId = useCallback((id: number) => {
-    setSelectedId(id);
-    if (isPhoneLayout()) setMobileDetailOpen(true);
-  }, []);
+    openItem(id);
+  }, [openItem]);
 
   /** Search dropdown selection — both platforms (PC full page, mobile sheet). */
   const onSelectFromSearch = useCallback((item: CatalogItem) => {
-    setSelectedId(item.id);
     setQuery("");
     setSearchOpen(false);
-    if (isPhoneLayout()) {
-      setMobileDetailOpen(true);
-    } else {
-      setFullPageOpen(true);
-    }
-  }, []);
+    openItem(item.id);
+  }, [openItem]);
 
   const goTab = useCallback((id: Exclude<Tab, "search">) => {
     setTab(id);
@@ -203,16 +207,25 @@ export function GeApp() {
     });
   }, [itemSortDir]);
 
+  useEffect(() => {
+    if (!fullPageOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullPageOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fullPageOpen]);
+
   const lastTradeAge =
     catalog.data?.priceTimestamp != null
       ? formatRelativeTime(catalog.data.priceTimestamp)
       : null;
 
   const showItemList = tab === "watch" || tab === "volume";
-  const showDetailAside = tab !== "invest";
   const showFlipBoard = tab === "flips" || tab === "hot";
   const activeNav = tab === "search" ? null : tab;
-  const filtersDefaultOpen = display.isDesktop;
+  // List-first: keep filters collapsed by default so the table gets the page
+  const filtersDefaultOpen = false;
 
   return (
     <div
@@ -334,16 +347,10 @@ export function GeApp() {
         </div>
       </header>
 
-      <main
-        className={cn(
-          "app-main mx-auto grid w-full max-w-[1600px] min-w-0",
-          showDetailAside
-            ? "grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(480px,54%)] xl:grid-cols-[minmax(0,1fr)_minmax(560px,58%)]"
-            : "grid-cols-1",
-        )}
-      >
+      {/* List-first: full-width list on PC; item detail is full-page overlay only */}
+      <main className="app-main mx-auto grid w-full max-w-[1800px] min-w-0 grid-cols-1">
         <section
-          className="flex min-w-0 flex-col overflow-hidden border-border lg:border-r"
+          className="flex min-w-0 flex-col overflow-hidden border-border"
           style={{ minHeight: 0, height: "100%" }}
         >
           <div
@@ -486,28 +493,6 @@ export function GeApp() {
             ) : null}
           </div>
         </section>
-
-        {showDetailAside && (
-          <aside className="hidden min-h-0 min-w-0 overflow-x-hidden overflow-y-auto border-l border-border bg-surface lg:block">
-            {selected ? (
-              <ItemDetail
-                item={selected}
-                bankroll={bankroll}
-                flipMode={showFlipBoard ? flipMode : "safe"}
-                onClose={() => setSelectedId(null)}
-                chartTall
-              />
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center gap-2 p-8 text-center">
-                <TrendingUp className="h-8 w-8 text-subtle" />
-                <p className="text-sm font-medium text-fg">Select a flip</p>
-                <p className="max-w-[220px] text-xs text-muted">
-                  Set starting GP, then pick an item to see quantity-aware profit.
-                </p>
-              </div>
-            )}
-          </aside>
-        )}
       </main>
 
       <footer className="hidden shrink-0 border-t border-border bg-bg px-4 py-2 text-center text-[11px] text-subtle lg:block">
@@ -576,9 +561,14 @@ export function GeApp() {
         </div>
       )}
 
-      {/* Desktop full-page item view (search selection) — graph-major */}
+      {/* Desktop full-page item intelligence — opens on any item click */}
       {fullPageOpen && selected && (
-        <div className="fixed inset-0 z-50 hidden overflow-hidden bg-bg lg:block">
+        <div
+          className="fixed inset-0 z-50 hidden overflow-hidden bg-bg lg:block"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${selected.name} details`}
+        >
           <div className="flex h-full min-h-0 flex-col">
             <ItemDetail
               item={selected}
