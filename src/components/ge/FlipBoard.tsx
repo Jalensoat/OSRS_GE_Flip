@@ -316,11 +316,11 @@ function FlipRow({
   isHot: boolean;
 }) {
   const { item } = flip;
-  const insights = useMemo(
-    () => computeItemInsights(item, { flipMode: isHot ? "hot" : "safe" }),
-    [item, isHot],
+  // Catalog-only fill score (same formula as ItemDetail — no history/bankroll).
+  const fillScore = useMemo(
+    () => computeItemInsights(item).fillScore,
+    [item],
   );
-  const fillScore = insights.fillScore;
 
   return (
     <button

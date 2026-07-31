@@ -215,7 +215,12 @@ export function computeItemInsights(
 
   const flip = bankroll > 0 ? computeFlip(item, bankroll, flipMode) : null;
 
-  // Fill score 0–100
+  /**
+   * Fill score 0–100 — catalog fields only.
+   * Must NOT depend on history (async) or bankroll/flip model, or the main-list
+   * score and the item drawer will disagree (e.g. 85 in table → 80 after chart loads).
+   * Trend / model spike risk stay as chips and standouts, not fill-score modifiers.
+   */
   let fillScore = 40;
   if (regime === "thick") fillScore += 25;
   else if (regime === "mixed") fillScore += 12;
@@ -227,8 +232,6 @@ export function computeItemInsights(
   if (volMin1h >= 20) fillScore += 10;
   if (volImbalance != null && Math.abs(volImbalance) > 0.55) fillScore -= 10;
   if (spikeVsAvg) fillScore -= 8;
-  if (flip?.spikeRisk) fillScore -= 10;
-  if (trend === "down" && flipMode === "safe") fillScore -= 5;
   fillScore = Math.max(0, Math.min(100, fillScore));
 
   const fillDetail =

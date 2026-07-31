@@ -251,9 +251,10 @@ export function sortFlips(
         r = cmpNum(a.roiPct, b.roiPct, dir);
         break;
       case "fill":
+        // Same catalog-only fill score as list rows / drawer (no mode/history).
         r = cmpNum(
-          computeItemInsights(a.item, { flipMode: a.mode }).fillScore,
-          computeItemInsights(b.item, { flipMode: b.mode }).fillScore,
+          computeItemInsights(a.item).fillScore,
+          computeItemInsights(b.item).fillScore,
           dir,
         );
         break;
