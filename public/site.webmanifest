@@ -1,0 +1,33 @@
+{
+  "name": "OSRS Flip Lab",
+  "short_name": "Flip Lab",
+  "description": "Capital-aware OSRS Grand Exchange flips and investments",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#12141a",
+  "theme_color": "#12141a",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "display_override": [
+    "standalone",
+    "browser"
+  ],
+  "scope": "/"
+}

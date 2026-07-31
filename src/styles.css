@@ -1,0 +1,210 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-bg: #0a0b0d;
+  --color-surface: #12141a;
+  --color-surface-2: #1a1d26;
+  --color-surface-3: #232733;
+  --color-fg: #e8e9ed;
+  --color-muted: #8b90a0;
+  --color-subtle: #5c6272;
+  --color-border: #2a2e3a;
+  --color-border-strong: #3a4050;
+  --color-primary: #c5ccd8;
+  --color-primary-fg: #0a0b0d;
+  --color-accent: #6b8cae;
+  --color-gain: #3d9a6a;
+  --color-loss: #c45c5c;
+  --color-warn: #c49a4a;
+  --color-ring: #6b8cae;
+
+  --font-sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+
+  /* Tab bar metrics — kept in sync with GeApp bottom nav */
+  --tabbar-h: 3rem; /* 48px icon row */
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+    box-sizing: border-box;
+  }
+
+  html {
+    color-scheme: dark;
+    height: 100%;
+    overflow: hidden;
+    /* Match tab bar so any residual system strip under the webview
+       looks like part of the footer, not a black void */
+    background: var(--color-surface);
+  }
+
+  body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-feature-settings: "tnum" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    transition:
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* 16px inputs = no iOS focus-zoom */
+  input,
+  textarea,
+  select {
+    font: inherit;
+    font-size: 16px;
+  }
+
+  @media (min-width: 1024px) {
+    input,
+    textarea,
+    select {
+      font-size: inherit;
+    }
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /**
+   * Full-screen shell.
+   * CSS grid (auto / 1fr / auto) is more reliable than flex-grow on iOS
+   * for pushing a footer to the true bottom.
+   */
+  .app {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    height: var(--app-height, 100dvh);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: hidden;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  /* On desktop the bottom nav is hidden — drop the third grid row content */
+  @media (min-width: 1024px) {
+    .app {
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+  }
+
+  .pad-top-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /**
+   * Phone tab bar — FIXED to the physical bottom of the screen.
+   * This is the same pattern most Home Screen PWAs use (and matches
+   * native tab bars): never depend on flex packing to reach the edge.
+   */
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    margin: 0;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    /* constant() for older iOS, env() for modern */
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: constant(safe-area-inset-left);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: constant(safe-area-inset-right);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Reserve space so list content can scroll above the fixed tab bar */
+  .app-main {
+    min-height: 0;
+    overflow: hidden;
+    /* tab row + home indicator */
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (min-width: 1024px) {
+    .bottom-nav {
+      display: none !important;
+    }
+    .app-main {
+      padding-bottom: 0;
+    }
+  }
+
+  .home-indicator-pad {
+    flex-shrink: 0;
+    height: constant(safe-area-inset-bottom);
+    height: env(safe-area-inset-bottom, 0px);
+    background: var(--color-surface);
+  }
+
+  .scroll-x {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .scroll-x::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

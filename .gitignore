@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+dist/
+.output/
+.vercel/
+.nitro/
+.tanstack/
+.vinxi/
+.wrangler/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs & OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# App-builder sandbox noise (not needed for PC clone)
+.grok/
+.node_modules.lock
+.project_id
+attachments/
+screenshots/
+
+# Local DB / data
+*.db
+*.sqlite
+data/
