@@ -122,10 +122,10 @@ function FlipGuideModal({ onClose }: { onClose: () => void }) {
             Ringed cards and highlighted chips are stand-outs (good or risky). Hover anything for more.
           </p>
           <p className="rounded-md border border-border bg-bg/50 px-2.5 py-2 text-[11px]">
-            <span className="font-medium text-fg">Last 5 min trades</span> = how many real GE trades
-            happened in the last five minutes (not a special “5m volume” GE setting). The hour can look
-            busy while the last five minutes went quiet — that means fills feel slow{" "}
-            <em>right now</em>.
+            <span className="font-medium text-fg">“Trades last 5m” is not 5 million GP.</span> It’s
+            how many times this item actually traded in the last five minutes — a trade count, not a
+            GE setting. The hour can look busy while the last five minutes went quiet — that means
+            fills feel slow <em>right now</em>.
           </p>
           <div>
             <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-subtle">

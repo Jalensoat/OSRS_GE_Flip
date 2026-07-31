@@ -138,7 +138,7 @@ export function ItemDetail({
         {insights.volatilityPct != null && (
           <span
             className="tabular"
-            title="How much prices typically wobble — compare to your profit %"
+            title="How much prices typically bounce — compare to your profit %"
           >
             Wobble ±{formatPercent(insights.volatilityPct).replace(/^\+/, "")}
           </span>
@@ -147,57 +147,73 @@ export function ItemDetail({
     </div>
   );
 
-  /* ── Price rail (PC full page) ── */
-  const priceRail = (
-    <aside className="flex flex-col justify-center gap-4 rounded-xl border border-border bg-surface-2/40 p-4">
-      <PriceBlock
-        label="Buy now (low)"
+  /* ── Trade ticket: big buy / sell / edge side-by-side ── */
+  const tradeTicket = (
+    <div
+      className={cn(
+        "grid grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-surface-2/40",
+        !insights.printFresh && "ring-1 ring-warn/30",
+      )}
+      title={
+        !insights.printFresh
+          ? "Prices may be outdated — re-check in the GE"
+          : undefined
+      }
+    >
+      <TicketCell
+        label="Buy now"
+        sub="sit / undercut"
         value={formatGpExact(flipBuy)}
-        tip="Last price someone paid to sell instantly — often your entry if you buy sitting"
+        tip="Last price for an instant sell — often what you pay if you sit a buy"
         tone="gain"
+        size={fullPage ? "lg" : "sm"}
       />
-      <PriceBlock
-        label="Sell now (high)"
+      <TicketCell
+        label="Sell now"
+        sub="sit sell"
         value={formatGpExact(flipSell)}
-        tip="Last price someone paid to buy instantly — often your exit if you sell sitting"
+        tip="Last price for an instant buy — often what you aim for if you sit a sell"
+        size={fullPage ? "lg" : "sm"}
       />
-      <div className="space-y-1.5 border-t border-border pt-3">
-        <MiniLine
-          label="Profit / item"
-          value={formatGpExact(lastMargin)}
-          tip="Sell now − tax − buy now"
-        />
-        <MiniLine
-          label="Tax if you sell"
-          value={`−${formatGpExact(taxOnSell)}`}
-          tip="2% of sell price, max 5m per item"
-        />
-      </div>
-    </aside>
+      <TicketCell
+        label="Edge after tax"
+        sub={`Tax −${formatGpExact(taxOnSell)}`}
+        value={formatGpExact(lastMargin)}
+        tip="Sell now − 2% GE tax − buy now. Must be clearly positive."
+        tone={lastMargin != null && lastMargin > 0 ? "gain" : "loss"}
+        size={fullPage ? "lg" : "sm"}
+      />
+    </div>
   );
 
-  /* ── Hero decision cards (big numbers) ── */
+  /* ── Hero decision cards (asymmetric on PC) ── */
   const heroCards = (
     <div
       className={cn(
-        "grid gap-3",
-        fullPage ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-2 sm:grid-cols-3",
+        "grid gap-2.5",
+        fullPage
+          ? "grid-cols-2 lg:grid-cols-12"
+          : "grid-cols-2",
       )}
     >
       <HeroCard
         label="Profit / item"
         value={formatGp(insights.netSpread)}
         hint={
-          insights.netSpreadPct != null
-            ? `${formatPercent(insights.netSpreadPct).replace(/^\+/, "")} after tax`
-            : "After GE tax"
+          insights.netSpread != null && insights.netSpread <= 0
+            ? "No edge after tax"
+            : insights.netSpreadPct != null
+              ? `${formatPercent(insights.netSpreadPct).replace(/^\+/, "")} after tax`
+              : "After GE tax"
         }
         tone={insights.netSpread != null && insights.netSpread > 0 ? "gain" : "loss"}
         standout={s.netSpread}
         why={g("netSpread")}
+        size={fullPage ? "primary" : "sheet"}
+        className={fullPage ? "lg:col-span-4" : undefined}
       />
       <HeroCard
-        label="How easy fills"
+        label="Will it fill?"
         value={String(insights.fillScore)}
         unit="/100"
         hint={
@@ -212,6 +228,8 @@ export function ItemDetail({
         }
         standout={s.fillScore}
         why={g("fillScore")}
+        size={fullPage ? "primary" : "sheet"}
+        className={fullPage ? "lg:col-span-4" : undefined}
       />
       <HeroCard
         label="GP per hour"
@@ -220,9 +238,11 @@ export function ItemDetail({
         tone={flip && flip.profitPerHour > 0 ? "gain" : undefined}
         standout={s.gpHour}
         why={g("gpHour")}
+        size={fullPage ? "secondary" : "sheet"}
+        className={fullPage ? "lg:col-span-2" : undefined}
       />
       <HeroCard
-        label="What limits you"
+        label="What's stopping you"
         value={bottleneckLabel}
         hint={
           flip
@@ -233,6 +253,8 @@ export function ItemDetail({
         }
         standout={s.bottleneck}
         why={g("bottleneck")}
+        size={fullPage ? "secondary" : "sheet"}
+        className={fullPage ? "lg:col-span-2" : undefined}
       />
     </div>
   );
@@ -241,7 +263,7 @@ export function ItemDetail({
   const chipRow = (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
-        Signals
+        Quick signals
       </span>
       {insights.chips.map((c) => {
         const guide = c.guideId ? METRIC_BY_ID[c.guideId] : undefined;
@@ -286,33 +308,36 @@ export function ItemDetail({
     </div>
   );
 
-  /* ── Secondary details (2-col cards, not full-width rows) ── */
+  /* ── Secondary details as mini tiles ── */
   const details = (
     <div className="rounded-xl border border-border bg-surface-2/30 p-4">
       <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-subtle">
-        More numbers
+        More detail
       </h3>
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+      <dl className="grid grid-cols-2 gap-2 xl:grid-cols-3">
         <Detail
-          label="Hourly trades"
+          label="Trades last hour"
           value={formatVolume(item.volume1h)}
-          tip="Trades in the last hour (both sides)"
+          tip="How many trades in the past hour (both sides)"
+          standout={s.volume}
         />
         <Detail
-          label="Last 5 min trades"
+          label="Trades last 5m"
           value={formatVolume(item.volume5m)}
-          tip="How many trades just happened — not a full hour total. Quiet last 5 min means slow fills right now even if the hour looked fine."
+          tip="How many times this item traded in the last 5 minutes — not “5 million GP,” just a trade count. Quiet last 5m means slow fills right now even if the hour looked fine."
           standout={insights.volumePace === "cooling" || insights.volumePace === "hot"}
+          warn={insights.volumePace === "cooling"}
         />
         <Detail
-          label="Buy / sell trades"
+          label="Buy / sell flow"
           value={`↑${formatVolume(insights.volHigh1h)} ↓${formatVolume(insights.volLow1h)}`}
           tip="↑ people paying top (insta-buy) · ↓ people dumping (insta-sell)"
         />
         <Detail
-          label="Weak side (min)"
+          label="Slower side"
           value={formatVolume(insights.volMin1h)}
-          tip="The slower of the two sides — this is your real flip capacity"
+          tip="The quieter of the two sides — this is your real flip capacity"
+          standout={s.volume}
         />
         <Detail
           label="1h avg buy / sell"
@@ -320,9 +345,11 @@ export function ItemDetail({
           tip="Smoothed prices over the hour — less noisy than last print"
         />
         <Detail
-          label="Data age"
-          value={`Buy ${formatAgeSec(insights.highAgeSec)} · Sell ${formatAgeSec(insights.lowAgeSec)}`}
+          label="Price freshness"
+          value={`${formatAgeSec(insights.highAgeSec)} · ${formatAgeSec(insights.lowAgeSec)}`}
           tip="How old the last instant-buy and instant-sell trades are"
+          standout={!insights.printFresh}
+          warn={!insights.printFresh}
         />
         {flip && (
           <>
@@ -332,14 +359,14 @@ export function ItemDetail({
               tip="What the bankroll model uses (may use averages, not last print)"
             />
             <Detail
-              label="One cycle · day est."
+              label="One cycle · day"
               value={`${formatGp(flip.profitOnce)} · ${formatGp(flip.profitPerDay)}/d`}
               tip="One full buy+sell profit, and rough daily if you keep cycling"
             />
             <Detail
               label="Stack size"
               value={formatQty(flip.qty)}
-              tip="How many the model sizes for your bankroll and limits"
+              tip="How many the model sizes for your cash and limits — not a command to buy that many"
             />
           </>
         )}
@@ -354,7 +381,7 @@ export function ItemDetail({
     </div>
   );
 
-  /* ── Sheet / compact (mobile) uses same heroes, stacked ── */
+  /* ── Sheet / compact (mobile) ── */
   if (!fullPage) {
     return (
       <div className={cn(sheet ? "flex flex-col bg-surface" : "flex h-full min-h-0 flex-col")}>
@@ -367,10 +394,11 @@ export function ItemDetail({
           onClose={onClose}
           onToggleWatch={() => watchlist.toggle(item.id)}
           fullPage={false}
+          showFillBadge
         />
         <div
           className={cn(
-            "space-y-3 p-3",
+            "space-y-2.5 p-3",
             sheet ? "" : "min-h-0 flex-1 overflow-y-auto overscroll-contain",
           )}
         >
@@ -378,6 +406,7 @@ export function ItemDetail({
             <>
               <FlipGuidePanel defaultOpen={false} />
               {heroCards}
+              {tradeTicket}
               {chipRow}
             </>
           )}
@@ -411,53 +440,58 @@ export function ItemDetail({
         onClose={onClose}
         onToggleWatch={() => watchlist.toggle(item.id)}
         fullPage
+        showFillBadge={false}
       />
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 sm:p-5">
-        {/* 1) Big decision numbers first */}
-        {heroCards}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5">
+        <div className="mx-auto w-full max-w-[1200px] space-y-3">
+          {/* 1) Big decision numbers */}
+          {heroCards}
 
-        {/* 2) Signals */}
-        {chipRow}
+          {/* 2) Trade ticket — prices to type */}
+          {tradeTicket}
 
-        {/* 3) Chart + live prices side by side */}
-        <section className="grid gap-3 lg:grid-cols-[1fr_200px]">
+          {/* 3) Signals */}
+          {chipRow}
+
+          {/* 4) Full-width chart */}
           {chartBlock}
-          {priceRail}
-        </section>
 
-        {/* 4) Checklist + more numbers */}
-        <section className="grid gap-3 lg:grid-cols-2">
-          {checks}
-          {details}
-        </section>
+          {/* 5) Checklist + more numbers */}
+          <section className="grid gap-3 lg:grid-cols-2">
+            {checks}
+            {details}
+          </section>
 
-        <FlipGuidePanel defaultOpen={false} />
+          <FlipGuidePanel defaultOpen={false} />
 
-        <Actions
-          watched={watched}
-          itemId={item.id}
-          onToggle={() => watchlist.toggle(item.id)}
-        />
+          <Actions
+            watched={watched}
+            itemId={item.id}
+            onToggle={() => watchlist.toggle(item.id)}
+          />
+        </div>
       </div>
 
       {/* Sticky plan footer */}
       <footer className="shrink-0 border-t border-border bg-surface/95 px-4 py-2.5 backdrop-blur sm:px-5">
-        <p className="text-sm text-muted">
+        <p className="mx-auto max-w-[1200px] text-sm text-muted">
           <span className="text-subtle">Plan · </span>
           buy{" "}
-          <span className="font-semibold tabular text-fg">
+          <span className="text-base font-semibold tabular text-fg">
             {formatGp(flip?.buyPrice ?? flipBuy)}
           </span>
           {" · "}sell{" "}
-          <span className="font-semibold tabular text-fg">
+          <span className="text-base font-semibold tabular text-fg">
             {formatGp(flip?.sellPrice ?? flipSell)}
           </span>
           {flip && (
             <>
               {" · "}qty{" "}
-              <span className="font-semibold tabular text-fg">≤{formatQty(flip.qty)}</span>
+              <span className="text-base font-semibold tabular text-fg">
+                ≤{formatQty(flip.qty)}
+              </span>
               {" · "}
-              <span className="font-semibold tabular text-gain">
+              <span className="text-base font-semibold tabular text-gain">
                 {formatGp(flip.profitPerHour)}/h
               </span>
             </>
@@ -477,6 +511,7 @@ function Header({
   onClose,
   onToggleWatch,
   fullPage,
+  showFillBadge,
 }: {
   item: CatalogItem;
   watched: boolean;
@@ -486,6 +521,7 @@ function Header({
   onClose: () => void;
   onToggleWatch: () => void;
   fullPage: boolean;
+  showFillBadge: boolean;
 }) {
   return (
     <div
@@ -506,7 +542,14 @@ function Header({
             >
               {item.name}
             </h2>
-            <p className="mt-0.5 line-clamp-2 text-xs text-muted">{item.examine}</p>
+            <p
+              className={cn(
+                "mt-0.5 text-xs text-muted",
+                fullPage ? "line-clamp-1" : "line-clamp-2",
+              )}
+            >
+              {item.examine}
+            </p>
           </div>
           <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close">
             <X className="h-4 w-4" />
@@ -542,14 +585,16 @@ function Header({
               {flip.confidenceLabel} trust
             </Badge>
           ) : null}
-          <Badge
-            variant={
-              fillScore >= 70 ? "gain" : fillScore < 45 ? "warn" : "default"
-            }
-            title={METRIC_BY_ID.fillScore?.short}
-          >
-            Fill {fillScore}
-          </Badge>
+          {showFillBadge && (
+            <Badge
+              variant={
+                fillScore >= 70 ? "gain" : fillScore < 45 ? "warn" : "default"
+              }
+              title={METRIC_BY_ID.fillScore?.short}
+            >
+              Fill {fillScore}
+            </Badge>
+          )}
           <button
             type="button"
             onClick={onToggleWatch}
@@ -601,6 +646,8 @@ function HeroCard({
   tone,
   standout,
   why,
+  size = "primary",
+  className,
 }: {
   label: string;
   value: string;
@@ -609,6 +656,8 @@ function HeroCard({
   tone?: "gain" | "loss" | "warn" | "sky";
   standout?: boolean;
   why?: { title: string; short: string; why: string; howToRead: string };
+  size?: "primary" | "secondary" | "sheet";
+  className?: string;
 }) {
   const title = why
     ? `${why.title}\n\n${why.short}\n\nWhy: ${why.why}\n\nHow to read: ${why.howToRead}`
@@ -617,12 +666,16 @@ function HeroCard({
     <div
       title={title}
       className={cn(
-        "cursor-help rounded-xl border px-4 py-3 transition-colors",
+        "min-w-0 cursor-help rounded-xl border transition-colors",
+        size === "primary" && "min-h-[88px] px-4 py-3.5",
+        size === "secondary" && "min-h-[88px] px-3 py-3",
+        size === "sheet" && "px-3 py-2.5",
         standout
           ? tone === "warn" || tone === "loss"
             ? "border-warn/40 bg-warn/5 ring-2 ring-warn/30"
             : "border-accent/40 bg-accent/5 ring-2 ring-accent/30"
           : "border-border bg-surface-2/40 hover:border-border-strong",
+        className,
       )}
     >
       <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
@@ -631,7 +684,10 @@ function HeroCard({
       <div className="mt-1 flex items-baseline gap-1.5">
         <span
           className={cn(
-            "text-2xl font-semibold tabular tracking-tight xl:text-3xl",
+            "font-semibold tabular tracking-tight",
+            size === "primary" && "text-3xl xl:text-4xl",
+            size === "secondary" && "text-2xl xl:text-3xl",
+            size === "sheet" && "text-2xl",
             tone === "gain" && "text-gain",
             tone === "loss" && "text-loss",
             tone === "warn" && "text-warn",
@@ -644,53 +700,51 @@ function HeroCard({
         {unit && <span className="text-xs text-subtle">{unit}</span>}
       </div>
       {hint && (
-        <div className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted">{hint}</div>
+        <div
+          className={cn(
+            "mt-0.5 line-clamp-2 leading-snug text-muted",
+            size === "secondary" ? "text-[10px]" : "text-[11px]",
+          )}
+        >
+          {hint}
+        </div>
       )}
     </div>
   );
 }
 
-function PriceBlock({
+function TicketCell({
   label,
+  sub,
   value,
   tip,
   tone,
+  size = "lg",
 }: {
   label: string;
+  sub?: string;
   value: string;
   tip?: string;
-  tone?: "gain";
+  tone?: "gain" | "loss";
+  size?: "lg" | "sm";
 }) {
   return (
-    <div title={tip} className="cursor-help">
+    <div title={tip} className={cn("cursor-help", size === "lg" ? "px-4 py-3" : "px-2 py-2")}>
       <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
         {label}
       </div>
       <div
         className={cn(
-          "mt-0.5 text-2xl font-semibold tabular tracking-tight",
-          tone === "gain" ? "text-gain" : "text-fg",
+          "mt-0.5 font-semibold tabular tracking-tight",
+          size === "lg" ? "text-2xl xl:text-3xl" : "text-lg",
+          tone === "gain" && "text-gain",
+          tone === "loss" && "text-loss",
+          !tone && "text-fg",
         )}
       >
         {value}
       </div>
-    </div>
-  );
-}
-
-function MiniLine({
-  label,
-  value,
-  tip,
-}: {
-  label: string;
-  value: string;
-  tip?: string;
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-2" title={tip}>
-      <span className="text-[10px] uppercase tracking-wide text-subtle">{label}</span>
-      <span className="text-sm font-medium tabular text-fg">{value}</span>
+      {sub && <div className="mt-0.5 text-[10px] text-subtle">{sub}</div>}
     </div>
   );
 }
@@ -700,21 +754,30 @@ function Detail({
   value,
   tip,
   standout,
+  warn,
 }: {
   label: string;
   value: string;
   tip?: string;
   standout?: boolean;
+  warn?: boolean;
 }) {
   return (
     <div
-      className={cn("min-w-0", standout && "rounded-md ring-1 ring-accent/40 px-1.5 py-0.5")}
+      className={cn(
+        "min-w-0 rounded-lg border px-2.5 py-2",
+        standout
+          ? warn
+            ? "border-warn/40 bg-warn/5 ring-1 ring-warn/30"
+            : "border-accent/40 bg-accent/5 ring-1 ring-accent/30"
+          : "border-border/80 bg-surface/40",
+      )}
       title={tip}
     >
       <dt className="truncate text-[10px] font-medium uppercase tracking-wide text-subtle">
         {label}
       </dt>
-      <dd className="text-sm font-semibold tabular tracking-tight text-fg">{value}</dd>
+      <dd className="text-base font-semibold tabular tracking-tight text-fg">{value}</dd>
     </div>
   );
 }

@@ -170,12 +170,12 @@ export function computeItemInsights(
 
   const regime = regimeFromVolumes(volMin1h, item.volume1h, item.volume5m);
   const regimeDetail = {
-    thick: "Strong two-sided 1h flow — faster fills, tighter competition",
-    mixed: "Usable liquidity — check both legs before full-limit commits",
-    thin: "Sparse two-sided volume — paper margins often fail",
-    spike: "5m volume hot vs 1h — fill window open, margin may compress",
-    drying: "1h was active but 5m is cold — dry-up risk mid-hold",
-    unknown: "Not enough volume signal to classify liquidity",
+    thick: "Lots of trades both ways last hour — fills faster, more competition",
+    mixed: "Enough trades to try — still check both buy and sell before full limit",
+    thin: "Very few trades both ways — “profit” often won’t fill",
+    spike: "Last 5 minutes way busier than the hour — window open, margin may shrink",
+    drying: "Hour was active but last 5 minutes went cold — may stall while you hold",
+    unknown: "Not enough trade data to say how busy this is",
   }[regime];
 
   let volumePace: ItemInsights["volumePace"] = "unknown";
@@ -233,10 +233,10 @@ export function computeItemInsights(
 
   const fillDetail =
     fillScore >= 70
-      ? "Both legs look workable for a standard cycle"
+      ? "Both sides look workable for a normal flip"
       : fillScore >= 45
-        ? "Possible fills — size carefully; watch the weak leg"
-        : "High risk of stuck inventory or phantom margin";
+        ? "Possible fills — size carefully; watch the slower side"
+        : "High risk of stuck items or fake-looking profit";
 
   const chips: InsightChip[] = [];
   const regimeLabel: Record<RegimeLabel, string> = {
@@ -292,7 +292,7 @@ export function computeItemInsights(
       id: "fresh",
       guideId: "fresh",
       label: "Prices recent",
-      detail: "Last buy-now and sell-now trades are under about an hour — numbers more trustworthy",
+      detail: "Last buy-now and sell-now under ~1 hour — numbers more trustworthy",
       tone: "gain",
       standout: false,
     });
@@ -304,8 +304,8 @@ export function computeItemInsights(
       label: volImbalance > 0 ? "Buy pressure" : "Sell pressure",
       detail:
         volImbalance > 0
-          ? "More people paying top prices — selling is easier; buying may wait"
-          : "More people dumping — buying is easier; selling is the hard part",
+          ? "More people paying top prices — selling easier; buying may wait"
+          : "More people dumping — buying easier; selling is the hard part",
       tone: "warn",
       standout: Math.abs(volImbalance) > 0.45,
     });
@@ -314,7 +314,7 @@ export function computeItemInsights(
     chips.push({
       id: "spike",
       guideId: "spike",
-      label: "Off hourly avg",
+      label: "Off hour average",
       detail: spikeDetail,
       tone: "warn",
       standout: true,
@@ -351,44 +351,66 @@ export function computeItemInsights(
           : volumePace === "stable"
             ? "Last 5m: steady"
             : "Last 5m: ?",
-    detail: `${item.volume5m} trades in the last 5 minutes (about ${Math.round(item.volume1h / 12)} would be a normal slice of the hour)`,
+    detail: `${item.volume5m} trades in the last 5 minutes (about ${Math.round(item.volume1h / 12)} would be a normal slice of the hour). Not millions of GP — just how many times it traded.`,
     tone: volumePace === "cooling" ? "warn" : volumePace === "hot" ? "accent" : "muted",
     standout: volumePace === "cooling" || volumePace === "hot",
   });
 
   const checks: string[] = [];
   if (regime === "thin" || regime === "unknown") {
-    checks.push("Confirm real two-sided volume — wide spreads on thin items are often unfillable.");
+    checks.push(
+      "Make sure people are both buying and selling — wide gaps on quiet items often never fill.",
+    );
   }
   if (!printFresh) {
-    checks.push("Re-check in-game margin: wiki high/low may be stale ghosts.");
+    checks.push(
+      "Open the GE and check real offers — the app’s prices may be outdated.",
+    );
   }
   if (volImbalance != null && volImbalance < -0.4) {
-    checks.push("Sell leg looks weak (more dumps than buys) — plan exit before full buy limit.");
+    checks.push(
+      "Selling looks hard (lots of dumps) — plan how you’ll get out before you buy your full limit.",
+    );
   }
   if (volImbalance != null && volImbalance > 0.4) {
-    checks.push("Buy leg competition high — undercutting on sell may be easier than resting buys.");
+    checks.push(
+      "Buying looks competitive — sitting a sell may be easier than sitting a buy.",
+    );
   }
   if (trend === "down") {
-    checks.push("Mid trending down — avoid pure mean-reversion buys unless you accept inventory risk.");
+    checks.push(
+      "Price is falling — don’t buy hoping it bounces unless you’re OK holding risk.",
+    );
   }
   if (trend === "range" && edgeVsVol === "strong") {
-    checks.push("Range + margin > local noise — classic harvest setup if fills hold.");
+    checks.push(
+      "Price is sideways and profit beats the normal bounce — good classic flip if fills still look OK.",
+    );
   }
   if (flip?.bottleneck === "buy_limit") {
-    checks.push("Buy limit is the ceiling — GP/hour is limit-gated, not bankroll-gated.");
+    checks.push(
+      "Buy limit is the ceiling — more cash won’t help until the 4h limit refreshes.",
+    );
   }
   if (flip?.bottleneck === "volume") {
-    checks.push("Market volume caps qty — don't assume full buy-limit cycles every hour.");
+    checks.push(
+      "Not enough trades to support full buy-limit every hour — size down.",
+    );
   }
   if (flip?.bottleneck === "capital") {
-    checks.push("Bankroll is the ceiling — more GP would size larger if volume allows.");
+    checks.push(
+      "Your cash is the ceiling — more GP (or a cheaper item) would let you size up if trades allow.",
+    );
   }
   if (spikeVsAvg) {
-    checks.push("Last prints diverge from 1h average — size small or wait for mid to settle.");
+    checks.push(
+      "Last prices look weird vs the rest of the hour — start small or wait.",
+    );
   }
   if (checks.length === 0) {
-    checks.push("No major red flags from public data — still verify in-game before full limit.");
+    checks.push(
+      "No major red flags from public data — still verify in-game before full limit.",
+    );
   }
 
   const standouts = {
