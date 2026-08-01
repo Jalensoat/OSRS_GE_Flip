@@ -147,6 +147,19 @@ function regimeFromVolumes(volMin: number, volTotal: number, vol5m: number): Reg
   return "mixed";
 }
 
+/**
+ * Mid path / volatility over a point series.
+ * For Quick signals + hold thesis, always pass a **fixed** lookback (24h).
+ * Chart UI may call this with the user-selected window for footer stats only.
+ */
+export function chartWindowStats(points: TimeseriesPoint[]): {
+  trend: TrendLabel;
+  midChangePct: number | null;
+  volatilityPct: number | null;
+} {
+  return trendFromHistory(points);
+}
+
 function trendFromHistory(points: TimeseriesPoint[]): {
   trend: TrendLabel;
   midChangePct: number | null;
@@ -184,13 +197,16 @@ function trendFromHistory(points: TimeseriesPoint[]): {
 }
 
 /**
- * Build decision metrics for an item. History optional (improves trend/vol).
+ * Build decision metrics for an item.
+ * `history` should be a **stable** window (app uses 24h) so Quick signals don’t
+ * flip when the user only changes the chart lookback. Chart exploration is separate.
  */
 export function computeItemInsights(
   item: CatalogItem,
   opts: {
     bankroll?: number;
     flipMode?: FlipMode;
+    /** Prefer fixed 24h timeseries — not the interactive chart lookback */
     history?: TimeseriesPoint[];
   } = {},
 ): ItemInsights {
@@ -390,7 +406,7 @@ export function computeItemInsights(
             : "Direction ?",
     detail:
       midChangePct != null
-        ? `Price mid moved ${midChangePct >= 0 ? "+" : ""}${midChangePct.toFixed(1)}% over the chart window`
+        ? `Price mid moved ${midChangePct >= 0 ? "+" : ""}${midChangePct.toFixed(1)}% over the last ~24h (fixed; not the chart lookback)`
         : "Need more history for direction",
     tone: trend === "down" ? "warn" : trend === "up" ? "accent" : "muted",
     standout: trend === "down" || trend === "range",
@@ -671,14 +687,14 @@ export function computeItemInsights(
     // 5) Chart context when we have history
     if (midChangePct != null) {
       return {
-        label: "Chart window move",
+        label: "24h mid move",
         value: formatPercent(midChangePct),
         hint:
           trend === "down"
-            ? "Falling on the chart · avoid dip-buys until it stabilizes"
+            ? "Falling over ~24h · avoid dip-buys until it stabilizes"
             : trend === "up"
-              ? "Climbing on the chart · flip or careful momentum only"
-              : "Sideways on the chart · best for classic sit flips",
+              ? "Climbing over ~24h · flip or careful momentum only"
+              : "Sideways over ~24h · best for classic sit flips",
         tone: trend === "down" ? "warn" : trend === "up" ? "accent" : "muted",
         standout: trend === "down",
         guideId: "trend",

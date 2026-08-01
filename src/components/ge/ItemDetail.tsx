@@ -16,7 +16,10 @@ import {
   flipMargin,
 } from "@/lib/osrs/format";
 import { formatQty, type FlipMode } from "@/lib/osrs/flip";
-import { computeItemInsights } from "@/lib/osrs/itemInsights";
+import {
+  chartWindowStats,
+  computeItemInsights,
+} from "@/lib/osrs/itemInsights";
 import { METRIC_BY_ID } from "@/lib/osrs/metricGuide";
 import { useWatchlist } from "@/lib/osrs/watchlist";
 import { Button } from "@/components/ui/button";
@@ -28,6 +31,8 @@ import { FlipGuidePanel } from "./FlipGuide";
 import { cn } from "@/lib/utils";
 
 const LOOKBACKS: Lookback[] = ["6h", "24h", "7d", "30d"];
+/** Fixed window for Quick signals / hold thesis — never follows chart buttons. */
+const SIGNAL_LOOKBACK: Lookback = "24h";
 
 export function ItemDetail({
   item,
@@ -52,9 +57,21 @@ export function ItemDetail({
   const isHot = flipMode === "hot";
   const dense = fullPage || sheet;
 
+  /** Interactive chart series (user-selected lookback). */
   const history = useQuery({
     queryKey: ["history", item.id, lookback],
     queryFn: () => fetchItemHistory({ data: { id: item.id, lookback } }),
+    staleTime: 60_000,
+  });
+
+  /**
+   * Stable series for chips / edge / hold direction.
+   * React Query dedupes when lookback === 24h so we don’t double-fetch.
+   */
+  const signalHistory = useQuery({
+    queryKey: ["history", item.id, SIGNAL_LOOKBACK],
+    queryFn: () =>
+      fetchItemHistory({ data: { id: item.id, lookback: SIGNAL_LOOKBACK } }),
     staleTime: 60_000,
   });
 
@@ -63,9 +80,15 @@ export function ItemDetail({
       computeItemInsights(item, {
         bankroll,
         flipMode,
-        history: history.data?.points ?? [],
+        history: signalHistory.data?.points ?? [],
       }),
-    [item, bankroll, flipMode, history.data?.points],
+    [item, bankroll, flipMode, signalHistory.data?.points],
+  );
+
+  /** Chart-footer stats only — may change with 6h / 7d / 30d. */
+  const chartStats = useMemo(
+    () => chartWindowStats(history.data?.points ?? []),
+    [history.data?.points],
   );
 
   const flip = insights.flip;
@@ -92,11 +115,16 @@ export function ItemDetail({
           : "Your cash"
     : "—";
 
-  /* ── Chart ── */
+  /* ── Chart (lookback is visual only; signals use fixed 24h) ── */
   const chartBlock = (
     <div className="min-w-0 rounded-xl border border-border bg-surface-2/30 p-3">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-xs font-semibold text-fg">Price history</h3>
+        <div className="min-w-0">
+          <h3 className="text-xs font-semibold text-fg">Price history</h3>
+          <p className="text-[10px] text-subtle">
+            Zoom only — Quick signals stay on a fixed 24h item view
+          </p>
+        </div>
         <div className="flex gap-1 rounded-md border border-border bg-surface p-0.5">
           {LOOKBACKS.map((lb) => (
             <button
@@ -130,17 +158,21 @@ export function ItemDetail({
         />
       )}
       <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-subtle">
-        {insights.midChangePct != null && (
-          <span className="tabular" title="How much the middle price moved over this chart">
-            Mid moved {formatPercent(insights.midChangePct)}
-          </span>
-        )}
-        {insights.volatilityPct != null && (
+        {chartStats.midChangePct != null && (
           <span
             className="tabular"
-            title="How much prices typically bounce — compare to your profit %"
+            title={`Middle price move over the selected chart window (${lookback}) — not used for Quick signals`}
           >
-            Wobble ±{formatPercent(insights.volatilityPct).replace(/^\+/, "")}
+            This view · mid {formatPercent(chartStats.midChangePct)}
+          </span>
+        )}
+        {chartStats.volatilityPct != null && (
+          <span
+            className="tabular"
+            title={`Wobble over the selected chart window (${lookback}) — Quick “margin vs noise” uses fixed 24h`}
+          >
+            This view · wobble ±
+            {formatPercent(chartStats.volatilityPct).replace(/^\+/, "")}
           </span>
         )}
       </div>
@@ -335,22 +367,22 @@ export function ItemDetail({
             size={fullPage ? "primary" : "sheet"}
           />
           <HeroCard
-            label="Chart mid move"
+            label="24h mid move"
             value={
               insights.midChangePct != null
                 ? formatPercent(insights.midChangePct)
-                : history.isLoading
+                : signalHistory.isLoading
                   ? "…"
                   : "—"
             }
             hint={
               insights.trend === "up"
-                ? "Climbing on chart"
+                ? "Climbing over ~24h"
                 : insights.trend === "down"
-                  ? "Falling on chart"
+                  ? "Falling over ~24h"
                   : insights.trend === "range"
                     ? "Sideways · flip-friendly"
-                    : "Pick a lookback below"
+                    : "Needs 24h history"
             }
             tone={
               insights.trend === "up"
@@ -380,8 +412,8 @@ export function ItemDetail({
             }
             hint={
               insights.volatilityPct != null
-                ? "Typical bounce on chart · compare to edge"
-                : "Loads with price history"
+                ? "Typical ~24h bounce · compare to edge"
+                : "Loads with 24h history"
             }
             why={g("edge")}
             size="secondary"

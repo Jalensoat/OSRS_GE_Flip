@@ -52,15 +52,15 @@ export const KEY_DECISION_METRICS: MetricGuide[] = [
   {
     id: "trend",
     title: "Price direction",
-    short: "Sideways, climbing, or falling over the chart window.",
-    why: "“Buy the dip” fails when the whole market is sliding.",
+    short: "Sideways, climbing, or falling over a fixed ~24h window (not the chart lookback you click).",
+    why: "“Buy the dip” fails when the whole market is sliding. Signals stay on the item; the chart is only for zooming detail.",
     howToRead: "Sideways + profit = classic flip. Falling = be careful. Climbing = don’t fight it blindly.",
   },
   {
     id: "edge",
     title: "Margin vs wobble",
-    short: "Is your profit bigger than normal price bounce?",
-    why: "If the chart jumps more than your profit, one bad move can erase the flip.",
+    short: "Is your profit bigger than typical ~24h price bounce? Independent of which chart range you open.",
+    why: "If prices usually bounce more than your profit, one bad move can erase the flip. Chart 6h/7d is for inspection only.",
     howToRead: "Strong = margin bigger than wobble. Weak = noise can wipe you out.",
   },
   {
