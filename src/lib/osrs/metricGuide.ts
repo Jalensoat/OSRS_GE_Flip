@@ -26,7 +26,7 @@ export const KEY_DECISION_METRICS: MetricGuide[] = [
       "Same-day flip edge after tax. The big number uses hour averages (like the main table). Last GE prints can look worse — that’s “instant edge,” not the table model.",
     why: "Tax is 2% on the sell (capped at 5m GP). Instant last trades can be red while average-based flips (the list) stay green — sit offers instead of forcing instants.",
     howToRead:
-      "Green flip profit + OK fill = classic same-day play. Red instant edge alone ≠ skip if model is green. Also check Hold / turnaround for dip-buys.",
+      "Green flip profit + OK fill = classic same-day play. Red instant edge alone ≠ skip if model is green — sit offers, don’t force instants.",
   },
   {
     id: "regime",

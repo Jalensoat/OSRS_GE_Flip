@@ -115,7 +115,7 @@ export type ItemInsights = {
   /** Spike: last print vs 1h avg */
   spikeVsAvg: boolean;
   spikeDetail: string | null;
-  /** 0–100 fill realism (both legs + limit + bankroll) */
+  /** 0–100 fill realism — catalog-only (regime, freshness, min-side vol, imbalance, spike vs 1h) */
   fillScore: number;
   fillDetail: string;
   /** Flip model (if bankroll) */
@@ -373,7 +373,7 @@ export function computeItemInsights(
   } else if (modelMargin != null && modelMargin > 0 && fillScore >= 45) {
     holdStyle = "quick_flip";
     holdThesis =
-      "Quick flip is optimal — no better dip/momentum story than sitting the same-day plan. Use the Quick flip sits; stats on both panels match on purpose.";
+      "Same-day sit flip looks best on public data — use reliable avg sits, not a multi-day hold story.";
   } else if (chartDown && vsHourAvgPct != null && vsHourAvgPct < 0) {
     holdStyle = "avoid";
     holdThesis =
@@ -659,18 +659,12 @@ export function computeItemInsights(
         source: "reference",
       };
     }
-    // quick_flip / mixed → tell user same-day is best (don't re-shout identical sits)
+    // Legacy holdPlan kept for API stability; UI no longer renders it
     if (quickPlan) {
       return {
         ...quickPlan,
-        label:
-          holdStyle === "quick_flip"
-            ? "Quick flip is optimal"
-            : "Quick flip is the best default",
-        hint:
-          holdStyle === "quick_flip"
-            ? "Both panels show the same stats. Action lives in Quick flip · reliable sits — no separate longer entry."
-            : "No strong dip/momentum story — prefer Quick flip reliable sits (or wait).",
+        label: "Same-day sits",
+        hint: "Use reliable avg fills on the main decision strip.",
         mirrorsQuickPlan: true,
       };
     }
@@ -722,12 +716,12 @@ export function computeItemInsights(
         guideId: "spike",
       };
     }
-    // 4) Near fair — same-day flip is the best option
+    // 4) Near fair — show model edge magnitude (UI no longer dual-panel)
     if (modelMargin != null && modelMargin > 0) {
       return {
-        label: "Quick flip is optimal",
+        label: "Model edge",
         value: formatGp(modelMargin),
-        hint: "Same-day edge after tax · no separate longer plan beats this",
+        hint: "After-tax sit edge from averages · matches main table",
         tone: "gain",
         standout: fillScore >= 50,
         guideId: "netSpread",

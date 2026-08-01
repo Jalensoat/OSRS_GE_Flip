@@ -28,13 +28,15 @@ Deep dive: `docs/research/` (10 lanes, waves of 2) + `docs/research/HIDDEN_FACTO
 
 ## Full-page zones (space-efficient)
 
-1. **Header** — icon, name, badges (members, limit, trust, fill score), close  
-2. **Decision strip** — 6 compact minis: net spread, fill score, GP/h, qty, volume, bottleneck  
-3. **Risk chips** — regime, trend, freshness, imbalance, spike, edge vs vol, 5m pace  
-4. **What to check** — 2–5 contextual bullets  
-5. **Hero chart** — majority of viewport height on full page  
-6. **Dense table** — exact prices, tax, avgs, ages (not large Stat cards)  
-7. **Actions** — Watch + Wiki  
+1. **Header** — icon, name, badges (members, limit, trust), close  
+2. **Decision strip (full width)** — flip profit, fill score, GP/h, bottleneck, vs hour avg, 24h mid move, context edge, price wobble; plus reliable sit buy→sell plan  
+3. **Last GE prints** — typing aids (may disagree with model sits)  
+4. **Risk chips** — regime, trend, freshness, imbalance, spike, edge vs vol, 5m pace  
+5. **Hero chart** — lookback is zoom only; Quick signals use fixed 24h  
+6. **What to check** + **More detail** — dense numbers (tax, avgs, ages, stack)  
+7. **Actions** — Watch + Wiki · sticky plan footer on PC  
+
+**Not in product:** dual “longer hold” panel or “quick flip is optimal” badge — one decision strip only.  
 
 ## User playbook (short)
 
