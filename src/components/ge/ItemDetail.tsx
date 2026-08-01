@@ -297,6 +297,7 @@ export function ItemDetail({
             plan={insights.quickPlan}
             why={g("quickPlan")}
             tone={flipProfitGp != null && flipProfitGp > 0 ? "gain" : undefined}
+            emphasizeChartFloor
           />
         )}
         {modelDisagreesInstant && (
@@ -428,8 +429,9 @@ export function ItemDetail({
                 ? "warn"
                 : insights.holdStyle === "dip_buy" || insights.holdStyle === "momentum"
                   ? "sky"
-                  : "gain"
+                  : undefined
             }
+            compact={insights.holdPlan.mirrorsQuickPlan}
           />
         )}
         <p
@@ -893,14 +895,54 @@ function PricePlanBar({
   plan,
   why,
   tone,
+  emphasizeChartFloor,
+  compact,
 }: {
-  plan: { buy: number; sell: number; label: string; hint: string };
+  plan: {
+    buy: number;
+    sell: number;
+    label: string;
+    hint: string;
+    whyNotChartLow?: string;
+    chartLow?: number | null;
+    chartHigh?: number | null;
+    source?: string;
+    mirrorsQuickPlan?: boolean;
+  };
   why?: { title: string; short: string; why: string; howToRead: string };
   tone?: "gain" | "warn" | "sky";
+  /** Show chart-floor vs sit-buy callout (quick flip) */
+  emphasizeChartFloor?: boolean;
+  /** Hold mirror of quick plan — don’t re-shout the same big numbers */
+  compact?: boolean;
 }) {
   const title = why
-    ? `${why.title}\n\n${why.short}\n\nWhy: ${why.why}\n\nHow to read: ${why.howToRead}\n\n${plan.hint}`
+    ? `${why.title}\n\n${why.short}\n\nWhy: ${why.why}\n\nHow to read: ${why.howToRead}\n\n${plan.hint}${
+        plan.whyNotChartLow ? `\n\n${plan.whyNotChartLow}` : ""
+      }`
     : plan.hint;
+
+  if (compact || plan.mirrorsQuickPlan) {
+    return (
+      <div
+        title={title}
+        className="mt-2.5 cursor-help rounded-lg border border-border/80 bg-surface/30 px-3 py-2"
+      >
+        <p className="text-[11px] leading-snug text-muted">
+          <span className="font-medium text-fg">{plan.label}</span>
+          {" · "}
+          {plan.hint}
+        </p>
+      </div>
+    );
+  }
+
+  const chartCheaper =
+    emphasizeChartFloor &&
+    plan.chartLow != null &&
+    plan.chartLow > 0 &&
+    plan.chartLow < plan.buy;
+
   return (
     <div
       title={title}
@@ -923,9 +965,23 @@ function PricePlanBar({
         <span className="text-lg font-semibold tabular tracking-tight text-fg sm:text-xl">
           {formatGp(plan.sell)}
         </span>
-        <span className="text-[11px] text-muted">buy · sell</span>
+        <span className="text-[11px] text-muted">sit buy · sit sell</span>
       </div>
       <p className="mt-0.5 text-[11px] leading-snug text-muted">{plan.hint}</p>
+      {chartCheaper && (
+        <p className="mt-1.5 rounded-md border border-border/60 bg-bg/40 px-2 py-1.5 text-[11px] leading-snug text-muted">
+          <span className="font-medium text-fg">Not the chart floor. </span>
+          24h chart saw ~{formatGp(plan.chartLow)} — often a thin dump you won’t fill if you sit
+          there. Green flip profit / GP/h assumes fills near{" "}
+          <span className="tabular text-fg">{formatGp(plan.buy)}</span>
+          {" → "}
+          <span className="tabular text-fg">{formatGp(plan.sell)}</span>
+          {plan.source ? ` (${plan.source})` : ""}.
+        </p>
+      )}
+      {!chartCheaper && plan.whyNotChartLow && (
+        <p className="mt-1 text-[11px] leading-snug text-subtle">{plan.whyNotChartLow}</p>
+      )}
     </div>
   );
 }

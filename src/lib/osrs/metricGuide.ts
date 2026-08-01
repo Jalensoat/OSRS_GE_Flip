@@ -97,18 +97,21 @@ export const KEY_DECISION_METRICS: MetricGuide[] = [
   },
   {
     id: "quickPlan",
-    title: "Sit buy → sell (quick flip)",
-    short: "Recommended GE offer prices for a same-day flip — usually hour averages, like the main table.",
-    why: "Typing sit offers at model prices is how Safe flips work. Last prints can disagree; still re-check live offers in-game.",
-    howToRead: "Buy at or under the sit-buy · sell at or over the sit-sell · leave both sides up.",
+    title: "Reliable sits (avg fills)",
+    short:
+      "Where the GE has been clearing lately (1h/5m averages) — not the lowest spike on the 24h chart.",
+    why: "Chart lows are often thin dumps that you cannot sit and fill. Same-day GP/h assumes both legs complete near average clear prices. Sitting at the chart floor can mean stuck GP.",
+    howToRead:
+      "Type sit-buy / sit-sell and leave them. If chart low ≪ sit-buy, that’s normal — patient undercuts are optional and slower, and are not what the green GP/h assumes.",
   },
   {
     id: "holdPlan",
     title: "Hold entry → target",
-    short: "Suggested entry and exit levels for a longer play (dip reclaim, momentum, or fair reference).",
-    why: "Holds need a plan too — not just “buy low.” Targets are sketches; always verify the GE book.",
+    short:
+      "Only different from Quick flip when a real dip/momentum story exists. “Same as Quick flip” means do not hunt the chart floor for a multi-day hold.",
+    why: "Same buy/sell on both panels used to look broken — for same-day items it is intentional: there is no separate long plan.",
     howToRead:
-      "Dip plan = buy under hour · target hour mid. Momentum = careful entry · higher exit. Fair reference on “skip” = context only.",
+      "Dip plan uses a deeper entry than reliable sits. Momentum trails higher. Avoid = reference only. Mirror of Quick flip = use that plan.",
   },
   {
     id: "holdStyle",

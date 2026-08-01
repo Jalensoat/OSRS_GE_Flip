@@ -22,10 +22,21 @@ export type HoldStyle = "quick_flip" | "dip_buy" | "momentum" | "mixed" | "avoid
 export type PricePlan = {
   buy: number;
   sell: number;
-  /** Short label e.g. "Sit both sides (model)" */
+  /** Short label e.g. "Reliable sits (avg fills)" */
   label: string;
   /** One-line how to use */
   hint: string;
+  /**
+   * Why buy isn’t the chart floor (critical for GE).
+   * Chart lows are often thin dumps — sits use where volume actually cleared.
+   */
+  whyNotChartLow?: string;
+  /** Lowest mid/low seen on the fixed signal window (context only) */
+  chartLow?: number | null;
+  chartHigh?: number | null;
+  source?: string;
+  /** When true, UI can collapse “same as quick flip” instead of duplicating */
+  mirrorsQuickPlan?: boolean;
 };
 
 /**
@@ -546,6 +557,22 @@ export function computeItemInsights(
     );
   }
 
+  // Extremes from fixed signal history (24h) — context only, not sit targets
+  let seriesLow: number | null = null;
+  let seriesHigh: number | null = null;
+  for (const p of history) {
+    const lo = p.avgLowPrice ?? null;
+    const hi = p.avgHighPrice ?? null;
+    if (lo != null && lo > 0) {
+      seriesLow = seriesLow == null ? lo : Math.min(seriesLow, lo);
+    }
+    if (hi != null && hi > 0) {
+      seriesHigh = seriesHigh == null ? hi : Math.max(seriesHigh, hi);
+    }
+  }
+  if (seriesLow != null) seriesLow = Math.round(seriesLow);
+  if (seriesHigh != null) seriesHigh = Math.round(seriesHigh);
+
   // ── Price plans (what to type in the GE) ──────────────────────────
   const quickPlan: PricePlan | null = (() => {
     const qBuy = flip?.buyPrice ?? modelBuy ?? (buy != null ? buy : null);
@@ -555,15 +582,25 @@ export function computeItemInsights(
       flip != null
         ? flip.priceSource === "last_trade"
           ? "last prints (hot)"
-          : "model averages"
+          : "1h/5m average clears"
         : model != null
-          ? "hour averages"
+          ? "1h/5m average clears"
           : "last prints";
+
+    const chartLower =
+      seriesLow != null && seriesLow < qBuy
+        ? `24h chart printed as low as ${seriesLow.toLocaleString()} gp — that is often a thin dump, not a level you can sit and fill. GP/h assumes fills near these average sits, not the chart floor.`
+        : `These are where both sides have been clearing recently (${src}), not “best price on the chart.”`;
+
     return {
       buy: qBuy,
       sell: qSell,
-      label: "Sit buy → sell",
-      hint: `Type these in the GE · ${src}. Leave offers; don’t force instants unless hot mode.`,
+      label: "Reliable sits (avg fills)",
+      hint: `Leave offers at these levels · ${src}. Don’t force instants unless Hot mode.`,
+      whyNotChartLow: chartLower,
+      chartLow: seriesLow,
+      chartHigh: seriesHigh,
+      source: src,
     };
   })();
 
@@ -571,7 +608,8 @@ export function computeItemInsights(
     const avgHigh = item.avgHigh1h;
     const avgLow = item.avgLow1h;
     if (holdStyle === "dip_buy") {
-      const hBuy = buy ?? modelBuy ?? avgLow;
+      // Prefer actual recent series low when available for patient entry
+      const hBuy = seriesLow ?? buy ?? modelBuy ?? avgLow;
       const hSell =
         avgMid != null
           ? Math.round(avgMid)
@@ -581,8 +619,15 @@ export function computeItemInsights(
       return {
         buy: Math.round(hBuy),
         sell: sellAdj,
-        label: "Dip entry → hour target",
-        hint: "Buy near the dip · target exit around the hour middle (not guaranteed).",
+        label: "Patient dip → hour mid target",
+        hint: "Different from Quick flip sits — lower entry, slower fill, hold risk if it never reclaims.",
+        whyNotChartLow:
+          quickPlan && hBuy < quickPlan.buy
+            ? `Entry uses a deeper level (~${Math.round(hBuy).toLocaleString()}) than reliable sits (${quickPlan.buy.toLocaleString()}). Expect slower fills; size small.`
+            : "Dip plans chase a better entry; they are not the same as same-day average sits.",
+        chartLow: seriesLow,
+        chartHigh: seriesHigh,
+        source: "dip / hour mid",
       };
     }
     if (holdStyle === "momentum") {
@@ -596,11 +641,13 @@ export function computeItemInsights(
         buy: Math.round(hBuy),
         sell: Math.round(Math.max(hSell, hBuy + 1)),
         label: "Momentum entry → higher exit",
-        hint: "Don’t chase the top · size small; trail the sell as it climbs.",
+        hint: "Not a value dip-buy — trail sells; size small.",
+        chartLow: seriesLow,
+        chartHigh: seriesHigh,
+        source: "momentum",
       };
     }
     if (holdStyle === "avoid") {
-      // Fair reference only — not a “do this” plan
       const hBuy = modelBuy ?? buy;
       const hSell = modelSell ?? sell;
       if (hBuy == null || hSell == null || hBuy <= 0) return null;
@@ -608,21 +655,25 @@ export function computeItemInsights(
         buy: Math.round(hBuy),
         sell: Math.round(Math.max(hSell, hBuy + 1)),
         label: "Fair reference only",
-        hint: "Signal says skip or tiny size — these are context prices, not a green light.",
+        hint: "Signal says skip or tiny size — context prices, not a green light.",
+        chartLow: seriesLow,
+        chartHigh: seriesHigh,
+        source: "reference",
       };
     }
-    // quick_flip / mixed → same as flip plan when possible
+    // quick_flip / mixed → do not duplicate identical numbers; mark as mirror
     if (quickPlan) {
       return {
         ...quickPlan,
         label:
           holdStyle === "quick_flip"
-            ? "Same-day sit plan"
-            : "Default sit plan",
+            ? "Same as Quick flip sits"
+            : "Default = Quick flip sits",
         hint:
           holdStyle === "quick_flip"
-            ? "Hold panel agrees: classic sit flip. Prefer this over a multi-day hold."
-            : "No strong hold story — use same-day sit prices or wait.",
+            ? "No separate multi-day plan — this item is a same-day sit flip, not a chart-floor hunt."
+            : "No strong hold story — use the Quick flip reliable sits (or wait).",
+        mirrorsQuickPlan: true,
       };
     }
     return null;
