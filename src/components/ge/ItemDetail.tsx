@@ -171,6 +171,18 @@ export function ItemDetail({
     ? `${holdGuide.title}\n\n${insights.holdThesis}\n\nWhy: ${holdGuide.why}\n\nHow to read: ${holdGuide.howToRead}`
     : insights.holdThesis;
 
+  const he = insights.holdEdge;
+  const holdEdgeTone =
+    he.tone === "gain"
+      ? "gain"
+      : he.tone === "warn" || he.tone === "loss"
+        ? he.tone === "loss"
+          ? "loss"
+          : "warn"
+        : he.tone === "accent"
+          ? "sky"
+          : undefined;
+
   /* ── Dual horizon: short-term flip vs longer hold (primary highlights) ── */
   const heroCards = (
     <div className={cn("grid gap-3", fullPage ? "lg:grid-cols-2" : "")}>
@@ -248,6 +260,13 @@ export function ItemDetail({
             size="secondary"
           />
         </div>
+        {insights.quickPlan && (
+          <PricePlanBar
+            plan={insights.quickPlan}
+            why={g("quickPlan")}
+            tone={flipProfitGp != null && flipProfitGp > 0 ? "gain" : undefined}
+          />
+        )}
         {modelDisagreesInstant && (
           <p className="mt-2 text-[11px] leading-snug text-muted">
             Last GE prints look worse than the table model —{" "}
@@ -344,24 +363,12 @@ export function ItemDetail({
             size={fullPage ? "primary" : "sheet"}
           />
           <HeroCard
-            label="If back to hour avg"
-            value={
-              insights.recoverToAvgGp != null
-                ? formatGp(insights.recoverToAvgGp)
-                : "—"
-            }
-            hint={
-              insights.recoverToAvgGp != null
-                ? "Rough / item after tax · not guaranteed"
-                : "Only when trading under hour avg"
-            }
-            tone={
-              insights.recoverToAvgGp != null && insights.recoverToAvgGp > 0
-                ? "gain"
-                : undefined
-            }
-            standout={insights.holdStyle === "dip_buy"}
-            why={g("recoverToAvg")}
+            label={he.label}
+            value={he.value}
+            hint={he.hint}
+            tone={holdEdgeTone}
+            standout={he.standout}
+            why={g(he.guideId)}
             size="secondary"
           />
           <HeroCard
@@ -372,16 +379,27 @@ export function ItemDetail({
                 : "—"
             }
             hint={
-              insights.volatilityPct != null &&
-              insights.recoverToAvgGp != null &&
-              insights.modelMarginPct != null
-                ? "Compare to your edge"
-                : "Typical bounce on chart"
+              insights.volatilityPct != null
+                ? "Typical bounce on chart · compare to edge"
+                : "Loads with price history"
             }
             why={g("edge")}
             size="secondary"
           />
         </div>
+        {insights.holdPlan && (
+          <PricePlanBar
+            plan={insights.holdPlan}
+            why={g("holdPlan")}
+            tone={
+              insights.holdStyle === "avoid"
+                ? "warn"
+                : insights.holdStyle === "dip_buy" || insights.holdStyle === "momentum"
+                  ? "sky"
+                  : "gain"
+            }
+          />
+        )}
         <p
           className="mt-2 cursor-help text-[11px] leading-snug text-muted"
           title={holdThesisTip}
@@ -835,6 +853,47 @@ function Actions({
           Wiki
         </a>
       </Button>
+    </div>
+  );
+}
+
+function PricePlanBar({
+  plan,
+  why,
+  tone,
+}: {
+  plan: { buy: number; sell: number; label: string; hint: string };
+  why?: { title: string; short: string; why: string; howToRead: string };
+  tone?: "gain" | "warn" | "sky";
+}) {
+  const title = why
+    ? `${why.title}\n\n${why.short}\n\nWhy: ${why.why}\n\nHow to read: ${why.howToRead}\n\n${plan.hint}`
+    : plan.hint;
+  return (
+    <div
+      title={title}
+      className={cn(
+        "mt-2.5 cursor-help rounded-lg border px-3 py-2.5",
+        tone === "gain" && "border-gain/25 bg-gain/5",
+        tone === "warn" && "border-warn/30 bg-warn/5",
+        tone === "sky" && "border-accent/30 bg-accent/5",
+        !tone && "border-border/80 bg-surface/40",
+      )}
+    >
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
+        {plan.label}
+      </div>
+      <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span className="text-lg font-semibold tabular tracking-tight text-gain sm:text-xl">
+          {formatGp(plan.buy)}
+        </span>
+        <span className="text-xs text-subtle">→</span>
+        <span className="text-lg font-semibold tabular tracking-tight text-fg sm:text-xl">
+          {formatGp(plan.sell)}
+        </span>
+        <span className="text-[11px] text-muted">buy · sell</span>
+      </div>
+      <p className="mt-0.5 text-[11px] leading-snug text-muted">{plan.hint}</p>
     </div>
   );
 }

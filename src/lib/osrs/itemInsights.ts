@@ -4,7 +4,7 @@
  * volatility, mean-reversion, asymmetry). Pure functions only.
  */
 import type { CatalogItem, TimeseriesPoint } from "./api";
-import { geTax, flipMargin } from "./format";
+import { formatGp, formatPercent, geTax, flipMargin } from "./format";
 import {
   computeFlip,
   modelFlipEdge,
@@ -17,6 +17,32 @@ export type TrendLabel = "range" | "up" | "down" | "unknown";
 export type ChipTone = "gain" | "loss" | "warn" | "muted" | "accent";
 /** Suggested play style at a glance */
 export type HoldStyle = "quick_flip" | "dip_buy" | "momentum" | "mixed" | "avoid";
+
+/** Sit / target prices for a plan (type these in the GE). */
+export type PricePlan = {
+  buy: number;
+  sell: number;
+  /** Short label e.g. "Sit both sides (model)" */
+  label: string;
+  /** One-line how to use */
+  hint: string;
+};
+
+/**
+ * Always-filled hold signal — replaces sparse “if back to hour avg”.
+ * Big-picture: dip, premium, flip-instead, or chart context.
+ */
+export type HoldEdge = {
+  /** Card title */
+  label: string;
+  /** Main number as display string (already formatted for variety of units) */
+  value: string;
+  hint: string;
+  tone: ChipTone;
+  standout: boolean;
+  /** metricGuide id */
+  guideId: string;
+};
 
 export type InsightChip = {
   id: string;
@@ -48,6 +74,12 @@ export type ItemInsights = {
    * (buy near last low, sell near avg mid after tax). Speculative.
    */
   recoverToAvgGp: number | null;
+  /** Same-day sit plan (table-aligned when possible) */
+  quickPlan: PricePlan | null;
+  /** Longer-horizon entry / target plan */
+  holdPlan: PricePlan | null;
+  /** Contextual hold card (never just “—” when we have any market data) */
+  holdEdge: HoldEdge;
   holdStyle: HoldStyle;
   holdThesis: string;
   /** Seconds since last high / low print */
@@ -226,10 +258,13 @@ export function computeItemInsights(
   const lastMid = mid;
   let vsHourAvgPct: number | null = null;
   let recoverToAvgGp: number | null = null;
+  /** GP gap last mid → hour mid (before tax story) */
+  let gapToHourGp: number | null = null;
   let spikeVsAvg = false;
   let spikeDetail: string | null = null;
   if (lastMid != null && avgMid != null && avgMid > 0) {
     vsHourAvgPct = ((lastMid - avgMid) / avgMid) * 100;
+    gapToHourGp = Math.round(avgMid - lastMid);
     if (Math.abs(vsHourAvgPct) >= 4) {
       spikeVsAvg = true;
       spikeDetail =
@@ -241,7 +276,8 @@ export function computeItemInsights(
     if (buy != null && lastMid < avgMid) {
       const exit = avgMid;
       const raw = exit - geTax(exit) - buy;
-      recoverToAvgGp = raw > 0 ? Math.round(raw) : null;
+      // Keep signed value even if tax eats it (UI decides how to present)
+      recoverToAvgGp = Math.round(raw);
     }
   }
 
@@ -298,9 +334,11 @@ export function computeItemInsights(
   } else if (vsHourAvgPct != null && vsHourAvgPct <= -2 && !chartDown) {
     holdStyle = "dip_buy";
     holdThesis =
-      recoverToAvgGp != null
+      recoverToAvgGp != null && recoverToAvgGp > 0
         ? `Trading under the hour average — possible turnaround if it climbs back (~${recoverToAvgGp.toLocaleString()} gp/item rough, after tax). Higher risk than a same-day flip.`
-        : "Trading under the hour average — possible dip-buy if you accept hold risk.";
+        : gapToHourGp != null && gapToHourGp > 0
+          ? `Trading ~${Math.abs(vsHourAvgPct!).toFixed(1)}% under the hour mid (~${gapToHourGp.toLocaleString()} gp). Tax may eat a full reclaim — size small.`
+          : "Trading under the hour average — possible dip-buy if you accept hold risk.";
   } else if (vsHourAvgPct != null && vsHourAvgPct >= 1.5 && chartUp) {
     holdStyle = "momentum";
     holdThesis =
@@ -492,6 +530,174 @@ export function computeItemInsights(
     );
   }
 
+  // ── Price plans (what to type in the GE) ──────────────────────────
+  const quickPlan: PricePlan | null = (() => {
+    const qBuy = flip?.buyPrice ?? modelBuy ?? (buy != null ? buy : null);
+    const qSell = flip?.sellPrice ?? modelSell ?? (sell != null ? sell : null);
+    if (qBuy == null || qSell == null || qBuy <= 0 || qSell <= qBuy) return null;
+    const src =
+      flip != null
+        ? flip.priceSource === "last_trade"
+          ? "last prints (hot)"
+          : "model averages"
+        : model != null
+          ? "hour averages"
+          : "last prints";
+    return {
+      buy: qBuy,
+      sell: qSell,
+      label: "Sit buy → sell",
+      hint: `Type these in the GE · ${src}. Leave offers; don’t force instants unless hot mode.`,
+    };
+  })();
+
+  const holdPlan: PricePlan | null = (() => {
+    const avgHigh = item.avgHigh1h;
+    const avgLow = item.avgLow1h;
+    if (holdStyle === "dip_buy") {
+      const hBuy = buy ?? modelBuy ?? avgLow;
+      const hSell =
+        avgMid != null
+          ? Math.round(avgMid)
+          : modelSell ?? sell ?? avgHigh;
+      if (hBuy == null || hSell == null || hBuy <= 0) return null;
+      const sellAdj = Math.max(hSell, hBuy + 1);
+      return {
+        buy: Math.round(hBuy),
+        sell: sellAdj,
+        label: "Dip entry → hour target",
+        hint: "Buy near the dip · target exit around the hour middle (not guaranteed).",
+      };
+    }
+    if (holdStyle === "momentum") {
+      const hBuy = modelBuy ?? buy;
+      const hSell =
+        sell != null && avgMid != null
+          ? Math.max(sell, Math.round(avgMid * 1.01))
+          : modelSell ?? sell;
+      if (hBuy == null || hSell == null || hBuy <= 0) return null;
+      return {
+        buy: Math.round(hBuy),
+        sell: Math.round(Math.max(hSell, hBuy + 1)),
+        label: "Momentum entry → higher exit",
+        hint: "Don’t chase the top · size small; trail the sell as it climbs.",
+      };
+    }
+    if (holdStyle === "avoid") {
+      // Fair reference only — not a “do this” plan
+      const hBuy = modelBuy ?? buy;
+      const hSell = modelSell ?? sell;
+      if (hBuy == null || hSell == null || hBuy <= 0) return null;
+      return {
+        buy: Math.round(hBuy),
+        sell: Math.round(Math.max(hSell, hBuy + 1)),
+        label: "Fair reference only",
+        hint: "Signal says skip or tiny size — these are context prices, not a green light.",
+      };
+    }
+    // quick_flip / mixed → same as flip plan when possible
+    if (quickPlan) {
+      return {
+        ...quickPlan,
+        label:
+          holdStyle === "quick_flip"
+            ? "Same-day sit plan"
+            : "Default sit plan",
+        hint:
+          holdStyle === "quick_flip"
+            ? "Hold panel agrees: classic sit flip. Prefer this over a multi-day hold."
+            : "No strong hold story — use same-day sit prices or wait.",
+      };
+    }
+    return null;
+  })();
+
+  const holdEdge: HoldEdge = (() => {
+    // 1) Clear dip with positive after-tax reclaim
+    if (
+      vsHourAvgPct != null &&
+      vsHourAvgPct <= -1.5 &&
+      recoverToAvgGp != null &&
+      recoverToAvgGp > 0
+    ) {
+      return {
+        label: "Turnaround if reclaims hour",
+        value: formatGp(recoverToAvgGp),
+        hint: `${formatPercent(vsHourAvgPct)} vs hour mid · rough / item after tax`,
+        tone: "gain",
+        standout: true,
+        guideId: "recoverToAvg",
+      };
+    }
+    // 2) Under hour mid but tax eats full reclaim — still show the dip
+    if (vsHourAvgPct != null && vsHourAvgPct <= -1.5 && gapToHourGp != null) {
+      return {
+        label: "Dip vs hour mid",
+        value: formatPercent(vsHourAvgPct),
+        hint:
+          recoverToAvgGp != null && recoverToAvgGp <= 0
+            ? `${formatGp(gapToHourGp)} below mid · tax may wipe reclaim — tiny size or skip`
+            : `${formatGp(gapToHourGp)} below hour mid · hold risk`,
+        tone: "accent",
+        standout: true,
+        guideId: "recoverToAvg",
+      };
+    }
+    // 3) Trading rich vs hour
+    if (vsHourAvgPct != null && vsHourAvgPct >= 1.5) {
+      return {
+        label: "Premium vs hour mid",
+        value: formatPercent(vsHourAvgPct),
+        hint:
+          holdStyle === "momentum"
+            ? "Above fair hour level · momentum ride, not a value buy"
+            : "Paying up vs the hour · wait for a pullback or skip",
+        tone: "warn",
+        standout: true,
+        guideId: "spike",
+      };
+    }
+    // 4) Near fair — point at same-day flip edge (app’s main job)
+    if (modelMargin != null && modelMargin > 0) {
+      return {
+        label: "Prefer same-day flip",
+        value: formatGp(modelMargin),
+        hint: "Near hour fair · use the Quick flip sit plan, not a long hold",
+        tone: "gain",
+        standout: fillScore >= 50,
+        guideId: "netSpread",
+      };
+    }
+    // 5) Chart context when we have history
+    if (midChangePct != null) {
+      return {
+        label: "Chart window move",
+        value: formatPercent(midChangePct),
+        hint:
+          trend === "down"
+            ? "Falling on the chart · avoid dip-buys until it stabilizes"
+            : trend === "up"
+              ? "Climbing on the chart · flip or careful momentum only"
+              : "Sideways on the chart · best for classic sit flips",
+        tone: trend === "down" ? "warn" : trend === "up" ? "accent" : "muted",
+        standout: trend === "down",
+        guideId: "trend",
+      };
+    }
+    // 6) Fill / liquidity fallback
+    return {
+      label: fillScore < 45 ? "Fill risk first" : "Watch fills",
+      value: `${fillScore}/100`,
+      hint:
+        fillScore < 45
+          ? "Long holds stuck worse — confirm both sides in GE before any plan"
+          : "No strong dip/premium signal · decide with Quick flip + fills",
+      tone: fillScore < 45 ? "warn" : "muted",
+      standout: fillScore < 45,
+      guideId: "fillScore",
+    };
+  })();
+
   const standouts = {
     fillScore: fillScore >= 70 || fillScore < 45,
     // Instant edge: only scream when model is also bad (avoids green table / red drawer)
@@ -518,6 +724,9 @@ export function computeItemInsights(
     modelSell,
     vsHourAvgPct,
     recoverToAvgGp,
+    quickPlan,
+    holdPlan,
+    holdEdge,
     holdStyle,
     holdThesis,
     highAgeSec,

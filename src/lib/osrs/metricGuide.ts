@@ -88,12 +88,27 @@ export const KEY_DECISION_METRICS: MetricGuide[] = [
   },
   {
     id: "recoverToAvg",
-    title: "If back to hour avg",
+    title: "Hold edge / turnaround",
     short:
-      "Rough GP per item after tax if you buy near last prices and mid only climbs back to the hour average.",
-    why: "This is a turnaround sketch, not a promise. Markets can keep falling or never reclaim the hour mid.",
+      "Context for a longer play: dip size, reclaim GP, premium over the hour, or “prefer same-day flip.” Rarely empty.",
+    why: "The app’s job is real GP you can take — if there’s no dip, we push you back to the Quick flip sit plan instead of a fake hold story.",
     howToRead:
-      "Only shows when trading under the hour avg. Compare to Hold wobble — if bounce is bigger than this edge, easy to lose. Always re-check in the GE.",
+      "Green reclaim GP = possible turnaround. −% dip with tax warning = careful. +% premium = don’t chase. “Prefer same-day flip” = use sit buy/sell, not a multi-day hold.",
+  },
+  {
+    id: "quickPlan",
+    title: "Sit buy → sell (quick flip)",
+    short: "Recommended GE offer prices for a same-day flip — usually hour averages, like the main table.",
+    why: "Typing sit offers at model prices is how Safe flips work. Last prints can disagree; still re-check live offers in-game.",
+    howToRead: "Buy at or under the sit-buy · sell at or over the sit-sell · leave both sides up.",
+  },
+  {
+    id: "holdPlan",
+    title: "Hold entry → target",
+    short: "Suggested entry and exit levels for a longer play (dip reclaim, momentum, or fair reference).",
+    why: "Holds need a plan too — not just “buy low.” Targets are sketches; always verify the GE book.",
+    howToRead:
+      "Dip plan = buy under hour · target hour mid. Momentum = careful entry · higher exit. Fair reference on “skip” = context only.",
   },
   {
     id: "holdStyle",
