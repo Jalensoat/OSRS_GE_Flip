@@ -88,12 +88,12 @@ export const KEY_DECISION_METRICS: MetricGuide[] = [
   },
   {
     id: "recoverToAvg",
-    title: "Hold edge / turnaround",
+    title: "Context edge",
     short:
-      "Context for a longer play: dip size, reclaim GP, premium over the hour, or “prefer same-day flip.” Rarely empty.",
-    why: "The app’s job is real GP you can take — if there’s no dip, we push you back to the Quick flip sit plan instead of a fake hold story.",
+      "Dip size, reclaim GP, premium vs hour mid, or model edge magnitude — context beside the main flip profit card.",
+    why: "Shows if last prices are cheap/rich vs the hour without inventing a second investment plan.",
     howToRead:
-      "Green reclaim GP = possible turnaround. −% dip with tax warning = careful. +% premium = don’t chase. “Prefer same-day flip” = use sit buy/sell, not a multi-day hold.",
+      "Green reclaim GP = possible bounce to hour mid. −% dip with tax warning = careful. +% premium = don’t chase. Model edge = same-day after-tax sit profit.",
   },
   {
     id: "quickPlan",
@@ -103,24 +103,6 @@ export const KEY_DECISION_METRICS: MetricGuide[] = [
     why: "Chart lows are often thin dumps that you cannot sit and fill. Same-day GP/h assumes both legs complete near average clear prices. Sitting at the chart floor can mean stuck GP.",
     howToRead:
       "Type sit-buy / sit-sell and leave them. If chart low ≪ sit-buy, that’s normal — patient undercuts are optional and slower, and are not what the green GP/h assumes.",
-  },
-  {
-    id: "holdPlan",
-    title: "Longer option plan",
-    short:
-      "Distinct entry/target when dip or momentum is real. If it says “Quick flip is optimal,” use the left plan — both panels intentionally share the same stats.",
-    why: "Duplicate sits looked broken. When same-day wins, we say so instead of inventing a fake second plan.",
-    howToRead:
-      "Dip = deeper entry than reliable sits. Momentum = trail higher. Avoid = context only. “Quick flip is optimal” = act on Quick flip sits.",
-  },
-  {
-    id: "holdStyle",
-    title: "Play style",
-    short:
-      "Best play for this item: same-day flip, dip/turnaround, momentum, mixed, or skip. Stats appear on both panels; the plan may differ.",
-    why: "Quick flip and a patient dip are different risks. When they aren’t, both panels agree: quick flip is optimal.",
-    howToRead:
-      "Same-day / Quick flip is optimal = use reliable sits. Dip = slower better entry. Momentum = don’t fade. Skip = tiny size or pass.",
   },
   {
     id: "pace",
