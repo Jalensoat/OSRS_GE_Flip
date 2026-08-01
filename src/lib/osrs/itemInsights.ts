@@ -373,9 +373,7 @@ export function computeItemInsights(
   } else if (modelMargin != null && modelMargin > 0 && fillScore >= 45) {
     holdStyle = "quick_flip";
     holdThesis =
-      netSpread != null && netSpread <= 0
-        ? "Same-day flip looks fine on average prices (like the main table). Last prints look worse — sit offers, don’t force instant buy/sell."
-        : "Same-day flip: sit both sides using model prices. Main table ranking matches this story.";
+      "Quick flip is optimal — no better dip/momentum story than sitting the same-day plan. Use the Quick flip sits; stats on both panels match on purpose.";
   } else if (chartDown && vsHourAvgPct != null && vsHourAvgPct < 0) {
     holdStyle = "avoid";
     holdThesis =
@@ -661,18 +659,18 @@ export function computeItemInsights(
         source: "reference",
       };
     }
-    // quick_flip / mixed → do not duplicate identical numbers; mark as mirror
+    // quick_flip / mixed → tell user same-day is best (don't re-shout identical sits)
     if (quickPlan) {
       return {
         ...quickPlan,
         label:
           holdStyle === "quick_flip"
-            ? "Same as Quick flip sits"
-            : "Default = Quick flip sits",
+            ? "Quick flip is optimal"
+            : "Quick flip is the best default",
         hint:
           holdStyle === "quick_flip"
-            ? "No separate multi-day plan — this item is a same-day sit flip, not a chart-floor hunt."
-            : "No strong hold story — use the Quick flip reliable sits (or wait).",
+            ? "Both panels show the same stats. Action lives in Quick flip · reliable sits — no separate longer entry."
+            : "No strong dip/momentum story — prefer Quick flip reliable sits (or wait).",
         mirrorsQuickPlan: true,
       };
     }
@@ -724,12 +722,12 @@ export function computeItemInsights(
         guideId: "spike",
       };
     }
-    // 4) Near fair — point at same-day flip edge (app’s main job)
+    // 4) Near fair — same-day flip is the best option
     if (modelMargin != null && modelMargin > 0) {
       return {
-        label: "Prefer same-day flip",
+        label: "Quick flip is optimal",
         value: formatGp(modelMargin),
-        hint: "Near hour fair · use the Quick flip sit plan, not a long hold",
+        hint: "Same-day edge after tax · no separate longer plan beats this",
         tone: "gain",
         standout: fillScore >= 50,
         guideId: "netSpread",

@@ -106,21 +106,21 @@ export const KEY_DECISION_METRICS: MetricGuide[] = [
   },
   {
     id: "holdPlan",
-    title: "Hold entry → target",
+    title: "Longer option plan",
     short:
-      "Only different from Quick flip when a real dip/momentum story exists. “Same as Quick flip” means do not hunt the chart floor for a multi-day hold.",
-    why: "Same buy/sell on both panels used to look broken — for same-day items it is intentional: there is no separate long plan.",
+      "Distinct entry/target when dip or momentum is real. If it says “Quick flip is optimal,” use the left plan — both panels intentionally share the same stats.",
+    why: "Duplicate sits looked broken. When same-day wins, we say so instead of inventing a fake second plan.",
     howToRead:
-      "Dip plan uses a deeper entry than reliable sits. Momentum trails higher. Avoid = reference only. Mirror of Quick flip = use that plan.",
+      "Dip = deeper entry than reliable sits. Momentum = trail higher. Avoid = context only. “Quick flip is optimal” = act on Quick flip sits.",
   },
   {
     id: "holdStyle",
-    title: "Hold / turnaround style",
+    title: "Play style",
     short:
-      "Suggested longer play: same-day flip, dip-buy, momentum hold, mixed, or skip — not the same as instant GE edge.",
-    why: "Quick flip and multi-hour holds need different risk. Sitting a classic flip is safer than catching a knife “for the rebound.”",
+      "Best play for this item: same-day flip, dip/turnaround, momentum, mixed, or skip. Stats appear on both panels; the plan may differ.",
+    why: "Quick flip and a patient dip are different risks. When they aren’t, both panels agree: quick flip is optimal.",
     howToRead:
-      "Same-day flip = table model story. Dip / turnaround = under hour avg. Momentum = riding a climb. Skip = weak edges or falling hard.",
+      "Same-day / Quick flip is optimal = use reliable sits. Dip = slower better entry. Momentum = don’t fade. Skip = tiny size or pass.",
   },
   {
     id: "pace",
