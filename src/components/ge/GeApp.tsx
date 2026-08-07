@@ -9,6 +9,7 @@ import {
   Coins,
   LineChart,
   Zap,
+  Sparkles,
 } from "lucide-react";
 import { fetchCatalog, type CatalogItem } from "@/lib/osrs/api";
 import { useWatchlist } from "@/lib/osrs/watchlist";
@@ -35,6 +36,7 @@ import { ItemDetail } from "./ItemDetail";
 import { CapitalBar } from "./CapitalBar";
 import { FlipBoard } from "./FlipBoard";
 import { InvestBoard } from "./InvestBoard";
+import { HighAlchBoard } from "./HighAlchBoard";
 import { AppLogo } from "./AppLogo";
 import { ThemeButton, ThemePicker } from "./ThemePicker";
 import { ListFilters } from "./ListFilters";
@@ -44,7 +46,7 @@ import { FlipGuideButton } from "./FlipGuide";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/osrs/format";
 
-type Tab = "flips" | "hot" | "invest" | "watch" | "volume" | "search";
+type Tab = "flips" | "hot" | "invest" | "alch" | "watch" | "volume" | "search";
 
 const NAV: {
   id: Exclude<Tab, "search">;
@@ -54,6 +56,7 @@ const NAV: {
 }[] = [
   { id: "flips", label: "Best", desktopLabel: "Best flips", icon: Coins },
   { id: "hot", label: "Hot", desktopLabel: "Hot flips", icon: Zap },
+  { id: "alch", label: "Alch", desktopLabel: "High alch", icon: Sparkles },
   { id: "invest", label: "Invest", desktopLabel: "Investments", icon: LineChart },
   { id: "watch", label: "Watch", desktopLabel: "Watchlist", icon: Star },
   { id: "volume", label: "Volume", desktopLabel: "Hot volume", icon: Flame },
@@ -224,6 +227,7 @@ export function GeApp() {
 
   const showItemList = tab === "watch" || tab === "volume";
   const showFlipBoard = tab === "flips" || tab === "hot";
+  const showAlchBoard = tab === "alch";
   const activeNav = tab === "search" ? null : tab;
   // List-first: keep filters collapsed by default so the table gets the page
   const filtersDefaultOpen = false;
@@ -384,6 +388,12 @@ export function GeApp() {
                   mode={flipMode}
                 />
               </>
+            ) : showAlchBoard ? (
+              <HighAlchBoard
+                items={items}
+                selectedId={activeId}
+                onSelect={onSelectId}
+              />
             ) : tab === "invest" ? (
               <InvestBoard
                 items={items}
