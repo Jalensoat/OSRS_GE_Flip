@@ -118,3 +118,20 @@ Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
 | Starting GP | Bankroll-aware qty / bottleneck |
 
 Live prices: `https://prices.runescape.wiki/api/v1/osrs` via `src/lib/osrs/api.ts`.
+
+## Design connections (Director → UI)
+
+The stakeholder installed Cursor plugins / MCP connections. **UI Team Lead and bench must use the ready design tools** when showing option cards. Isolated windows will not “see” the install unless you open the tools.
+
+| Connection | Status | UI use |
+|------------|--------|--------|
+| **Tldraw** | Ready | Live canvas for PC + mobile option layouts. `search` the Editor API, then `exec` JS on a canvas. Examples only — not the shipped app. |
+| **GitHub** | Ready | PRs, files, review. |
+| **Sonatype** | Ready | Dependency trust/license — not chrome. |
+| **Magic Patterns** | Installed, needs auth | UI pattern / mock generation once tools appear. |
+| **Canva** | Installed, needs auth | Asset boards once tools appear. |
+| **Vercel** | Installed, needs auth | Production deploy once tools appear. Platform still owns `npm run deploy`. |
+| Linear, Supabase, Webflow, Wix, Sanity, Aleph, Google Calendar, Harness, Profound, Subtext | Installed, needs auth | Not UI-primary. Skip unless a handoff says so. |
+| GitLab, Paper, Tierzero | Discovery error | Skip. |
+
+**Do not** block a redesign on a `needsAuth` server. **Do not** ask the stakeholder to authenticate unless a specific tool is the only way to finish. Discover tools with the MCP catalog before calling them. Visual corpus still comes first (`docs/references/visual-corpus/`).

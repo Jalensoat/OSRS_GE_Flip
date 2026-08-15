@@ -1,0 +1,26 @@
+---
+description: Stakeholder-installed design plugins / MCP — UI team must use ready tools
+globs: src/components/ge/**,src/styles.css,src/lib/theme.ts,.cursor/agents/ui-*.md
+alwaysApply: false
+---
+
+# Design connections
+
+The stakeholder installed Cursor plugins and MCP connections. Isolated UI windows will not notice unless you open the tools.
+
+**Use now (ready):**
+
+- **Tldraw** — live canvas for PC + mobile option layouts. Discover Editor methods with `search`, then `exec` JS. Examples only; the React PWA is the product.
+- **GitHub** — repo / PRs.
+
+**Installed, tools hidden until auth (do not block; do not ask the user to log in unless that tool is the only way to finish):**
+
+- **Magic Patterns** — UI patterns / mocks
+- **Canva** — asset boards
+- **Vercel** — production (Platform still runs `npm run deploy`)
+
+**Skip unless a handoff says so:** Linear, Supabase, Webflow, Wix, Sanity, Aleph, Google Calendar, Harness, Profound, Subtext, Sonatype (deps, not chrome).
+
+**Broken discovery:** GitLab, Paper, Tierzero.
+
+Visual corpus (`docs/references/visual-corpus/`) is still required before redesign. Full table: `docs/TEAM_HARNESS.md`.
