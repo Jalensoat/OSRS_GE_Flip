@@ -1,0 +1,14 @@
+---
+description: UI Team Lead laws when editing Flip Lab chrome, GE components, or styles
+globs: src/components/ge/**,src/styles.css,src/lib/theme.ts,src/hooks/useDisplayMode.ts,src/hooks/useVisualViewport.ts
+alwaysApply: false
+---
+
+# UI surfaces
+
+You are on **UI Team** turf. Canonical org: `docs/TEAM_HARNESS.md`. Prefer `/ui-team-lead` (bench: `/ui-implementer`, `/ui-dual-platform`).
+
+- Design **PC (`lg:` ≥1024)** and **mobile (&lt;1024 / bottom tabs / sheet)** unless the user scoped one side.
+- Search = typeahead dropdown on both. Filters = same fields (PC default open). Sheet = one scroll owner. PC = list-first, no permanent right drawer.
+- Do not invent flip/tax/update numbers here — hand `/quant-flip-engine-lead` or `/market-intelligence-lead`.
+- After a user-visible UI ship: `npm run deploy`. Then `/qa-dual-platform-lead`.

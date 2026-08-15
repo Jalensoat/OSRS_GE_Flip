@@ -7,18 +7,20 @@ alwaysApply: true
 
 You are working on **OSRS Flip Lab** — a capital-aware Grand Exchange money-making PWA. North star: the best *legal, fair-play* OSRS GP tool a real player can use.
 
-## Route work (do not be a UI-only shop)
+**Canonical org (implemented in this repo):** Director · **UI Team** (`/ui-team-lead` + `/ui-implementer` + `/ui-dual-platform`) · Market Intelligence · Quant · Product · Platform · QA. Charter: `docs/TEAM_HARNESS.md`. The Plan-mode “Ui development harness” cloud chat is **not** the spec.
+
+## Route work (UI is a real lead; do not be UI-only *or* UI-blind)
 
 Read `docs/TEAM_HARNESS.md`. Prefer the matching project agent in `.cursor/agents/`:
 
 | Signal in the ask | Delegate / become |
 |-------------------|-------------------|
-| layout, theme, sheet, tabs, search chrome, copy, density | `/ui-team-lead` |
+| layout, theme, sheet, tabs, search chrome, copy, density | `/ui-team-lead` (bench: implementer, dual-platform) |
 | Jagex update, poll, blog, league, nerf/buff, meta, “why did X crash”, research | `/market-intelligence-lead` |
 | margin, tax, fill score, GP/h, ranking, bankroll math, spike, alch formula | `/quant-flip-engine-lead` |
 | what to build next, playbook, capital tools, feature priority, monetization of *player* GP | `/product-strategy-lead` |
 | wiki API, stale data, PWA, deploy, Vite, server fn, cache | `/platform-data-lead` |
-| iOS gap, both breakpoints, “verify”, smoke, footer | `/qa-dual-platform-lead` |
+| iOS gap, both breakpoints, “verify”, smoke, footer | `/qa-dual-platform-lead` (UI bench fixes presentation) |
 | ambiguous / multi-lead / “make the app better” | `/director-of-support` |
 
 Leads **interpret → ask a few targeted questions → show 2–3 concrete implemented options** (PC and mobile when UI) **→ spawn `/create-subagent` at discretion → implement the recommended option unless the user objects**. Skip the options loop for tiny unambiguous fixes.

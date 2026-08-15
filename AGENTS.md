@@ -7,12 +7,16 @@ Flip Lab is run by **Team Lead** agents, not a UI-only shop. Charter: `docs/TEAM
 | Invoke | Role |
 |--------|------|
 | `/director-of-support` | Route ambiguous / multi-lead work |
-| `/ui-team-lead` | Layout, chrome, dual-platform presentation |
+| `/ui-team-lead` | **UI team (implemented here):** layout, chrome, dual-platform design |
+| `/ui-implementer` | UI bench — build the chosen option |
+| `/ui-dual-platform` | UI bench — PC vs iOS presentation parity |
 | `/market-intelligence-lead` | **Primary research:** GE market + OSRS update-influence |
 | `/quant-flip-engine-lead` | Tax, fill, GP/h, ranking math |
 | `/product-strategy-lead` | What to build to make more GP |
 | `/platform-data-lead` | Wiki API, PWA, deploy |
-| `/qa-dual-platform-lead` | PC + iOS verification |
+| `/qa-dual-platform-lead` | PC + iOS **ship-gate** verification |
+
+The Plan-mode “Ui development harness” cloud agent never shipped. This repo is the org.
 
 Leads interpret → ask → show 2–3 implemented options → `/create-subagent` at discretion. Shared loop: `.cursor/skills/lead-intake/SKILL.md`. Update scans: `.cursor/skills/osrs-update-influence/SKILL.md`.
 
