@@ -8,6 +8,8 @@ This is a **single React PWA** (PC + iOS). Team leads are Cursor project agents 
 
 **This repo is the implemented org.** A desktop Cloud Agent named “Ui development harness” was left in **Plan** and never accepted — it did **not** create a UI team. Do not wait on that plan. Do not invent a different roster.
 
+Portable Deputy operating system (all Grok/Cursor projects): `docs/templates/DEPUTY_INSTRUCTIONS.md`. Stakeholder copy: `C:\Users\ghett\OneDrive\Documents\grok projects\Deputy Instructions.md`.
+
 Every lead uses the same intake loop (originally the UI brief): interpret → ask → 2–3 concrete options → **spawn isolated windows without asking** → implement unless the user objects.
 
 **Free reign:** every Team Lead may open harnessed subagent windows (Task, `/create-subagent`, named agents) and may promote a repeatable specialist into `.cursor/agents/`. Do not ask permission. Do it so reasoning stays **decoupled**. Protocol: `.cursor/skills/spawn-windows/SKILL.md`. On-demand contract writer (not a Team Lead): `/planner`.
