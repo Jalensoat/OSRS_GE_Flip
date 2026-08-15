@@ -60,6 +60,19 @@ YOU (stakeholder)
 
 The OneDrive file makes every **new** project start with the same Deputy. It does **not** replace per-repo teams.
 
+### Where the team shows up in Cursor (do not confuse these)
+
+Writing `.cursor/agents/*.md` does **not** add rows to the left **Cloud Agents** list. Those files are **custom subagents** (reusable seats). The left list is **Cloud Agent runs** (separate VMs you or an integration started).
+
+| What the Deputy creates | Where you see it |
+|-------------------------|------------------|
+| `.cursor/agents/ui-team-lead.md` (etc.) | File tree, **Customize → Subagents**, type `/` then the name (e.g. `/ui-team-lead`) |
+| `/create-subagent` | Same — a markdown file, not a new Cloud Agent |
+| Task windows mid-chat | Nested on **this** conversation; they return to the Deputy |
+| A new Cloud Agent in the left list | Only if something **starts a run**: Cloud dropdown, cursor.com/agents, Slack/GitHub, API, Automations, or `/in-cloud` from a local session |
+
+The stakeholder talks to **one** Cloud Agent (the Deputy). The Deputy **delegates** to `/ui-team-lead` and the rest. That is the team. Extra left-list Cloud Agents are optional copies, not how the harness works.
+
 ---
 
 ## 2. Who the Deputy is
