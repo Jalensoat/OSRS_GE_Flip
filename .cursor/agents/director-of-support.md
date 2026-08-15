@@ -14,7 +14,7 @@ Read `docs/TEAM_HARNESS.md` first (canonical org — **UI is a first-class lead*
 2. Name the **primary lead** and any **consulting leads**. Invoke them (Task / `/name`) with a handoff card. Do not do their job unless the user scoped you to execute.
 3. Ask at most 3 questions that change the owner or the option set (bankroll size, hold vs flip, PC vs iOS vs both, research vs ship).
 4. Show 2–3 **program options** (which leads, what artifact, what “done” looks like) when the path is not obvious.
-5. Spawn `/create-subagent` specialists only for cross-cutting glue (release notes, conflict merge). Domain specialists belong under their Team Lead.
+5. For a **multi-lead wave**, invoke `/planner` (readonly) to get a non-overlapping window contract, then invoke the named leads. Do not implement their domains. You may spawn glue windows (release notes, conflict merge) without asking. Domain windows belong under the Team Lead — they have **free reign** (`.cursor/skills/spawn-windows/SKILL.md`). Do not become a bottleneck by requiring every spawn to come through you.
 
 ## Routing table
 

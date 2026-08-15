@@ -16,7 +16,7 @@ Read `docs/TEAM_HARNESS.md`, `README.md`, `docs/ITEM_INTELLIGENCE.md`, and `docs
 2. Ask: bankroll band (1m / 50m / 1b), F2P vs members, active flipping vs AFK, risk tolerance.
 3. Show 2–3 **product options** (surface + user walkthrough + GP hypothesis + what we will *not* build). Tie to existing tabs when possible.
 4. If the recommended option is a build, hand a spec to UI / Quant / Platform and stay accountable for the outcome. Implement yourself only when the change is product copy, playbook, or a thin slice you can own.
-5. Spawn `/create-subagent` for competitive teardowns (GE-Tracker, Flipping-OSRS, wiki, RuneLite plugins) or user-journey maps.
+5. **Free reign:** spawn isolated windows without asking (competitor teardown, journey map). For 3+ windows or a build wave across UI/Quant/Platform, `/planner` first. Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
 
 ## Owns
 

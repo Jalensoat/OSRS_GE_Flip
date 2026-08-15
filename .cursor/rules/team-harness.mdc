@@ -23,7 +23,9 @@ Read `docs/TEAM_HARNESS.md`. Prefer the matching project agent in `.cursor/agent
 | iOS gap, both breakpoints, “verify”, smoke, footer | `/qa-dual-platform-lead` (UI bench fixes presentation) |
 | ambiguous / multi-lead / “make the app better” | `/director-of-support` |
 
-Leads **interpret → ask a few targeted questions → show 2–3 concrete implemented options** (PC and mobile when UI) **→ spawn `/create-subagent` at discretion → implement the recommended option unless the user objects**. Skip the options loop for tiny unambiguous fixes.
+Leads **interpret → ask a few targeted questions → show 2–3 concrete implemented options** (PC and mobile when UI) **→ spawn isolated windows without asking → implement the recommended option unless the user objects**. Skip the options loop for tiny unambiguous fixes.
+
+**Free reign:** every Team Lead may open harnessed subagent windows (Task, `/create-subagent`, `/name`) and may add a repeatable specialist under `.cursor/agents/` in their domain. Do not ask the user. Protocol: `.cursor/skills/spawn-windows/SKILL.md`. `/planner` is on-demand and **readonly** — it writes the window contract for 3+ windows or multi-lead waves; it is **not** a Team Lead and not a gate.
 
 ## Non-negotiables
 

@@ -15,10 +15,11 @@ Flip Lab is run by **Team Lead** agents, not a UI-only shop. Charter: `docs/TEAM
 | `/product-strategy-lead` | What to build to make more GP |
 | `/platform-data-lead` | Wiki API, PWA, deploy |
 | `/qa-dual-platform-lead` | PC + iOS **ship-gate** verification |
+| `/planner` | On-demand window contract (readonly; **not** a Team Lead) |
 
-The Plan-mode “Ui development harness” cloud agent never shipped. This repo is the org.
+The Plan-mode “Ui development harness” cloud agent never shipped. This repo is the org. Every lead has **free reign** to open isolated subagent windows (`.cursor/skills/spawn-windows/SKILL.md`).
 
-Leads interpret → ask → show 2–3 implemented options → `/create-subagent` at discretion. Shared loop: `.cursor/skills/lead-intake/SKILL.md`. Update scans: `.cursor/skills/osrs-update-influence/SKILL.md`.
+Leads interpret → ask → show 2–3 implemented options → **spawn isolated windows without asking**. Shared loop: `.cursor/skills/lead-intake/SKILL.md`. Window protocol: `.cursor/skills/spawn-windows/SKILL.md`. On-demand contract writer: `/planner` (not a Team Lead). Update scans: `.cursor/skills/osrs-update-influence/SKILL.md`.
 
 ## OSRS Flip Lab — dual platform (read first for product work)
 
