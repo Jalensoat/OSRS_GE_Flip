@@ -40,6 +40,22 @@ Every lead uses the same intake loop (originally the UI brief): interpret → as
 
 UI is a **first-class lead**, equal to Market and Quant. Market is the **primary research** seat (GE + update-influence). QA is the **ship gate**; UI Dual-Platform is the **design/fix** bench.
 
+`/planner` is **not** in this org chart. It is a readonly specialist that writes the window contract when a lead (or Director) is about to fan out 3+ isolated windows. It does not own product.
+
+## Decoupled windows (free reign)
+
+Yes — **each Team Lead implements subagents in isolated harnessed windows as needed.** That is a standing order, not a favor.
+
+| Do | Do not |
+|----|--------|
+| Spawn Task / `/create-subagent` / `/name` without asking | Ask the user for permission to spawn |
+| Pass a full contract (windows have **no** parent chat) | Spawn “go fix UI” with no files or laws |
+| Non-overlapping write files; parent merges | Two windows editing `flip.ts` |
+| `/planner` before 3+ windows or a multi-lead wave | Add a tenth Team Lead named Planner |
+| Promote a *repeatable* specialist to `.cursor/agents/` in your domain | Invent a new org or steal another lead’s files |
+
+Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
+
 ## How to use
 
 | You want… | Invoke |
