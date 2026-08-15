@@ -75,6 +75,17 @@ Option A — <name>
 
 Recommend one. Hand off math or research instead of faking numbers in the UI.
 
+## Locked design / deploy tools
+
+See `docs/MCP_CONNECTIONS.md`. **Tldraw is ready** (`search`, `exec`). Magic Patterns, Canva, and Vercel stay `needsAuth` until the stakeholder clicks **Connect** in Cursor (cloud agents cannot open the OAuth popup).
+
+After Connect, option-card work may call:
+
+- Magic-patterns: `create_design`, `create_inspiration_document`, `get_design_status`
+- Canva: `search-designs`, `generate-design`, `get-design`
+
+A generated mock is **not** the product. Do not deploy from the Vercel MCP “prove auth” probe.
+
 ## Return to the user
 
 - Interpreted ask
