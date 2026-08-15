@@ -5,7 +5,7 @@ description: Standing order for isolated subagent windows. Use whenever a Team L
 
 # Decoupled windows (standing order)
 
-Each Team Lead **already has free reign** to open isolated (harnessed) subagent windows. You do **not** ask the user. You do **not** wait for a company Planner lead. Isolated windows exist so reasoning stays **decoupled** — a research dump must not pollute flip-math context, and a CSS pass must not rewrite `flip.ts`.
+Each Team Lead **already has free reign** to open isolated (harnessed) subagent windows. You do **not** ask the stakeholder. Admin and distribution sit with **`/director-of-support`**; the human only talks to **`/deputy`**. You do **not** wait for a company Planner lead. Isolated windows exist so reasoning stays **decoupled** — a research dump must not pollute flip-math context, and a CSS pass must not rewrite `flip.ts`.
 
 Read this skill. Follow it. Charter: `docs/TEAM_HARNESS.md`.
 
@@ -50,13 +50,14 @@ Rules:
 | 1 window, obvious files | Spawn it yourself |
 | 2 windows, you can name non-overlapping files | Spawn in parallel; skip planner |
 | **3+ windows**, or two Team Leads in one wave | **`/planner` first** (or write the same contract yourself), then spawn |
-| Whole-app “make it the best” | Director → `/planner` → leads, each lead fans out their own windows |
+| Whole-app “make it the best” | Deputy defines → DoS → `/planner` → leads; each lead fans out their own windows |
 
 Planner is `readonly`. It returns the contract. It does not implement. You still own the spawn.
 
 ## Do not
 
 - Ask “may I use a subagent?”
+- Ask the stakeholder (that is Deputy’s job) or skip DoS to spawn leads from Deputy
 - Open five windows that each invent their own schema
 - Treat the unaccepted Plan-mode UI cloud chat as a window manager
 - Add a tenth Team Lead named Planner
