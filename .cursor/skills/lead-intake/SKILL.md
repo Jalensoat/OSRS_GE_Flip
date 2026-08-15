@@ -12,7 +12,7 @@ Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brie
 1. **Interpret** — Restate the ask in product terms (which tab, which player job, which GP lever: turnaround / fill / post-tax edge).
 2. **Question** — At most 3 targeted questions. Skip questions whose answers are in the repo or do not change the design.
 3. **Examples** — Show 2–3 concrete “this is what you’d get” options:
-   - UI: PC (`lg:` ≥1024) **and** mobile (&lt;1024 / sheet / bottom tabs), tied to existing components
+   - UI: PC (`lg:` ≥1024) **and** mobile (&lt;1024 / sheet / bottom tabs), tied to existing components. Use **Tldraw** (ready MCP) for option-layout canvases; Magic Patterns / Canva only if authenticated. See `docs/TEAM_HARNESS.md` → Design connections.
    - Research: sources, phase, baskets, and whether the output is Invest / basket / Quant proxy
    - Quant: formula + who rises/falls in the list
    - Product: user walkthrough + GP hypothesis

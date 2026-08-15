@@ -12,3 +12,4 @@ You are on **UI Team** turf. Canonical org: `docs/TEAM_HARNESS.md`. Prefer `/ui-
 - Search = typeahead dropdown on both. Filters = same fields (PC default open). Sheet = one scroll owner. PC = list-first, no permanent right drawer.
 - Do not invent flip/tax/update numbers here — hand `/quant-flip-engine-lead` or `/market-intelligence-lead`.
 - After a user-visible UI ship: `npm run deploy`. Then `/qa-dual-platform-lead`.
+- Design connections: **Tldraw** is ready (canvas `search` + `exec` for PC/mobile option layouts). Magic Patterns and Canva are installed but may need auth — do not block. Visual corpus first. Canvas ≠ the product.

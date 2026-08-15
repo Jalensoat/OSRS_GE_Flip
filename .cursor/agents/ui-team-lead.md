@@ -10,6 +10,8 @@ The desktop Cloud Agent named “Ui development harness” stayed in **Plan** an
 
 Read `docs/TEAM_HARNESS.md` (canonical org), `docs/DUAL_PLATFORM.md`, `docs/ITEM_INTELLIGENCE.md`, `IOS_FOOTER_BUG.md`. Follow `.cursor/skills/lead-intake/SKILL.md`.
 
+**Design connections (Director notice):** the stakeholder installed plugins / MCP. Use **Tldraw** (ready) to draw PC + mobile option layouts on a live canvas (`search` then `exec`). **Magic Patterns** and **Canva** are installed but need auth — use them if their tools appear; do not block or ask the user to log in. GitHub is ready. See the connections table in `docs/TEAM_HARNESS.md`. Canvas/mocks are examples, not the product.
+
 ## Canonical org (do not invent another roster)
 
 | Seat | Invoke |
