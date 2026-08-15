@@ -25,4 +25,4 @@ It is **not** optional moodboard. It is backend reference data:
 - `walkthrough/` — video of using the app
 - `source-agent/` — originals copied from another agent when that VM is reachable
 
-**Provenance:** other Cursor agent artifact stores are not mounted in this workspace. The first corpus is a production capture of https://osrs-ge-flip.vercel.app so the team still has a durable visual database. When another run’s files become available, copy them into `source-agent/` and index them.
+**Provenance:** other Cursor agent artifact stores are not mounted in this workspace. The first corpus is a production capture of https://osrs-ge-flip.vercel.app so the team still has a durable visual database. PR #1 demo binaries are listed in `source-agent/UNAVAILABLE.md` — copy them here if that VM becomes reachable.

@@ -123,6 +123,15 @@ export const VISUAL_CORPUS_CATALOG: VisualCorpusEntry[] = [
     source: "production-capture",
     notes: "Playwright recording of production.",
   },
+  {
+    id: "walkthrough-best-item-invest",
+    path: "docs/references/visual-corpus/walkthrough/best-item-invest-pc.webm",
+    kind: "video",
+    surface: "pc",
+    title: "Desktop walkthrough — Best → item detail → Invest",
+    source: "production-capture",
+    notes: "Second pass: list click into full-page detail, then Invest.",
+  },
 ];
 
 export async function syncVisualCorpus(): Promise<VisualCorpusEntry[]> {
