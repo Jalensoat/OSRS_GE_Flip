@@ -29,8 +29,8 @@
 **Changes:** Density + chip columns on the board; PC filters forced open (today’s `filtersDefaultOpen = false` in `GeApp.tsx` is a law miss); sit tape on Best.
 
 **Images**
-- `/workspace/screenshots/redesigns/option-a-command-deck-pc.png`
-- `/workspace/screenshots/redesigns/option-a-command-deck-mobile.png`
+- `docs/ui/redesigns/option-a-command-deck-pc.png`
+- `docs/ui/redesigns/option-a-command-deck-mobile.png`
 - Extra: `option-a-search-dropdown-pc.png`, `option-a-search-dropdown-mobile.png`, `option-a-item-detail-pc.png`
 
 **Risk / would NOT ship**
@@ -61,8 +61,8 @@
 **Changes:** Visual system (parchment/gold), list density down, teaching copy up.
 
 **Images**
-- `/workspace/screenshots/redesigns/option-b-field-kit-pc.png`
-- `/workspace/screenshots/redesigns/option-b-field-kit-mobile.png`
+- `docs/ui/redesigns/option-b-field-kit-pc.png`
+- `docs/ui/redesigns/option-b-field-kit-mobile.png`
 - Extra: `option-b-sheet-mobile.png`
 
 **Risk / would NOT ship**
@@ -93,8 +93,8 @@
 **Changes:** Invest chrome + phase labels; calendar-first *attention*, not a new engine.
 
 **Images**
-- `/workspace/screenshots/redesigns/option-c-war-room-pc.png`
-- `/workspace/screenshots/redesigns/option-c-war-room-mobile.png`
+- `docs/ui/redesigns/option-c-war-room-pc.png`
+- `docs/ui/redesigns/option-c-war-room-mobile.png`
 
 **Risk / would NOT ship**
 - Do **not** sort Best by “update hype.”
@@ -139,15 +139,15 @@ Everyday job is still **Best/Hot sits**, not Invest. A wins GP if the extra chip
 
 ## Image index (absolute)
 
-1. `/workspace/screenshots/redesigns/option-a-command-deck-pc.png`
-2. `/workspace/screenshots/redesigns/option-a-command-deck-mobile.png`
-3. `/workspace/screenshots/redesigns/option-b-field-kit-pc.png`
-4. `/workspace/screenshots/redesigns/option-b-field-kit-mobile.png`
-5. `/workspace/screenshots/redesigns/option-c-war-room-pc.png`
-6. `/workspace/screenshots/redesigns/option-c-war-room-mobile.png`
-7. `/workspace/screenshots/redesigns/option-a-search-dropdown-pc.png`
-8. `/workspace/screenshots/redesigns/option-a-search-dropdown-mobile.png`
-9. `/workspace/screenshots/redesigns/option-a-item-detail-pc.png`
-10. `/workspace/screenshots/redesigns/option-b-sheet-mobile.png`
+1. `docs/ui/redesigns/option-a-command-deck-pc.png`
+2. `docs/ui/redesigns/option-a-command-deck-mobile.png`
+3. `docs/ui/redesigns/option-b-field-kit-pc.png`
+4. `docs/ui/redesigns/option-b-field-kit-mobile.png`
+5. `docs/ui/redesigns/option-c-war-room-pc.png`
+6. `docs/ui/redesigns/option-c-war-room-mobile.png`
+7. `docs/ui/redesigns/option-a-search-dropdown-pc.png`
+8. `docs/ui/redesigns/option-a-search-dropdown-mobile.png`
+9. `docs/ui/redesigns/option-a-item-detail-pc.png`
+10. `docs/ui/redesigns/option-b-sheet-mobile.png`
 
-HTML sources: `/workspace/screenshots/redesigns/html/`
+HTML sources: `docs/ui/redesigns/html/`
