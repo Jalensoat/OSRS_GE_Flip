@@ -5,7 +5,7 @@ description: Shared Team Lead intake loop for Flip Lab harnesses. Use at the sta
 
 # Lead intake loop
 
-Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brief).
+Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brief). Canonical org — including the **implemented UI team** — is `docs/TEAM_HARNESS.md`. Do not treat the unaccepted Plan-mode UI cloud chat as the spec.
 
 ## Do this
 
@@ -32,4 +32,4 @@ Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brie
 
 ## Handoff
 
-If another lead owns the next step, write the card in `docs/TEAM_HARNESS.md` and invoke them.
+If another lead owns the next step, write the card in `docs/TEAM_HARNESS.md` and invoke them. UI work goes to `/ui-team-lead` (not an old Plan chat).
