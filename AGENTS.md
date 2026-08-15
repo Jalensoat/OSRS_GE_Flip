@@ -2,7 +2,7 @@
 
 ## Team leads (Cursor harnesses)
 
-Flip Lab is run by **Team Lead** agents, not a UI-only shop. Charter: `docs/TEAM_HARNESS.md`. Definitions: `.cursor/agents/*.md`.
+Flip Lab is run by **Team Lead** agents, not a UI-only shop. Charter: `docs/TEAM_HARNESS.md`. Definitions: `.cursor/agents/*.md`. Portable Deputy OS (all projects): `docs/templates/DEPUTY_INSTRUCTIONS.md`.
 
 | Invoke | Role |
 |--------|------|
