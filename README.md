@@ -2,7 +2,7 @@
 
 Capital-aware Old School RuneScape Grand Exchange flip finder.
 
-**Agent team:** implemented in `.cursor/agents/` — see [`docs/TEAM_HARNESS.md`](./docs/TEAM_HARNESS.md). UI (`/ui-team-lead`) is a first-class lead; market/update research is `/market-intelligence-lead`. Leads have free reign to spawn isolated windows (`.cursor/skills/spawn-windows/SKILL.md`); `/planner` writes the contract when a wave needs it.
+**Agent team:** **Deputy** (`/deputy`) faces you; **Director of Support** (`/director-of-support`) admins the leads. See [`docs/TEAM_HARNESS.md`](./docs/TEAM_HARNESS.md). UI (`/ui-team-lead`) is a first-class lead; market/update research is `/market-intelligence-lead`. Leads have free reign to spawn isolated windows (`.cursor/skills/spawn-windows/SKILL.md`); `/planner` writes the contract when a wave needs it.
 
 Live wiki/RuneLite prices, volume-weighted “Best” vs aggressive “Hot” flips, starting GP bankroll sizing (buy limits + 1h volume + 2% GE tax), watchlist, investments (polls/news/trends), themes, and PWA install.
 

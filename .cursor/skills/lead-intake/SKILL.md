@@ -1,16 +1,16 @@
 ---
 name: lead-intake
-description: Shared Team Lead intake loop for Flip Lab harnesses. Use at the start of any UI, Market, Quant, Product, Platform, QA, or Director turn when the user made a request.
+description: Shared Team Lead intake loop for Flip Lab harnesses. Use at the start of any UI, Market, Quant, Product, Platform, QA, or Director of Support turn when DoS handed a task. Deputy faces the stakeholder; leads do not.
 ---
 
 # Lead intake loop
 
-Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brief). Canonical org — including the **implemented UI team** — is `docs/TEAM_HARNESS.md`. Do not treat the unaccepted Plan-mode UI cloud chat as the spec.
+Every Flip Lab Team Lead uses the same loop. You report to **`/director-of-support`**, not the stakeholder. Deputy (`/deputy`) is the only seat that talks to the human. Canonical org: `docs/TEAM_HARNESS.md`. Do not treat the unaccepted Plan-mode UI cloud chat as the spec.
 
 ## Do this
 
 1. **Interpret** — Restate the ask in product terms (which tab, which player job, which GP lever: turnaround / fill / post-tax edge).
-2. **Question** — At most 3 targeted questions. Skip questions whose answers are in the repo or do not change the design.
+2. **Question** — At most 3 targeted questions. Skip questions whose answers are in the repo or the DoS packet. Questions for the **stakeholder** go up to DoS → Deputy. Do not ping the human.
 3. **Examples** — Show 2–3 concrete “this is what you’d get” options:
    - UI: PC (`lg:` ≥1024) **and** mobile (&lt;1024 / sheet / bottom tabs), tied to existing components
    - Research: sources, phase, baskets, and whether the output is Invest / basket / Quant proxy
@@ -32,4 +32,4 @@ Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brie
 
 ## Handoff
 
-If another lead owns the next step, write the card in `docs/TEAM_HARNESS.md` and invoke them. UI work goes to `/ui-team-lead` (not an old Plan chat).
+If another lead owns the next step, write the card and tell **DoS**. UI work goes to `/ui-team-lead` (not an old Plan chat). Do not report to the stakeholder; DoS relays to Deputy.

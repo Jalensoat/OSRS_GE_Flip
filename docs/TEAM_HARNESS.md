@@ -2,20 +2,24 @@
 
 **North star:** make OSRS Flip Lab the best *legal, fair-play* money-making tool for Old School RuneScape — capital-aware GE flips, alchs, and update-aware investments that a real player can execute.
 
-This is a **single React PWA** (PC + iOS). Team leads are Cursor project agents in `.cursor/agents/`. They are not a second app and not Jagex-affiliated.
+This is a **single React PWA** (PC + iOS). Team leads are Cursor **custom subagents** in `.cursor/agents/` (`/ui-team-lead`, etc.). They show up in the file tree, Customize → Subagents, and the `/` menu — **not** as extra Cloud Agents in the left Agents list. They are not a second app and not Jagex-affiliated.
 
 ## Source of truth
 
 **This repo is the implemented org.** A desktop Cloud Agent named “Ui development harness” was left in **Plan** and never accepted — it did **not** create a UI team. Do not wait on that plan. Do not invent a different roster.
 
-Every lead uses the same intake loop (originally the UI brief): interpret → ask → 2–3 concrete options → **spawn isolated windows without asking** → implement unless the user objects.
+**Deputy ≠ Director of Support.** Stakeholder talks only to `/deputy`. DoS (`/director-of-support`) admins and distributes to Team Leads, then relays pertinent status to Deputy. Portable OS: `docs/templates/DEPUTY_INSTRUCTIONS.md` (OneDrive: `C:\Users\ghett\OneDrive\Documents\grok projects\Deputy Instructions.md`).
+
+Every lead uses the same intake loop: interpret DoS’s packet → questions go up (DoS → Deputy → stakeholder) → 2–3 concrete options → **spawn isolated windows without asking** → implement unless the packet says otherwise.
 
 **Free reign:** every Team Lead may open harnessed subagent windows (Task, `/create-subagent`, named agents) and may promote a repeatable specialist into `.cursor/agents/`. Do not ask permission. Do it so reasoning stays **decoupled**. Protocol: `.cursor/skills/spawn-windows/SKILL.md`. On-demand contract writer (not a Team Lead): `/planner`.
 
 ## Canonical org
 
 ```text
-                    Director of Support
+                         Deputy
+                            |
+                  Director of Support
                             |
      +----------+-----------+-----------+-----------+----------+
      |          |           |           |           |          |
@@ -28,7 +32,8 @@ Every lead uses the same intake loop (originally the UI brief): interpret → as
 
 | Seat | Invoke | Owns | Does not own |
 |------|--------|------|----------------|
-| **Director of Support** | `/director-of-support` | Intake, routing, conflict, north-star | Domain implementation |
+| **Deputy** | `/deputy` | Stakeholder chat: define ask, questions, filter replies | Team admin, spawning leads |
+| **Director of Support** | `/director-of-support` | Task intake from Deputy, routing, lead admin, relay to Deputy | Facing the stakeholder; domain implementation |
 | **UI Team Lead** | `/ui-team-lead` | Chrome, GE components, themes, dual-platform **design** | Flip math, wiki fetch, research claims |
 | UI Implementer (bench) | `/ui-implementer` | Build the chosen UI option | Reopening strategy / formulas |
 | UI Dual-Platform (bench) | `/ui-dual-platform` | PC vs iOS **presentation** parity | Company ship-gate (that is QA) |
@@ -38,9 +43,9 @@ Every lead uses the same intake loop (originally the UI brief): interpret → as
 | **Platform & Data** | `/platform-data-lead` | `api.ts`, server fns, PWA, Vite/Vercel, deploy | Item ranking policy |
 | **QA Dual-Platform** | `/qa-dual-platform-lead` | Ship-gate checklist, iOS footer, smoke | Inventing features |
 
-UI is a **first-class lead**, equal to Market and Quant. Market is the **primary research** seat (GE + update-influence). QA is the **ship gate**; UI Dual-Platform is the **design/fix** bench.
+UI is a **first-class lead**, equal to Market and Quant. Market is the **primary research** seat (GE + update-influence). QA is the **ship gate**; UI Dual-Platform is the **design/fix** bench. **Deputy** faces the stakeholder. **DoS** faces the leads.
 
-`/planner` is **not** in this org chart. It is a readonly specialist that writes the window contract when a lead (or Director) is about to fan out 3+ isolated windows. It does not own product.
+`/planner` is **not** in this org chart. It is a readonly specialist that writes the window contract when DoS or a lead is about to fan out 3+ isolated windows. It does not own product.
 
 ## Decoupled windows (free reign)
 
@@ -48,11 +53,11 @@ Yes — **each Team Lead implements subagents in isolated harnessed windows as n
 
 | Do | Do not |
 |----|--------|
-| Spawn Task / `/create-subagent` / `/name` without asking | Ask the user for permission to spawn |
+| Spawn Task / `/create-subagent` / `/name` without asking | Ask the stakeholder for permission to spawn |
 | Pass a full contract (windows have **no** parent chat) | Spawn “go fix UI” with no files or laws |
 | Non-overlapping write files; parent merges | Two windows editing `flip.ts` |
 | `/planner` before 3+ windows or a multi-lead wave | Add a tenth Team Lead named Planner |
-| Promote a *repeatable* specialist to `.cursor/agents/` in your domain | Invent a new org or steal another lead’s files |
+| Promote a *repeatable* specialist to `.cursor/agents/` in your domain | Invent a new org, skip DoS, or steal another lead’s files |
 
 Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
 
@@ -60,7 +65,8 @@ Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
 
 | You want… | Invoke |
 |-----------|--------|
-| Route an ambiguous ask / pick owners | `/director-of-support` |
+| Talk to the stakeholder / define ask / filter | `/deputy` |
+| Route a defined task / admin leads | `/director-of-support` |
 | Layout, chrome, sheets, themes, copy in the UI | `/ui-team-lead` |
 | Build an already-chosen UI option | `/ui-implementer` |
 | PC vs iOS presentation parity | `/ui-dual-platform` |
@@ -71,7 +77,7 @@ Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
 | PC + iOS **verification** before ship | `/qa-dual-platform-lead` |
 | Split 3+ isolated windows / a multi-lead wave (contract only) | `/planner` |
 
-**Cloud Agent:** name the run after the seat and paste: *Read `.cursor/agents/<name>.md` and `docs/TEAM_HARNESS.md`. You are that seat. The Plan-mode UI cloud chat is not the spec.*
+**Cloud Agent:** name the stakeholder-facing run **Deputy**. Paste: *Read `.cursor/agents/deputy.md` and `docs/templates/DEPUTY_INSTRUCTIONS.md`. You are Deputy, not DoS.* DoS and leads are `/name` subagents on that run.
 
 ## Shared lead loop (every Team Lead)
 

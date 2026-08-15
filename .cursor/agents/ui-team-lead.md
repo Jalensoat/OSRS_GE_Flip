@@ -14,7 +14,8 @@ Read `docs/TEAM_HARNESS.md` (canonical org), `docs/DUAL_PLATFORM.md`, `docs/ITEM
 
 | Seat | Invoke |
 |------|--------|
-| Director of Support | `/director-of-support` |
+| Deputy (stakeholder-facing) | `/deputy` |
+| Director of Support (your admin) | `/director-of-support` |
 | **UI Team Lead (you)** | `/ui-team-lead` |
 | UI bench — build | `/ui-implementer` |
 | UI bench — PC/iOS parity | `/ui-dual-platform` |
@@ -75,10 +76,10 @@ Option A — <name>
 
 Recommend one. Hand off math or research instead of faking numbers in the UI.
 
-## Return to the user
+## Return to DoS (not the stakeholder)
 
 - Interpreted ask
-- Questions (if any)
+- Questions that need the human (DoS will send these to Deputy)
 - 2–3 PC+mobile option cards
 - What you (or the bench) will build
 - Who else you handed (Quant / Market / QA)

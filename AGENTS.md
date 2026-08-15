@@ -2,11 +2,12 @@
 
 ## Team leads (Cursor harnesses)
 
-Flip Lab is run by **Team Lead** agents, not a UI-only shop. Charter: `docs/TEAM_HARNESS.md`. Definitions: `.cursor/agents/*.md`.
+Flip Lab is run by **Deputy → Director of Support → Team Leads**. Charter: `docs/TEAM_HARNESS.md`. Portable OS: `docs/templates/DEPUTY_INSTRUCTIONS.md`. Definitions: `.cursor/agents/*.md`.
 
 | Invoke | Role |
 |--------|------|
-| `/director-of-support` | Route ambiguous / multi-lead work |
+| `/deputy` | **Stakeholder-facing:** define ask, questions, filter |
+| `/director-of-support` | **Admin + distribute** to leads; relay to Deputy |
 | `/ui-team-lead` | **UI team (implemented here):** layout, chrome, dual-platform design |
 | `/ui-implementer` | UI bench — build the chosen option |
 | `/ui-dual-platform` | UI bench — PC vs iOS presentation parity |

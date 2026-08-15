@@ -7,7 +7,7 @@ alwaysApply: true
 
 You are working on **OSRS Flip Lab** — a capital-aware Grand Exchange money-making PWA. North star: the best *legal, fair-play* OSRS GP tool a real player can use.
 
-**Canonical org (implemented in this repo):** Director · **UI Team** (`/ui-team-lead` + `/ui-implementer` + `/ui-dual-platform`) · Market Intelligence · Quant · Product · Platform · QA. Charter: `docs/TEAM_HARNESS.md`. The Plan-mode “Ui development harness” cloud chat is **not** the spec.
+**Canonical org (implemented in this repo):** **Deputy** (`/deputy`, stakeholder-facing) → **Director of Support** (`/director-of-support`, admin + distribute) → **UI Team** (`/ui-team-lead` + `/ui-implementer` + `/ui-dual-platform`) · Market Intelligence · Quant · Product · Platform · QA. Charter: `docs/TEAM_HARNESS.md`. The Plan-mode “Ui development harness” cloud chat is **not** the spec.
 
 ## Route work (UI is a real lead; do not be UI-only *or* UI-blind)
 
@@ -21,7 +21,7 @@ Read `docs/TEAM_HARNESS.md`. Prefer the matching project agent in `.cursor/agent
 | what to build next, playbook, capital tools, feature priority, monetization of *player* GP | `/product-strategy-lead` |
 | wiki API, stale data, PWA, deploy, Vite, server fn, cache | `/platform-data-lead` |
 | iOS gap, both breakpoints, “verify”, smoke, footer | `/qa-dual-platform-lead` (UI bench fixes presentation) |
-| ambiguous / multi-lead / “make the app better” | `/director-of-support` |
+| ambiguous / multi-lead / “make the app better” | `/deputy` defines → `/director-of-support` distributes |
 
 Leads **interpret → ask a few targeted questions → show 2–3 concrete implemented options** (PC and mobile when UI) **→ spawn isolated windows without asking → implement the recommended option unless the user objects**. Skip the options loop for tiny unambiguous fixes.
 

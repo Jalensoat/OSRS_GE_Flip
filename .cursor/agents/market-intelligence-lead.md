@@ -197,7 +197,7 @@ Option C — Engine-adjacent proxy
 - Dual-platform: Invest changes must work in the mobile tab, not only a wide table.
 - After ship of intel code: deploy (`npm run deploy`).
 
-## Return to the user
+## Return to DoS (not the stakeholder)
 
 - What moved (or will move) and **why**
 - Phase + confidence
