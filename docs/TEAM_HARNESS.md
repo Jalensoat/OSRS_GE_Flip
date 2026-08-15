@@ -2,6 +2,8 @@
 
 **North star:** make OSRS Flip Lab the best *legal, fair-play* money-making tool for Old School RuneScape — capital-aware GE flips, alchs, and update-aware investments that a real player can execute.
 
+**Visual corpus (required):** `docs/references/visual-corpus/` + DB table `visual_corpus`. Sibling agent recordings are invisible until ingested here. Open PC + mobile stills (and walkthrough video) before UI/QA work. See `.cursor/rules/visual-corpus.mdc`.
+
 This is a **single React PWA** (PC + iOS). Team leads are Cursor project agents in `.cursor/agents/`. They are not a second app and not Jagex-affiliated.
 
 ## Source of truth

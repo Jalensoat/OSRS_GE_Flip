@@ -9,7 +9,7 @@ Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brie
 
 ## Do this
 
-1. **Interpret** — Restate the ask in product terms (which tab, which player job, which GP lever: turnaround / fill / post-tax edge).
+1. **Interpret** — Restate the ask in product terms (which tab, which player job, which GP lever: turnaround / fill / post-tax edge). If the work is visual, **open `docs/references/visual-corpus/` first** (DB: `visual_corpus`). Other agents’ pictures/video are not in your context unless they were ingested there.
 2. **Question** — At most 3 targeted questions. Skip questions whose answers are in the repo or do not change the design.
 3. **Examples** — Show 2–3 concrete “this is what you’d get” options:
    - UI: PC (`lg:` ≥1024) **and** mobile (&lt;1024 / sheet / bottom tabs), tied to existing components

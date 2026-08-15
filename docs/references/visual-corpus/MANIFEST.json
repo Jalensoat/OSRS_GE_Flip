@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "description": "Canonical visual corpus index. Synced into visual_corpus (Postgres / PGLite). Isolated agent windows must read these files — they cannot see sibling Cursor recordings.",
+  "entries": [
+    {
+      "id": "pc-best",
+      "path": "docs/references/visual-corpus/current-app/pc-best.png",
+      "kind": "screenshot",
+      "surface": "pc",
+      "title": "Best flips — desktop",
+      "source": "production-capture",
+      "notes": "Live https://osrs-ge-flip.vercel.app · 1280×800. Sibling-agent VM recordings were not mounted in this workspace."
+    },
+    {
+      "id": "pc-hot",
+      "path": "docs/references/visual-corpus/current-app/pc-hot.png",
+      "kind": "screenshot",
+      "surface": "pc",
+      "title": "Hot flips — desktop",
+      "source": "production-capture",
+      "notes": "Same capture pass as pc-best."
+    },
+    {
+      "id": "pc-alch",
+      "path": "docs/references/visual-corpus/current-app/pc-alch.png",
+      "kind": "screenshot",
+      "surface": "pc",
+      "title": "High alch — desktop",
+      "source": "production-capture",
+      "notes": "Same capture pass as pc-best."
+    },
+    {
+      "id": "pc-invest",
+      "path": "docs/references/visual-corpus/current-app/pc-invest.png",
+      "kind": "screenshot",
+      "surface": "pc",
+      "title": "Investments — desktop",
+      "source": "production-capture",
+      "notes": "Wiki polls + related GE prices."
+    },
+    {
+      "id": "pc-item-detail",
+      "path": "docs/references/visual-corpus/current-app/pc-item-detail.png",
+      "kind": "screenshot",
+      "surface": "pc",
+      "title": "Item detail — desktop",
+      "source": "production-capture",
+      "notes": "Full-page item after list click."
+    },
+    {
+      "id": "mobile-best",
+      "path": "docs/references/visual-corpus/current-app/mobile-best.png",
+      "kind": "screenshot",
+      "surface": "mobile",
+      "title": "Best flips — mobile",
+      "source": "production-capture",
+      "notes": "390×844 · bottom tabs."
+    },
+    {
+      "id": "mobile-hot",
+      "path": "docs/references/visual-corpus/current-app/mobile-hot.png",
+      "kind": "screenshot",
+      "surface": "mobile",
+      "title": "Hot flips — mobile",
+      "source": "production-capture",
+      "notes": "Same capture pass as mobile-best."
+    },
+    {
+      "id": "mobile-alch",
+      "path": "docs/references/visual-corpus/current-app/mobile-alch.png",
+      "kind": "screenshot",
+      "surface": "mobile",
+      "title": "High alch — mobile",
+      "source": "production-capture",
+      "notes": "Same capture pass as mobile-best."
+    },
+    {
+      "id": "mobile-invest",
+      "path": "docs/references/visual-corpus/current-app/mobile-invest.png",
+      "kind": "screenshot",
+      "surface": "mobile",
+      "title": "Investments — mobile",
+      "source": "production-capture",
+      "notes": "Same capture pass as mobile-best."
+    },
+    {
+      "id": "mobile-item-detail",
+      "path": "docs/references/visual-corpus/current-app/mobile-item-detail.png",
+      "kind": "screenshot",
+      "surface": "mobile",
+      "title": "Item / invest context — mobile",
+      "source": "production-capture",
+      "notes": "390×844 after a list/item interaction."
+    },
+    {
+      "id": "walkthrough-pc",
+      "path": "docs/references/visual-corpus/walkthrough/app-walkthrough-pc.webm",
+      "kind": "video",
+      "surface": "pc",
+      "title": "Desktop walkthrough — Best / Hot / Alch / Invest",
+      "source": "production-capture",
+      "notes": "Playwright recording of production. Ingest any other-agent video here if it later becomes available."
+    }
+  ]
+}

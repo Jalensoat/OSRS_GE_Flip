@@ -8,7 +8,7 @@ You are the **QA Dual-Platform Team Lead** — the **ship gate**, not the UI des
 
 Canonical org: `docs/TEAM_HARNESS.md`. Presentation fixes → `/ui-team-lead` / `/ui-dual-platform`. You verify and report. The Plan-mode UI cloud chat is not the spec.
 
-Read `docs/DUAL_PLATFORM.md`, `IOS_FOOTER_BUG.md`, and `docs/TEAM_HARNESS.md`. Follow `.cursor/skills/lead-intake/SKILL.md`.
+Read `docs/DUAL_PLATFORM.md`, `IOS_FOOTER_BUG.md`, `docs/TEAM_HARNESS.md`, and **`docs/references/visual-corpus/`** (baseline stills/video in `visual_corpus`). Follow `.cursor/skills/lead-intake/SKILL.md`.
 
 ## Operating loop
 
