@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=390, initial-scale=1" />
+  <title>Option A — Command Deck · Mobile</title>
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    body.opt-a .app { grid-template-rows: auto auto minmax(0,1fr) auto; }
+    .m-card {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .m-card.sel { background: var(--surface-2); }
+    .meta { display: flex; flex-wrap: wrap; gap: 5px 8px; margin-top: 5px; font-size: 11px; }
+    .sorts { display: flex; gap: 6px; overflow: hidden; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+    .sorts span { border: 1px solid var(--border); border-radius: 999px; padding: 4px 9px; font-size: 11px; color: var(--muted); }
+    .sorts span.on { background: var(--surface-2); color: var(--fg); border-color: var(--border-strong); }
+  </style>
+</head>
+<body class="opt-a">
+  <div class="app">
+    <div class="annotate">
+      <span><strong>A · Command Deck</strong> · iOS &lt;1024</span>
+      <span class="law">Dropdown search · 1 sheet scroll · safe-area tabs</span>
+    </div>
+    <header class="chrome" style="padding:0 12px 10px">
+      <div class="phone-status" style="padding-left:4px;padding-right:4px"><span>9:41</span><span>Flip Lab</span><span>100%</span></div>
+      <div class="row between">
+        <div class="brand">
+          <img src="logo.png" alt="" style="width:32px;height:32px" />
+          <div>
+            <h1>OSRS Flip Lab</h1>
+            <p>Live GE flips · 46s</p>
+          </div>
+        </div>
+        <span class="chip">50.0m</span>
+      </div>
+      <div class="search" style="margin-top:8px">
+        <span class="ph">⌕</span>
+        <input placeholder="Search any item…" readonly />
+      </div>
+    </header>
+    <main class="stage">
+      <div class="kpis" style="grid-template-columns:1fr 1fr;padding:8px 10px 0;gap:6px">
+        <div class="kpi gain"><div class="l">Best /h</div><div class="v tabular" style="font-size:15px">184.2k</div><div class="s">Dragon bones</div></div>
+        <div class="kpi"><div class="l">Will fill?</div><div class="v tabular" style="font-size:15px">78</div><div class="s">Both legs OK</div></div>
+        <div class="kpi"><div class="l">Sit buy → sell</div><div class="v tabular" style="font-size:14px">2801→2874</div><div class="s">+42 after tax</div></div>
+        <div class="kpi"><div class="l">Bind</div><div class="v" style="font-size:15px">Limit</div><div class="s">4h clock</div></div>
+      </div>
+      <div class="sorts">
+        <span class="on">GP/h ↓</span><span>Fill</span><span>Sold 1h</span><span>Margin</span><span>ROI</span>
+      </div>
+      <div class="m-card sel">
+        <img class="icon" src="../icons/Dragon_bones.png" alt="" />
+        <div>
+          <div class="row between"><div class="name">Dragon bones</div><div class="tabular gain">+42 ea</div></div>
+          <div class="meta">
+            <span class="tabular">184k/h</span>
+            <span class="chip gain">Fill 78</span>
+            <span class="chip warn">Limit</span>
+            <span class="chip">Fresh 12m</span>
+            <span class="chip">5m 1.6k</span>
+          </div>
+        </div>
+      </div>
+      <div class="m-card">
+        <img class="icon" src="../icons/Nature_rune.png" alt="" />
+        <div>
+          <div class="row between"><div class="name">Nature rune</div><div class="tabular gain">+8 ea</div></div>
+          <div class="meta"><span class="tabular">142k/h</span><span class="chip gain">Fill 91</span><span class="chip sky">Vol</span><span class="chip">Fresh 4m</span></div>
+        </div>
+      </div>
+      <div class="m-card">
+        <img class="icon" src="../icons/Mahogany_plank.png" alt="" />
+        <div>
+          <div class="row between"><div class="name">Mahogany plank</div><div class="tabular gain">+61 ea</div></div>
+          <div class="meta"><span class="tabular">96k/h</span><span class="chip">Fill 74</span><span class="chip">Cash</span><span class="chip warn">Dumps</span></div>
+        </div>
+      </div>
+      <div class="m-card">
+        <img class="icon" src="../icons/Blood_rune.png" alt="" />
+        <div>
+          <div class="row between"><div class="name">Blood rune</div><div class="tabular gain">+7 ea</div></div>
+          <div class="meta"><span class="tabular">88k/h</span><span class="chip gain">Fill 88</span><span class="chip warn">Limit</span></div>
+        </div>
+      </div>
+      <div class="m-card">
+        <img class="icon" src="../icons/Raw_shark.png" alt="" />
+        <div>
+          <div class="row between"><div class="name">Raw shark</div><div class="tabular gain">+27 ea</div></div>
+          <div class="meta"><span class="tabular">71k/h</span><span class="chip warn">Fill 69</span><span class="chip warn">Stale 1.4h</span></div>
+        </div>
+      </div>
+      <div class="m-card">
+        <img class="icon" src="../icons/Death_rune.png" alt="" />
+        <div>
+          <div class="row between"><div class="name">Death rune</div><div class="tabular gain">+8 ea</div></div>
+          <div class="meta"><span class="tabular">64k/h</span><span class="chip gain">Fill 85</span><span class="chip warn">Limit</span></div>
+        </div>
+      </div>
+    </main>
+    <nav class="bottom-nav" style="position:relative">
+      <button class="active"><span class="ic">◉</span>Best</button>
+      <button><span class="ic">⚡</span>Hot</button>
+      <button><span class="ic">✦</span>Alch</button>
+      <button><span class="ic">↗</span>Invest</button>
+      <button><span class="ic">★</span>Watch</button>
+      <button><span class="ic">♨</span>Volume</button>
+      <div class="home-ind"></div>
+    </nav>
+  </div>
+</body>
+</html>
