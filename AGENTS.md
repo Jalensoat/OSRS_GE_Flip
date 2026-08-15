@@ -1,5 +1,21 @@
 # App Builder Workspace
 
+## Team leads (Cursor harnesses)
+
+Flip Lab is run by **Team Lead** agents, not a UI-only shop. Charter: `docs/TEAM_HARNESS.md`. Definitions: `.cursor/agents/*.md`.
+
+| Invoke | Role |
+|--------|------|
+| `/director-of-support` | Route ambiguous / multi-lead work |
+| `/ui-team-lead` | Layout, chrome, dual-platform presentation |
+| `/market-intelligence-lead` | **Primary research:** GE market + OSRS update-influence |
+| `/quant-flip-engine-lead` | Tax, fill, GP/h, ranking math |
+| `/product-strategy-lead` | What to build to make more GP |
+| `/platform-data-lead` | Wiki API, PWA, deploy |
+| `/qa-dual-platform-lead` | PC + iOS verification |
+
+Leads interpret → ask → show 2–3 implemented options → `/create-subagent` at discretion. Shared loop: `.cursor/skills/lead-intake/SKILL.md`. Update scans: `.cursor/skills/osrs-update-influence/SKILL.md`.
+
 ## OSRS Flip Lab — dual platform (read first for product work)
 
 This repo is a **single** React PWA. “PC” and “iOS/app” are responsive surfaces of

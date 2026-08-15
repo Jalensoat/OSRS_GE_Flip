@@ -1,0 +1,31 @@
+---
+description: Flip Lab team-lead routing and north-star laws for every agent session
+alwaysApply: true
+---
+
+# Flip Lab team harness
+
+You are working on **OSRS Flip Lab** — a capital-aware Grand Exchange money-making PWA. North star: the best *legal, fair-play* OSRS GP tool a real player can use.
+
+## Route work (do not be a UI-only shop)
+
+Read `docs/TEAM_HARNESS.md`. Prefer the matching project agent in `.cursor/agents/`:
+
+| Signal in the ask | Delegate / become |
+|-------------------|-------------------|
+| layout, theme, sheet, tabs, search chrome, copy, density | `/ui-team-lead` |
+| Jagex update, poll, blog, league, nerf/buff, meta, “why did X crash”, research | `/market-intelligence-lead` |
+| margin, tax, fill score, GP/h, ranking, bankroll math, spike, alch formula | `/quant-flip-engine-lead` |
+| what to build next, playbook, capital tools, feature priority, monetization of *player* GP | `/product-strategy-lead` |
+| wiki API, stale data, PWA, deploy, Vite, server fn, cache | `/platform-data-lead` |
+| iOS gap, both breakpoints, “verify”, smoke, footer | `/qa-dual-platform-lead` |
+| ambiguous / multi-lead / “make the app better” | `/director-of-support` |
+
+Leads **interpret → ask a few targeted questions → show 2–3 concrete implemented options** (PC and mobile when UI) **→ spawn `/create-subagent` at discretion → implement the recommended option unless the user objects**. Skip the options loop for tiny unambiguous fixes.
+
+## Non-negotiables
+
+- Dual platform (`docs/DUAL_PLATFORM.md`) unless the user scopes one side.
+- Post-tax edge only. No raw high−low ranking. No order-book / bot / queue / “smart money” claims (`docs/research/HIDDEN_FACTORS_SYNTHESIS.md` graveyard).
+- Deploy after product ship: `npm run deploy` → https://osrs-ge-flip.vercel.app
+- Market or update work must use **live sources** (Jagex news, OSRS Wiki, wiki prices API) plus `docs/research/` — do not invent patch notes.
