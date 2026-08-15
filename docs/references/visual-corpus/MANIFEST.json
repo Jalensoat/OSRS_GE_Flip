@@ -1,7 +1,7 @@
 {
   "version": 1,
   "generatedAt": "2026-08-15T22:46:00Z",
-  "description": "Canonical visual corpus index. Isolated agent windows must read these files \u2014 they cannot see sibling Cursor recordings.",
+  "description": "Canonical visual corpus index. Isolated agent windows must read these files — they cannot see sibling Cursor recordings.",
   "hunt": {
     "siblingAgentArtifactsMounted": false,
     "machine": [
@@ -10,7 +10,7 @@
       "/cursor/stores (only this run; no media)",
       "/tmp/cursor/cloud-agent-transcripts (text only; no png/mp4)",
       "/home/ubuntu (no Flip Lab screenshots outside workspace)",
-      "/workspace/screenshots/redesigns (other-agent UI mockups + wiki icons \u2014 copied)"
+      "/workspace/screenshots/redesigns (other-agent UI mockups + wiki icons — copied)"
     ],
     "git": "No screenshot/video history on any branch except public/ branding icons. No deleted screenshot paths.",
     "github": {
@@ -49,16 +49,16 @@
       "surface": "unknown",
       "title": "Flip list with live data (PR #1)",
       "source": "other-agent",
-      "notes": "flip_list_live_data.webp on bc-86447751 \u2014 not mounted."
+      "notes": "flip_list_live_data.webp on bc-86447751 — not mounted."
     },
     {
       "id": "setup-agent-item-detail-dragon-2h",
       "path": null,
       "kind": "screenshot",
       "surface": "unknown",
-      "title": "Item detail \u2014 Dragon 2h sword (PR #1)",
+      "title": "Item detail — Dragon 2h sword (PR #1)",
       "source": "other-agent",
-      "notes": "item_detail_dragon_2h_sword.webp on bc-86447751 \u2014 not mounted."
+      "notes": "item_detail_dragon_2h_sword.webp on bc-86447751 — not mounted."
     },
     {
       "id": "setup-agent-watchlist-added-item",
@@ -67,7 +67,7 @@
       "surface": "unknown",
       "title": "Watchlist with added item (PR #1)",
       "source": "other-agent",
-      "notes": "watchlist_with_added_item.webp on bc-86447751 \u2014 not mounted."
+      "notes": "watchlist_with_added_item.webp on bc-86447751 — not mounted."
     }
   ],
   "files": [
@@ -76,16 +76,16 @@
       "path": "docs/references/visual-corpus/current-app/pc-best.png",
       "kind": "screenshot",
       "surface": "pc",
-      "title": "Best flips \u2014 desktop",
+      "title": "Best flips — desktop",
       "source": "production-capture",
-      "notes": "Live https://osrs-ge-flip.vercel.app \u00b7 1280\u00d7800. Sibling-agent VM recordings were not available in this workspace."
+      "notes": "Live https://osrs-ge-flip.vercel.app · 1280×800. Sibling-agent VM recordings were not available in this workspace."
     },
     {
       "id": "pc-hot",
       "path": "docs/references/visual-corpus/current-app/pc-hot.png",
       "kind": "screenshot",
       "surface": "pc",
-      "title": "Hot flips \u2014 desktop",
+      "title": "Hot flips — desktop",
       "source": "production-capture",
       "notes": "Same production pass as pc-best."
     },
@@ -94,7 +94,7 @@
       "path": "docs/references/visual-corpus/current-app/pc-alch.png",
       "kind": "screenshot",
       "surface": "pc",
-      "title": "High alch \u2014 desktop",
+      "title": "High alch — desktop",
       "source": "production-capture",
       "notes": "Same production pass as pc-best."
     },
@@ -103,7 +103,7 @@
       "path": "docs/references/visual-corpus/current-app/pc-invest.png",
       "kind": "screenshot",
       "surface": "pc",
-      "title": "Investments \u2014 desktop",
+      "title": "Investments — desktop",
       "source": "production-capture",
       "notes": "Wiki polls + related GE prices."
     },
@@ -112,7 +112,7 @@
       "path": "docs/references/visual-corpus/current-app/pc-item-detail.png",
       "kind": "screenshot",
       "surface": "pc",
-      "title": "Item detail \u2014 Arcane prayer scroll (desktop full-page)",
+      "title": "Item detail — Arcane prayer scroll (desktop full-page)",
       "source": "production-capture",
       "notes": "Recaptured after first pass landed on Invest instead of full-page detail. Shows Quant strip + reliable sits + chart."
     },
@@ -121,16 +121,16 @@
       "path": "docs/references/visual-corpus/current-app/mobile-best.png",
       "kind": "screenshot",
       "surface": "mobile",
-      "title": "Best flips \u2014 mobile",
+      "title": "Best flips — mobile",
       "source": "production-capture",
-      "notes": "390\u00d7844 \u00b7 bottom tabs."
+      "notes": "390×844 · bottom tabs."
     },
     {
       "id": "mobile-hot",
       "path": "docs/references/visual-corpus/current-app/mobile-hot.png",
       "kind": "screenshot",
       "surface": "mobile",
-      "title": "Hot flips \u2014 mobile",
+      "title": "Hot flips — mobile",
       "source": "production-capture",
       "notes": "Same production pass as mobile-best."
     },
@@ -139,7 +139,7 @@
       "path": "docs/references/visual-corpus/current-app/mobile-alch.png",
       "kind": "screenshot",
       "surface": "mobile",
-      "title": "High alch \u2014 mobile",
+      "title": "High alch — mobile",
       "source": "production-capture",
       "notes": "Same production pass as mobile-best."
     },
@@ -148,7 +148,7 @@
       "path": "docs/references/visual-corpus/current-app/mobile-invest.png",
       "kind": "screenshot",
       "surface": "mobile",
-      "title": "Investments \u2014 mobile",
+      "title": "Investments — mobile",
       "source": "production-capture",
       "notes": "Same production pass as mobile-best."
     },
@@ -157,7 +157,7 @@
       "path": "docs/references/visual-corpus/current-app/mobile-item-detail.png",
       "kind": "screenshot",
       "surface": "mobile",
-      "title": "Item sheet \u2014 Arcane prayer scroll (mobile)",
+      "title": "Item sheet — Arcane prayer scroll (mobile)",
       "source": "production-capture",
       "notes": "Recaptured bottom sheet after first pass missed the sheet. Single scroll owner visible."
     },
@@ -166,7 +166,7 @@
       "path": "docs/references/visual-corpus/walkthrough/app-walkthrough-pc.webm",
       "kind": "video",
       "surface": "pc",
-      "title": "Desktop walkthrough \u2014 Best / Hot / Alch / Invest tabs",
+      "title": "Desktop walkthrough — Best / Hot / Alch / Invest tabs",
       "source": "production-capture",
       "notes": "Playwright recording of production tab clicks. Sibling-agent demo mp4 was not mounted."
     },
@@ -175,16 +175,16 @@
       "path": "docs/references/visual-corpus/walkthrough/best-item-invest-pc.webm",
       "kind": "video",
       "surface": "pc",
-      "title": "Desktop walkthrough \u2014 Best \u2192 item detail \u2192 Invest",
+      "title": "Desktop walkthrough — Best → item detail → Invest",
       "source": "production-capture",
-      "notes": "Playwright webm (~10s, 1280\u00d7800). Replacement for unmounted PR #1 end-to-end demo."
+      "notes": "Playwright webm (~10s, 1280×800). Replacement for unmounted PR #1 end-to-end demo."
     },
     {
       "id": "redesign-option-a-command-deck-pc",
       "path": "docs/references/visual-corpus/source-agent/option-a-command-deck-pc.png",
       "kind": "screenshot",
       "surface": "pc",
-      "title": "UI redesign Option A \u2014 Command Deck (PC)",
+      "title": "UI redesign Option A — Command Deck (PC)",
       "source": "other-agent",
       "notes": "Original PNG from local ui-redesign agent work in screenshots/redesigns/. Not overwritten by later HTML recapture."
     },
@@ -193,7 +193,7 @@
       "path": "docs/references/visual-corpus/source-agent/option-a-command-deck-mobile.png",
       "kind": "screenshot",
       "surface": "mobile",
-      "title": "UI redesign Option A \u2014 Command Deck (mobile)",
+      "title": "UI redesign Option A — Command Deck (mobile)",
       "source": "other-agent",
       "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
     },
@@ -202,7 +202,7 @@
       "path": "docs/references/visual-corpus/source-agent/option-a-item-detail-pc.png",
       "kind": "screenshot",
       "surface": "pc",
-      "title": "UI redesign Option A \u2014 item detail (PC)",
+      "title": "UI redesign Option A — item detail (PC)",
       "source": "other-agent",
       "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
     },
@@ -211,7 +211,7 @@
       "path": "docs/references/visual-corpus/source-agent/option-a-search-dropdown-pc.png",
       "kind": "screenshot",
       "surface": "pc",
-      "title": "UI redesign Option A \u2014 search dropdown (PC)",
+      "title": "UI redesign Option A — search dropdown (PC)",
       "source": "other-agent",
       "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
     },
@@ -220,7 +220,7 @@
       "path": "docs/references/visual-corpus/source-agent/option-a-search-dropdown-mobile.png",
       "kind": "screenshot",
       "surface": "mobile",
-      "title": "UI redesign Option A \u2014 search dropdown (mobile)",
+      "title": "UI redesign Option A — search dropdown (mobile)",
       "source": "other-agent",
       "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
     },
@@ -229,7 +229,7 @@
       "path": "docs/references/visual-corpus/source-agent/option-b-field-kit-pc.png",
       "kind": "screenshot",
       "surface": "pc",
-      "title": "UI redesign Option B \u2014 Field Kit (PC)",
+      "title": "UI redesign Option B — Field Kit (PC)",
       "source": "other-agent",
       "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
     },
@@ -238,7 +238,7 @@
       "path": "docs/references/visual-corpus/source-agent/option-b-field-kit-mobile.png",
       "kind": "screenshot",
       "surface": "mobile",
-      "title": "UI redesign Option B \u2014 Field Kit (mobile)",
+      "title": "UI redesign Option B — Field Kit (mobile)",
       "source": "other-agent",
       "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
     },
@@ -247,7 +247,7 @@
       "path": "docs/references/visual-corpus/source-agent/option-b-sheet-mobile.png",
       "kind": "screenshot",
       "surface": "mobile",
-      "title": "UI redesign Option B \u2014 item sheet (mobile)",
+      "title": "UI redesign Option B — item sheet (mobile)",
       "source": "other-agent",
       "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
     },
@@ -256,7 +256,7 @@
       "path": "docs/references/visual-corpus/source-agent/option-c-war-room-pc.png",
       "kind": "screenshot",
       "surface": "pc",
-      "title": "UI redesign Option C \u2014 War Room (PC)",
+      "title": "UI redesign Option C — War Room (PC)",
       "source": "other-agent",
       "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
     },
@@ -265,405 +265,7 @@
       "path": "docs/references/visual-corpus/source-agent/option-c-war-room-mobile.png",
       "kind": "screenshot",
       "surface": "mobile",
-      "title": "UI redesign Option C \u2014 War Room (mobile)",
-      "source": "other-agent",
-      "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
-    },
-    {
-      "id": "icon-anglerfish",
-      "path": "docs/references/visual-corpus/source-agent/icons/Anglerfish.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Anglerfish",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-blood-rune",
-      "path": "docs/references/visual-corpus/source-agent/icons/Blood_rune.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Blood rune",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-coal",
-      "path": "docs/references/visual-corpus/source-agent/icons/Coal.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Coal",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-death-rune",
-      "path": "docs/references/visual-corpus/source-agent/icons/Death_rune.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Death rune",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-dragon-bones",
-      "path": "docs/references/visual-corpus/source-agent/icons/Dragon_bones.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Dragon bones",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-gold-ore",
-      "path": "docs/references/visual-corpus/source-agent/icons/Gold_ore.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Gold ore",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-iron-ore",
-      "path": "docs/references/visual-corpus/source-agent/icons/Iron_ore.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Iron ore",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-magic-logs",
-      "path": "docs/references/visual-corpus/source-agent/icons/Magic_logs.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Magic logs",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-mahogany-plank",
-      "path": "docs/references/visual-corpus/source-agent/icons/Mahogany_plank.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Mahogany plank",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-maple-logs",
-      "path": "docs/references/visual-corpus/source-agent/icons/Maple_logs.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Maple logs",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-nature-rune",
-      "path": "docs/references/visual-corpus/source-agent/icons/Nature_rune.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Nature rune",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-old-school-bond",
-      "path": "docs/references/visual-corpus/source-agent/icons/Old_school_bond.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Old school bond",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-pure-essence",
-      "path": "docs/references/visual-corpus/source-agent/icons/Pure_essence.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Pure essence",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-ranarr-weed",
-      "path": "docs/references/visual-corpus/source-agent/icons/Ranarr_weed.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Ranarr weed",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-raw-shark",
-      "path": "docs/references/visual-corpus/source-agent/icons/Raw_shark.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Raw shark",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-rune-arrow-5",
-      "path": "docs/references/visual-corpus/source-agent/icons/Rune_arrow_5.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Rune arrow 5",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-super-restore-4",
-      "path": "docs/references/visual-corpus/source-agent/icons/Super_restore(4).png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Super restore (4)",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-twisted-bow",
-      "path": "docs/references/visual-corpus/source-agent/icons/Twisted_bow.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Twisted bow",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-yew-logs",
-      "path": "docs/references/visual-corpus/source-agent/icons/Yew_logs.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Yew logs",
-      "source": "other-agent",
-      "notes": "Wiki item icon used by ui-redesign agent mockups."
-    },
-    {
-      "id": "icon-mockup-logo",
-      "path": "docs/references/visual-corpus/source-agent/icons/mockup-logo.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Redesign mockup logo",
-      "source": "other-agent",
-      "notes": "Logo copied from screenshots/redesigns/html/logo.png."
-    },
-    {
-      "id": "icon-repo-logo",
-      "path": "docs/references/visual-corpus/source-agent/icons/repo-logo.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "Flip Lab logo (repo)",
-      "source": "repo",
-      "notes": "Copied from public/logo.png (initial commit branding)."
-    },
-    {
-      "id": "icon-repo-icon-512",
-      "path": "docs/references/visual-corpus/source-agent/icons/repo-icon-512.png",
-      "kind": "icon",
-      "surface": "both",
-      "title": "PWA icon 512 (repo)",
-      "source": "repo",
-      "notes": "Copied from public/icon-512.png."
-    }
-  ],
-  "entries": [
-    {
-      "id": "pc-best",
-      "path": "docs/references/visual-corpus/current-app/pc-best.png",
-      "kind": "screenshot",
-      "surface": "pc",
-      "title": "Best flips \u2014 desktop",
-      "source": "production-capture",
-      "notes": "Live https://osrs-ge-flip.vercel.app \u00b7 1280\u00d7800. Sibling-agent VM recordings were not available in this workspace."
-    },
-    {
-      "id": "pc-hot",
-      "path": "docs/references/visual-corpus/current-app/pc-hot.png",
-      "kind": "screenshot",
-      "surface": "pc",
-      "title": "Hot flips \u2014 desktop",
-      "source": "production-capture",
-      "notes": "Same production pass as pc-best."
-    },
-    {
-      "id": "pc-alch",
-      "path": "docs/references/visual-corpus/current-app/pc-alch.png",
-      "kind": "screenshot",
-      "surface": "pc",
-      "title": "High alch \u2014 desktop",
-      "source": "production-capture",
-      "notes": "Same production pass as pc-best."
-    },
-    {
-      "id": "pc-invest",
-      "path": "docs/references/visual-corpus/current-app/pc-invest.png",
-      "kind": "screenshot",
-      "surface": "pc",
-      "title": "Investments \u2014 desktop",
-      "source": "production-capture",
-      "notes": "Wiki polls + related GE prices."
-    },
-    {
-      "id": "pc-item-detail",
-      "path": "docs/references/visual-corpus/current-app/pc-item-detail.png",
-      "kind": "screenshot",
-      "surface": "pc",
-      "title": "Item detail \u2014 Arcane prayer scroll (desktop full-page)",
-      "source": "production-capture",
-      "notes": "Recaptured after first pass landed on Invest instead of full-page detail. Shows Quant strip + reliable sits + chart."
-    },
-    {
-      "id": "mobile-best",
-      "path": "docs/references/visual-corpus/current-app/mobile-best.png",
-      "kind": "screenshot",
-      "surface": "mobile",
-      "title": "Best flips \u2014 mobile",
-      "source": "production-capture",
-      "notes": "390\u00d7844 \u00b7 bottom tabs."
-    },
-    {
-      "id": "mobile-hot",
-      "path": "docs/references/visual-corpus/current-app/mobile-hot.png",
-      "kind": "screenshot",
-      "surface": "mobile",
-      "title": "Hot flips \u2014 mobile",
-      "source": "production-capture",
-      "notes": "Same production pass as mobile-best."
-    },
-    {
-      "id": "mobile-alch",
-      "path": "docs/references/visual-corpus/current-app/mobile-alch.png",
-      "kind": "screenshot",
-      "surface": "mobile",
-      "title": "High alch \u2014 mobile",
-      "source": "production-capture",
-      "notes": "Same production pass as mobile-best."
-    },
-    {
-      "id": "mobile-invest",
-      "path": "docs/references/visual-corpus/current-app/mobile-invest.png",
-      "kind": "screenshot",
-      "surface": "mobile",
-      "title": "Investments \u2014 mobile",
-      "source": "production-capture",
-      "notes": "Same production pass as mobile-best."
-    },
-    {
-      "id": "mobile-item-detail",
-      "path": "docs/references/visual-corpus/current-app/mobile-item-detail.png",
-      "kind": "screenshot",
-      "surface": "mobile",
-      "title": "Item sheet \u2014 Arcane prayer scroll (mobile)",
-      "source": "production-capture",
-      "notes": "Recaptured bottom sheet after first pass missed the sheet. Single scroll owner visible."
-    },
-    {
-      "id": "walkthrough-pc-tabs",
-      "path": "docs/references/visual-corpus/walkthrough/app-walkthrough-pc.webm",
-      "kind": "video",
-      "surface": "pc",
-      "title": "Desktop walkthrough \u2014 Best / Hot / Alch / Invest tabs",
-      "source": "production-capture",
-      "notes": "Playwright recording of production tab clicks. Sibling-agent demo mp4 was not mounted."
-    },
-    {
-      "id": "walkthrough-pc-best-item-invest",
-      "path": "docs/references/visual-corpus/walkthrough/best-item-invest-pc.webm",
-      "kind": "video",
-      "surface": "pc",
-      "title": "Desktop walkthrough \u2014 Best \u2192 item detail \u2192 Invest",
-      "source": "production-capture",
-      "notes": "Playwright webm (~10s, 1280\u00d7800). Replacement for unmounted PR #1 end-to-end demo."
-    },
-    {
-      "id": "redesign-option-a-command-deck-pc",
-      "path": "docs/references/visual-corpus/source-agent/option-a-command-deck-pc.png",
-      "kind": "screenshot",
-      "surface": "pc",
-      "title": "UI redesign Option A \u2014 Command Deck (PC)",
-      "source": "other-agent",
-      "notes": "Original PNG from local ui-redesign agent work in screenshots/redesigns/. Not overwritten by later HTML recapture."
-    },
-    {
-      "id": "redesign-option-a-command-deck-mobile",
-      "path": "docs/references/visual-corpus/source-agent/option-a-command-deck-mobile.png",
-      "kind": "screenshot",
-      "surface": "mobile",
-      "title": "UI redesign Option A \u2014 Command Deck (mobile)",
-      "source": "other-agent",
-      "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
-    },
-    {
-      "id": "redesign-option-a-item-detail-pc",
-      "path": "docs/references/visual-corpus/source-agent/option-a-item-detail-pc.png",
-      "kind": "screenshot",
-      "surface": "pc",
-      "title": "UI redesign Option A \u2014 item detail (PC)",
-      "source": "other-agent",
-      "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
-    },
-    {
-      "id": "redesign-option-a-search-dropdown-pc",
-      "path": "docs/references/visual-corpus/source-agent/option-a-search-dropdown-pc.png",
-      "kind": "screenshot",
-      "surface": "pc",
-      "title": "UI redesign Option A \u2014 search dropdown (PC)",
-      "source": "other-agent",
-      "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
-    },
-    {
-      "id": "redesign-option-a-search-dropdown-mobile",
-      "path": "docs/references/visual-corpus/source-agent/option-a-search-dropdown-mobile.png",
-      "kind": "screenshot",
-      "surface": "mobile",
-      "title": "UI redesign Option A \u2014 search dropdown (mobile)",
-      "source": "other-agent",
-      "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
-    },
-    {
-      "id": "redesign-option-b-field-kit-pc",
-      "path": "docs/references/visual-corpus/source-agent/option-b-field-kit-pc.png",
-      "kind": "screenshot",
-      "surface": "pc",
-      "title": "UI redesign Option B \u2014 Field Kit (PC)",
-      "source": "other-agent",
-      "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
-    },
-    {
-      "id": "redesign-option-b-field-kit-mobile",
-      "path": "docs/references/visual-corpus/source-agent/option-b-field-kit-mobile.png",
-      "kind": "screenshot",
-      "surface": "mobile",
-      "title": "UI redesign Option B \u2014 Field Kit (mobile)",
-      "source": "other-agent",
-      "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
-    },
-    {
-      "id": "redesign-option-b-sheet-mobile",
-      "path": "docs/references/visual-corpus/source-agent/option-b-sheet-mobile.png",
-      "kind": "screenshot",
-      "surface": "mobile",
-      "title": "UI redesign Option B \u2014 item sheet (mobile)",
-      "source": "other-agent",
-      "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
-    },
-    {
-      "id": "redesign-option-c-war-room-pc",
-      "path": "docs/references/visual-corpus/source-agent/option-c-war-room-pc.png",
-      "kind": "screenshot",
-      "surface": "pc",
-      "title": "UI redesign Option C \u2014 War Room (PC)",
-      "source": "other-agent",
-      "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
-    },
-    {
-      "id": "redesign-option-c-war-room-mobile",
-      "path": "docs/references/visual-corpus/source-agent/option-c-war-room-mobile.png",
-      "kind": "screenshot",
-      "surface": "mobile",
-      "title": "UI redesign Option C \u2014 War Room (mobile)",
+      "title": "UI redesign Option C — War Room (mobile)",
       "source": "other-agent",
       "notes": "Rendered from other-agent HTML mockup via their capture.mjs."
     },
