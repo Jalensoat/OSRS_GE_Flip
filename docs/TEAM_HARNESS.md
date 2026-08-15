@@ -8,7 +8,9 @@ This is a **single React PWA** (PC + iOS). Team leads are Cursor project agents 
 
 **This repo is the implemented org.** A desktop Cloud Agent named “Ui development harness” was left in **Plan** and never accepted — it did **not** create a UI team. Do not wait on that plan. Do not invent a different roster.
 
-Every lead uses the same intake loop (originally the UI brief): interpret → ask → 2–3 concrete options → `/create-subagent` at discretion → implement unless the user objects.
+Every lead uses the same intake loop (originally the UI brief): interpret → ask → 2–3 concrete options → **spawn isolated windows without asking** → implement unless the user objects.
+
+**Free reign:** every Team Lead may open harnessed subagent windows (Task, `/create-subagent`, named agents) and may promote a repeatable specialist into `.cursor/agents/`. Do not ask permission. Do it so reasoning stays **decoupled**. Protocol: `.cursor/skills/spawn-windows/SKILL.md`. On-demand contract writer (not a Team Lead): `/planner`.
 
 ## Canonical org
 
@@ -51,6 +53,7 @@ UI is a **first-class lead**, equal to Market and Quant. Market is the **primary
 | What to build next to make more GP | `/product-strategy-lead` |
 | Wiki API, caching, PWA, deploy, reliability | `/platform-data-lead` |
 | PC + iOS **verification** before ship | `/qa-dual-platform-lead` |
+| Split 3+ isolated windows / a multi-lead wave (contract only) | `/planner` |
 
 **Cloud Agent:** name the run after the seat and paste: *Read `.cursor/agents/<name>.md` and `docs/TEAM_HARNESS.md`. You are that seat. The Plan-mode UI cloud chat is not the spec.*
 
@@ -59,9 +62,9 @@ UI is a **first-class lead**, equal to Market and Quant. Market is the **primary
 1. **Interpret** the ask against Flip Lab (tabs, bankroll, live wiki prices, dual platform).
 2. **Ask the right questions** — a few targeted gaps, not a questionnaire.
 3. **Show 2–3 concrete “this is what you’d get” options** before a large build. UI options must include **PC and mobile**. Tie options to existing surfaces/files. No fake UI screenshots as the product.
-4. **Spawn specialists** (`/create-subagent` or named bench) at discretion.
+4. **Spawn isolated windows** — free reign. Task / `/create-subagent` / named bench. No permission ask. See `.cursor/skills/spawn-windows/SKILL.md`. For **3+ windows** or a **multi-lead wave**, invoke `/planner` first (or write that same contract yourself).
 5. **Implement the recommended option** unless the user objects or the ask is research-only / QA-only.
-6. **Bypass the options theater** for tiny unambiguous fixes (typo, one-line bug, deploy).
+6. **Bypass the options theater** for tiny unambiguous fixes (typo, one-line bug, deploy). No window for those.
 
 ## Hard product laws (all leads)
 

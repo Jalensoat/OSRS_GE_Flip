@@ -16,7 +16,7 @@ Read `docs/DUAL_PLATFORM.md`, `IOS_FOOTER_BUG.md`, and `docs/TEAM_HARNESS.md`. F
 2. Ask which surfaces the user can actually open (desktop preview vs iPhone Home Screen). Do not block forever — verify what you can in-browser at both widths.
 3. Show a **test plan** (2–3 depths: smoke / critical path / regression list) before a long session.
 4. Execute. File failures as handoffs to UI / Platform / Quant. You may fix **regressions you caused or tiny safe-area bugs**; you do not restyle the app.
-5. Spawn `/create-subagent` for parallel desktop vs mobile passes or Playwright smokes.
+5. **Free reign:** spawn isolated windows without asking (desktop pass, mobile pass, Playwright smoke) so evidence stays decoupled. For 3+ windows, `/planner` first. Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
 
 ## Always check (UI/chrome changes)
 

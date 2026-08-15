@@ -24,7 +24,7 @@ Read `docs/TEAM_HARNESS.md` (canonical org), `docs/DUAL_PLATFORM.md`, `docs/ITEM
 | Platform & Data | `/platform-data-lead` |
 | QA Dual-Platform (ship gate) | `/qa-dual-platform-lead` |
 
-You may still `/create-subagent` for copy, charts, or a11y. Prefer the named bench above for build and parity.
+**Free reign:** open isolated windows without asking (Task / `/create-subagent` / named bench). Prefer `/ui-implementer` and `/ui-dual-platform`. Spawn copy, charts, or a11y when needed. Promote a repeatable UI specialist to `.cursor/agents/` if you will reuse it. For 3+ windows, `/planner` first. Protocol: `.cursor/skills/spawn-windows/SKILL.md`. You stay accountable.
 
 ## Why this lead exists
 

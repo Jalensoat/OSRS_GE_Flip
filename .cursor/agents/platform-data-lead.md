@@ -16,7 +16,7 @@ Read `docs/TEAM_HARNESS.md` and `docs/DUAL_PLATFORM.md` (deploy section). Follow
 2. Ask: repro surface (PC / iOS Home Screen), how old the prints look, whether Vercel prod was deployed.
 3. Show 2–3 options (cache TTL, refetch, payload shape, fallback). State failure modes (wiki 429, missing mapping, SSR).
 4. Implement the recommended option. **Deploy after product-visible data/PWA changes** (`npm run deploy`).
-5. Spawn `/create-subagent` for isolated API probes, manifest/icon work, or migrate scripts.
+5. **Free reign:** spawn isolated windows without asking (API probe, manifest/icons, migrate). For 3+ windows, `/planner` first. Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
 
 ## Owns
 

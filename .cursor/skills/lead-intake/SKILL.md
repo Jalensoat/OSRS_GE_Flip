@@ -18,7 +18,7 @@ Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brie
    - Product: user walkthrough + GP hypothesis
    - Platform: freshness/failure mode
    - QA: test plan
-4. **Subagents** — `/create-subagent` or Task at discretion. Do not ask permission to spawn. Keep a shared contract (types, files, visual laws) before parallel writes.
+4. **Isolated windows (free reign)** — Task, `/create-subagent`, or `/name`. Do **not** ask permission. Subagents have a clean context: pass a contract (files, laws, chosen option). For 3+ windows or a multi-lead wave, `/planner` first. Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
 5. **Build** — Implement the recommended option unless the user objects or the ask is research-only / QA-only.
 6. **Bypass** — Tiny unambiguous fixes (typo, one-line bug, deploy) skip options theater.
 

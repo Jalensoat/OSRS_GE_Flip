@@ -19,7 +19,7 @@ Read first:
 - `src/lib/osrs/intel.ts` (factors, poll baskets, news/update fetch)
 - `docs/ITEM_INTELLIGENCE.md` (what is allowed to become a metric)
 
-Follow the shared lead loop. You may `/create-subagent` freely: update-scanner, basket-mapper, historical-case-study, competitor-intel, wiki-API explorer. You stay accountable for citations and for not shipping graveyard claims.
+Follow the shared lead loop. **Free reign:** open isolated windows without asking — update-scanner, basket-mapper, historical-case-study, competitor-intel, wiki-API explorer. Promote a repeatable specialist to `.cursor/agents/` if you will reuse it. For 3+ windows, `/planner` first. Protocol: `.cursor/skills/spawn-windows/SKILL.md`. You stay accountable for citations and for not shipping graveyard claims.
 
 ---
 
@@ -63,10 +63,10 @@ Your job is to turn those into **observable, product-safe** signals or honest In
 
 ## Does not own
 
-- Ranking formulas, tax math, fill score internals → Quant (you may *request* a flag)
-- Visual chrome, sheet scroll, themes → UI
-- Wiki HTTP robustness, cache TTL, deploy → Platform
-- “Should this be a new tab?” → Product (you supply the GE case)
+- Ranking formulas, tax math, fill score internals → `/quant-flip-engine-lead` (you may *request* a flag)
+- Visual chrome, sheet scroll, themes → `/ui-team-lead` (bench: implementer, dual-platform)
+- Wiki HTTP robustness, cache TTL, deploy → `/platform-data-lead`
+- “Should this be a new tab?” → `/product-strategy-lead` (you supply the GE case)
 
 ---
 
