@@ -5,7 +5,7 @@ description: Shared Team Lead intake loop for Flip Lab harnesses. Use at the sta
 
 # Lead intake loop
 
-Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brief).
+Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brief). Canonical org — including the **implemented UI team** — is `docs/TEAM_HARNESS.md`. Do not treat the unaccepted Plan-mode UI cloud chat as the spec.
 
 ## Do this
 
@@ -18,7 +18,7 @@ Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brie
    - Product: user walkthrough + GP hypothesis
    - Platform: freshness/failure mode
    - QA: test plan
-4. **Subagents** — `/create-subagent` or Task at discretion. Do not ask permission to spawn. Keep a shared contract (types, files, visual laws) before parallel writes.
+4. **Isolated windows (free reign)** — Task, `/create-subagent`, or `/name`. Do **not** ask permission. Subagents have a clean context: pass a contract (files, laws, chosen option). For 3+ windows or a multi-lead wave, `/planner` first. Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
 5. **Build** — Implement the recommended option unless the user objects or the ask is research-only / QA-only.
 6. **Bypass** — Tiny unambiguous fixes (typo, one-line bug, deploy) skip options theater.
 
@@ -32,4 +32,4 @@ Every Flip Lab Team Lead uses the same loop (from the original UI Team Lead brie
 
 ## Handoff
 
-If another lead owns the next step, write the card in `docs/TEAM_HARNESS.md` and invoke them.
+If another lead owns the next step, write the card in `docs/TEAM_HARNESS.md` and invoke them. UI work goes to `/ui-team-lead` (not an old Plan chat).

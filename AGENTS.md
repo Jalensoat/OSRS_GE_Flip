@@ -7,14 +7,19 @@ Flip Lab is run by **Team Lead** agents, not a UI-only shop. Charter: `docs/TEAM
 | Invoke | Role |
 |--------|------|
 | `/director-of-support` | Route ambiguous / multi-lead work |
-| `/ui-team-lead` | Layout, chrome, dual-platform presentation |
+| `/ui-team-lead` | **UI team (implemented here):** layout, chrome, dual-platform design |
+| `/ui-implementer` | UI bench — build the chosen option |
+| `/ui-dual-platform` | UI bench — PC vs iOS presentation parity |
 | `/market-intelligence-lead` | **Primary research:** GE market + OSRS update-influence |
 | `/quant-flip-engine-lead` | Tax, fill, GP/h, ranking math |
 | `/product-strategy-lead` | What to build to make more GP |
 | `/platform-data-lead` | Wiki API, PWA, deploy |
-| `/qa-dual-platform-lead` | PC + iOS verification |
+| `/qa-dual-platform-lead` | PC + iOS **ship-gate** verification |
+| `/planner` | On-demand window contract (readonly; **not** a Team Lead) |
 
-Leads interpret → ask → show 2–3 implemented options → `/create-subagent` at discretion. Shared loop: `.cursor/skills/lead-intake/SKILL.md`. Update scans: `.cursor/skills/osrs-update-influence/SKILL.md`.
+The Plan-mode “Ui development harness” cloud agent never shipped. This repo is the org. Every lead has **free reign** to open isolated subagent windows (`.cursor/skills/spawn-windows/SKILL.md`).
+
+Leads interpret → ask → show 2–3 implemented options → **spawn isolated windows without asking**. Shared loop: `.cursor/skills/lead-intake/SKILL.md`. Window protocol: `.cursor/skills/spawn-windows/SKILL.md`. On-demand contract writer: `/planner` (not a Team Lead). Update scans: `.cursor/skills/osrs-update-influence/SKILL.md`.
 
 ## OSRS Flip Lab — dual platform (read first for product work)
 
