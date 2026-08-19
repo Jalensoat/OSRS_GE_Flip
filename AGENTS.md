@@ -562,3 +562,31 @@ prompt:    often one line — expand into a full product
 never:     ask the user to run commands, open localhost, or QA your environment
 never:     delete or abandon /workspace/startup.sh
 ```
+
+---
+
+## Cursor Cloud specific instructions
+
+Single service: a Vite dev server (TanStack Start) on `0.0.0.0:8080`. There is no
+separate backend — data comes from server functions (`createServerFn`) that run
+inside the same Vite process.
+
+- **Dependencies are NOT committed.** `node_modules/` is absent on a fresh VM and
+  is restored by the startup update script (`npm install`). Ignore the "deps
+  preinstalled" claim above — that describes the Grok sandbox, not Cursor Cloud.
+- **Run the app:** `npm run dev` (binds `0.0.0.0:8080`) or `sh startup.sh`
+  (idempotent — no-op if `:8080` already answers). Standard scripts live in
+  `package.json` (`lint`, `typecheck`, `build`, `dev`).
+- **Live data needs egress.** The flip board fetches OSRS prices server-side from
+  `https://prices.runescape.wiki` and item icons from `oldschool.runescape.wiki`.
+  These are reachable in this environment; if the list is empty, suspect blocked
+  egress rather than a code bug.
+- **DB:** no `DATABASE_URL` is needed for dev. `src/lib/db.ts` falls back to
+  PGLite, and `npm run build`'s `db:migrate` step self-skips when unset.
+- **`npm run lint` reports 3 pre-existing `prefer-const` errors in**
+  `src/lib/osrs/flip.ts` (plus hook-dep warnings). These are not caused by env
+  setup; `npm run typecheck` and `npm run build` both pass clean.
+- **Playwright's Chromium binary is not installed**, so `scripts/browser-smoke.mjs`
+  fails until `npx playwright install chromium` is run. Prefer the computer-use
+  browser for manual QA instead of installing it.
+- **Do not run `npm run deploy`** (Vercel) from Cloud unless explicitly asked.
