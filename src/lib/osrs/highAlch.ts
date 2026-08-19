@@ -132,7 +132,7 @@ export function alchBuyPrice(item: CatalogItem): number | null {
 export function natureRuneCost(items: CatalogItem[]): number {
   const nat = items.find((i) => i.id === NATURE_RUNE_ID);
   if (!nat) return 0;
-  // Buying natures: pay high when possible
+  // Buying natures: pay high when possible. 0 = unknown — callers must not treat as free.
   return alchBuyPrice(nat) ?? 0;
 }
 
@@ -146,6 +146,8 @@ export function computeHighAlch(
   if (buyPrice == null || buyPrice <= 0) return null;
   // Don't alch the nature rune itself as an "item" opportunity in a weird way
   if (item.id === NATURE_RUNE_ID) return null;
+  // Unknown/zero nature price would inflate every profit — refuse rather than invent.
+  if (natureCost <= 0) return null;
 
   const costPerAlch = buyPrice + natureCost;
   if (costPerAlch <= 0) return null;
@@ -176,6 +178,7 @@ export function rankHighAlchs(
   limit = 200,
 ): HighAlchOpportunity[] {
   const natureCost = natureRuneCost(items);
+  if (natureCost <= 0) return [];
   const out: HighAlchOpportunity[] = [];
   for (const item of items) {
     const row = computeHighAlch(item, natureCost);

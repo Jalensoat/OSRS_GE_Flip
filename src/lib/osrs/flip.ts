@@ -122,7 +122,9 @@ function sizeFlip(
 } | null {
   if (buy <= 0 || margin <= 0 || bankroll <= 0) return null;
 
-  const limitQty = item.limit != null && item.limit > 0 ? item.limit : 10_000;
+  // Missing mapping limit → do not invent 10k (would oversize rares).
+  const hasLimit = item.limit != null && item.limit > 0;
+  const limitQty = hasLimit ? item.limit! : Number.POSITIVE_INFINITY;
   const affordableQty = Math.floor(bankroll / buy);
   if (affordableQty < 1) return null;
 
@@ -131,17 +133,17 @@ function sizeFlip(
 
   const capitalUsed = qty * buy;
   const profitOnce = qty * margin;
-  const profitPerHour = Math.min(affordableQty, limitQty, volCap) * margin;
+  const profitPerHour = qty * margin;
 
   const limitCycles = 6;
-  const dailyLimitQty = limitQty * limitCycles;
+  const dailyLimitQty = hasLimit ? limitQty * limitCycles : Number.POSITIVE_INFINITY;
   const dailyVolumeQty = volCap * 24;
   const profitPerDay =
     Math.min(dailyLimitQty, dailyVolumeQty, affordableQty * limitCycles) * margin;
 
   const roiPct = (margin / buy) * 100;
   const volumeCapped = qty >= volCap && volCap <= limitQty && volCap <= affordableQty;
-  const limitCapped = qty >= limitQty && limitQty <= affordableQty;
+  const limitCapped = hasLimit && qty >= limitQty && limitQty <= affordableQty;
   const gpCapped = qty >= affordableQty;
 
   let bottleneck: FlipOpportunity["bottleneck"] = "none";
@@ -266,13 +268,15 @@ function computeHotFlip(item: CatalogItem, bankroll: number): FlipOpportunity | 
 
   if (total1h < 1 && total5m < 1) return null;
 
+  // Two-sided cap only — never size off the fat side or raw 5m count.
+  // Hot may take more of the thin book than Best (0.70 vs 0.35).
   const hourlyFlow = Math.min(buySide1h, sellSide1h);
-  const volumeQty = Math.max(
-    hourlyFlow > 0 ? hourlyFlow : 0,
-    Math.floor(total1h / 2),
-    total5m > 0 ? Math.max(1, total5m) : 0,
-    1,
-  );
+  const volumeQty =
+    hourlyFlow > 0
+      ? Math.max(1, Math.floor(hourlyFlow * 0.7))
+      : total1h > 0
+        ? Math.max(1, Math.floor(total1h * 0.15))
+        : Math.max(1, total5m);
 
   const sized = sizeFlip(buyPrice, marginPerItem, bankroll, item, volumeQty);
   if (!sized) return null;
@@ -319,7 +323,7 @@ function computeHotFlip(item: CatalogItem, bankroll: number): FlipOpportunity | 
     confidence: Math.round(confidence),
     confidenceLabel: "Hot",
     score,
-    spikeMargin: marginPerItem,
+    spikeMargin: spikeRisk ? marginPerItem : null,
     spikeRisk,
     ...sized,
   };

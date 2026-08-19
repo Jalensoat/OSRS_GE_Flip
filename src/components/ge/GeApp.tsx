@@ -17,6 +17,7 @@ import { useBankroll } from "@/lib/osrs/bankroll";
 import { parseGpInput, rankFlips, type FlipMode } from "@/lib/osrs/flip";
 import {
   EMPTY_FILTERS,
+  countActiveFilters,
   filterCatalogItems,
   filterFlips,
   nextSortState,
@@ -212,13 +213,15 @@ export function GeApp() {
   }, [itemSortDir]);
 
   useEffect(() => {
-    if (!fullPageOpen) return;
+    if (!fullPageOpen && !mobileDetailOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setFullPageOpen(false);
+      if (e.key !== "Escape") return;
+      if (fullPageOpen) setFullPageOpen(false);
+      if (mobileDetailOpen) setMobileDetailOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [fullPageOpen]);
+  }, [fullPageOpen, mobileDetailOpen]);
 
   const lastTradeAge =
     catalog.data?.priceTimestamp != null
@@ -229,8 +232,9 @@ export function GeApp() {
   const showFlipBoard = tab === "flips" || tab === "hot";
   const showAlchBoard = tab === "alch";
   const activeNav = tab === "search" ? null : tab;
-  // List-first: keep filters collapsed by default so the table gets the page
-  const filtersDefaultOpen = false;
+  const filtersActive = countActiveFilters(filters) > 0;
+  /** Dual-platform law: PC panel open so all fields are visible. */
+  const filtersDefaultOpen = display.isDesktop;
 
   return (
     <div
@@ -262,6 +266,7 @@ export function GeApp() {
                 size="sm"
                 onClick={() => catalog.refetch()}
                 disabled={catalog.isFetching}
+                aria-label="Refresh prices"
               >
                 <RefreshCw
                   className={cn("h-3.5 w-3.5", catalog.isFetching && "animate-spin")}
@@ -291,9 +296,11 @@ export function GeApp() {
               }}
               placeholder="Search any item…"
               className="w-full min-w-0 pl-10 pr-10"
+              role="combobox"
               aria-label="Search items"
               aria-autocomplete="list"
               aria-expanded={searchOpen}
+              aria-controls="search-results"
               autoComplete="off"
             />
             {query && (
@@ -331,6 +338,12 @@ export function GeApp() {
                       key={item.id}
                       type="button"
                       onClick={() => goTab(item.id)}
+                      aria-current={active ? "page" : undefined}
+                      aria-label={
+                        item.id === "watch"
+                          ? `${item.desktopLabel}${count != null ? `, ${count}` : ""}`
+                          : undefined
+                      }
                       className={cn(
                         "inline-flex shrink-0 items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
                         active
@@ -371,7 +384,16 @@ export function GeApp() {
               </div>
             ) : catalog.isError ? (
               <div className="m-4 rounded-lg border border-loss/30 bg-loss/10 p-4 text-sm text-loss">
-                Could not load live prices. Try refresh.
+                <p>Could not load live prices.</p>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => catalog.refetch()}
+                >
+                  Retry
+                </Button>
               </div>
             ) : showFlipBoard ? (
               <>
@@ -386,6 +408,7 @@ export function GeApp() {
                   onSelect={onSelectId}
                   bankroll={bankroll}
                   mode={flipMode}
+                  filtersActive={filtersActive}
                 />
               </>
             ) : showAlchBoard ? (
@@ -398,10 +421,7 @@ export function GeApp() {
               <InvestBoard
                 items={items}
                 bankroll={bankroll}
-                onSelectItem={(id) => {
-                  onSelectId(id);
-                  setTab("flips");
-                }}
+                onSelectItem={onSelectId}
               />
             ) : showItemList ? (
               <>
@@ -452,7 +472,8 @@ export function GeApp() {
                     onClick={() => onItemSort("margin")}
                   />
                   <SortableTh
-                    label="1h trades"
+                    label="1h"
+                    title="Trades in the last hour"
                     active={itemSortKey === "volume"}
                     dir={itemSortDir}
                     onClick={() => onItemSort("volume")}
@@ -505,7 +526,11 @@ export function GeApp() {
                 </div>
                 <div className="space-y-0.5 p-2 sm:p-3">
                   {listItems.length === 0 ? (
-                    <EmptyState tab={tab} hasQuery={Boolean(query.trim())} />
+                    <EmptyState
+                      tab={tab}
+                      hasQuery={Boolean(query.trim())}
+                      filtersActive={filtersActive}
+                    />
                   ) : (
                     listItems.map((item) => (
                       <ItemRow
@@ -543,6 +568,12 @@ export function GeApp() {
                 key={item.id}
                 type="button"
                 onClick={() => goTab(item.id)}
+                aria-current={active ? "page" : undefined}
+                aria-label={
+                  item.id === "watch"
+                    ? `${item.label}${count != null ? `, ${count}` : ""}`
+                    : undefined
+                }
                 className={cn(
                   "relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[10px] font-medium transition-colors",
                   active ? "text-accent" : "text-muted active:text-fg",
@@ -561,7 +592,7 @@ export function GeApp() {
         </div>
       </nav>
 
-      {mobileDetailOpen && selected && tab !== "invest" && (
+      {mobileDetailOpen && selected && (
         <div className="fixed inset-0 z-40 flex flex-col justify-end lg:hidden">
           <button
             type="button"
@@ -569,21 +600,21 @@ export function GeApp() {
             aria-label="Close detail"
             onClick={() => setMobileDetailOpen(false)}
           />
-          {/* Single scroll owner — min-h-0 flex-1 + overscroll so iOS can reach the graph */}
-          <div className="relative z-10 flex max-h-[min(92dvh,100%)] min-h-0 w-full flex-col overflow-hidden rounded-t-xl border border-border bg-surface shadow-2xl">
+          {/* One scroll owner lives inside ItemDetail (sheet) so the sit-plan can pin */}
+          <div
+            className="relative z-10 flex max-h-[min(92dvh,100%)] min-h-0 w-full flex-col overflow-hidden rounded-t-xl border border-border bg-surface shadow-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${selected.name} details`}
+          >
             <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border-strong" />
-            <div
-              className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
-              <ItemDetail
-                item={selected}
-                bankroll={bankroll}
-                flipMode={showFlipBoard ? flipMode : "safe"}
-                sheet
-                onClose={() => setMobileDetailOpen(false)}
-              />
-            </div>
+            <ItemDetail
+              item={selected}
+              bankroll={bankroll}
+              flipMode={showFlipBoard ? flipMode : "safe"}
+              sheet
+              onClose={() => setMobileDetailOpen(false)}
+            />
             <div className="home-indicator-pad shrink-0" aria-hidden />
           </div>
         </div>
@@ -616,12 +647,28 @@ export function GeApp() {
   );
 }
 
-function EmptyState({ tab, hasQuery }: { tab: Tab; hasQuery: boolean }) {
+function EmptyState({
+  tab,
+  hasQuery,
+  filtersActive,
+}: {
+  tab: Tab;
+  hasQuery: boolean;
+  filtersActive: boolean;
+}) {
   if (tab === "search" && hasQuery) {
     return (
       <div className="m-6 text-center">
         <p className="text-sm font-medium text-fg">No items match</p>
         <p className="mt-1 text-xs text-muted">Try a shorter name or check spelling.</p>
+      </div>
+    );
+  }
+  if (filtersActive) {
+    return (
+      <div className="m-6 text-center">
+        <p className="text-sm font-medium text-fg">No items match filters</p>
+        <p className="mt-1 text-xs text-muted">Clear or loosen min / max ranges.</p>
       </div>
     );
   }
@@ -633,6 +680,14 @@ function EmptyState({ tab, hasQuery }: { tab: Tab; hasQuery: boolean }) {
         <p className="mt-1 text-xs text-muted">
           Search for items and tap the star to track them here.
         </p>
+      </div>
+    );
+  }
+  if (tab === "volume") {
+    return (
+      <div className="m-6 text-center">
+        <p className="text-sm font-medium text-fg">No volume movers yet</p>
+        <p className="mt-1 text-xs text-muted">Live 1h trades will show here after prices load.</p>
       </div>
     );
   }

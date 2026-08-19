@@ -3,6 +3,7 @@ import { ChevronDown, Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useDisplayMode } from "@/hooks/useDisplayMode";
 import {
   EMPTY_FILTERS,
   countActiveFilters,
@@ -40,7 +41,7 @@ function RangeField({
           placeholder="Min"
           inputMode="decimal"
           aria-label={`${label} minimum`}
-          className="h-9 min-w-0 px-2 text-sm lg:h-9 lg:text-sm"
+          className="h-11 min-w-0 px-2 lg:h-9"
         />
         <span className="text-xs text-subtle">–</span>
         <Input
@@ -49,7 +50,7 @@ function RangeField({
           placeholder="Max"
           inputMode="decimal"
           aria-label={`${label} maximum`}
-          className="h-9 min-w-0 px-2 text-sm lg:h-9 lg:text-sm"
+          className="h-11 min-w-0 px-2 lg:h-9"
         />
       </div>
       {hint ? <p className="text-[10px] text-subtle">{hint}</p> : null}
@@ -61,7 +62,7 @@ export function ListFilters({
   value,
   onChange,
   className,
-  /** Desktop starts open so all wiki-style fields are obvious */
+  /** Override: omit to follow dual-platform law (PC open, mobile collapsed). */
   defaultOpen,
 }: {
   value: ListFilterState;
@@ -69,12 +70,16 @@ export function ListFilters({
   className?: string;
   defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(Boolean(defaultOpen));
+  const display = useDisplayMode();
+  const wantOpen = defaultOpen ?? display.isDesktop;
+  const [open, setOpen] = useState(false);
+  const [touched, setTouched] = useState(false);
   const active = countActiveFilters(value);
 
   useEffect(() => {
-    if (defaultOpen) setOpen(true);
-  }, [defaultOpen]);
+    if (touched) return;
+    setOpen(wantOpen);
+  }, [wantOpen, touched]);
 
   const set = <K extends keyof ListFilterState>(key: K, v: ListFilterState[K]) => {
     onChange({ ...value, [key]: v });
@@ -85,7 +90,10 @@ export function ListFilters({
       <div className="flex flex-wrap items-center gap-2 px-3 py-2">
         <button
           type="button"
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => {
+            setTouched(true);
+            setOpen((o) => !o);
+          }}
           className={cn(
             "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
             open || active > 0

@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useDisplayMode } from "@/hooks/useDisplayMode";
 import {
   ALCHS_PER_HOUR,
   ALCH_BATCH,
@@ -422,8 +423,15 @@ function AlchFilters({
   value: AlchFilterState;
   onChange: (next: AlchFilterState) => void;
 }) {
-  const [open, setOpen] = useState(true);
+  const display = useDisplayMode();
+  const [open, setOpen] = useState(false);
+  const [touched, setTouched] = useState(false);
   const active = countAlchFilters(value);
+
+  useEffect(() => {
+    if (touched) return;
+    setOpen(display.isDesktop);
+  }, [display.isDesktop, touched]);
   const set = <K extends keyof AlchFilterState>(key: K, v: AlchFilterState[K]) => {
     onChange({ ...value, [key]: v });
   };
@@ -432,7 +440,10 @@ function AlchFilters({
     <div className="rounded-md border border-border bg-surface-2/30">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          setTouched(true);
+          setOpen((o) => !o);
+        }}
         className="flex w-full items-center gap-2 px-2.5 py-2 text-left"
         aria-expanded={open}
       >
@@ -588,7 +599,7 @@ function RangeField({
           placeholder="Min"
           inputMode="decimal"
           aria-label={`${label} minimum`}
-          className="h-9 min-w-0 px-2 text-sm"
+          className="h-11 min-w-0 px-2 lg:h-9"
         />
         <span className="text-xs text-subtle">–</span>
         <Input
@@ -597,7 +608,7 @@ function RangeField({
           placeholder="Max"
           inputMode="decimal"
           aria-label={`${label} maximum`}
-          className="h-9 min-w-0 px-2 text-sm"
+          className="h-11 min-w-0 px-2 lg:h-9"
         />
       </div>
       {hint ? <p className="text-[10px] text-subtle">{hint}</p> : null}

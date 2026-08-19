@@ -17,8 +17,7 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       {
         name: "viewport",
-        content:
-          "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
       {
         title: `${BRAND.name} — Capital-aware GE flips & investments`,
@@ -31,6 +30,8 @@ export const Route = createRootRoute({
       // Obsidian surface (tab bar chrome), not content bg — keep in sync with
       // THEMES[obsidian].vars.surface, public/site.webmanifest, and applyTheme()
       { name: "theme-color", content: "#12141a" },
+      { name: "color-scheme", content: "dark" },
+      { name: "format-detection", content: "telephone=no" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       // "black" (opaque) avoids translucent status-bar layout quirks on some iOS versions
@@ -57,6 +58,8 @@ function RootComponent() {
           queries: {
             retry: 1,
             refetchOnWindowFocus: true,
+            refetchOnReconnect: true,
+            gcTime: 5 * 60_000,
           },
         },
       }),
@@ -75,7 +78,7 @@ function RootComponent() {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
         {/* No --app-height first-paint lock: height-locking races with fixed

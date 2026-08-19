@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Check, Palette, X } from "lucide-react";
 import { THEMES, useTheme, type ThemeId } from "@/lib/theme";
 import { BRAND } from "@/lib/branding";
@@ -14,6 +15,15 @@ export function ThemePicker({
 }) {
   const { themeId, setTheme } = useTheme();
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return (
@@ -26,6 +36,7 @@ export function ThemePicker({
       />
       <div
         role="dialog"
+        aria-modal="true"
         aria-labelledby="appearance-title"
         className="relative z-10 flex max-h-[90%] w-full max-w-lg flex-col overflow-hidden rounded-t-xl border border-border bg-surface shadow-2xl sm:max-h-[85%] sm:rounded-xl"
       >

@@ -250,7 +250,11 @@ export function ItemDetail({
           label="GP per hour"
           value={flip ? formatGp(flip.profitPerHour) : "—"}
           hint={
-            flip ? `${formatPercent(flip.roiPct)} per cycle` : "Set starting GP"
+            flip
+              ? `${formatPercent(flip.roiPct)} per cycle`
+              : bankroll > 0
+                ? "No sized stack for this item"
+                : "Set starting GP"
           }
           tone={flip && flip.profitPerHour > 0 ? "gain" : undefined}
           standout={s.gpHour}
@@ -326,15 +330,17 @@ export function ItemDetail({
           why={g("trend")}
           size="secondary"
         />
-        <HeroCard
-          label={he.label}
-          value={he.value}
-          hint={he.hint}
-          tone={edgeTone}
-          standout={he.standout}
-          why={g(he.guideId)}
-          size="secondary"
-        />
+        {he.label !== "24h mid move" && (
+          <HeroCard
+            label={he.label}
+            value={he.value}
+            hint={he.hint}
+            tone={edgeTone}
+            standout={he.standout}
+            why={g(he.guideId)}
+            size="secondary"
+          />
+        )}
         <HeroCard
           label="Price wobble"
           value={
@@ -560,10 +566,44 @@ export function ItemDetail({
     </div>
   );
 
+  const planFooter = (
+    <footer className="shrink-0 border-t border-border bg-surface/95 px-3 py-2 backdrop-blur sm:px-5 sm:py-2.5">
+      <p className="mx-auto max-w-[1200px] text-sm text-muted">
+        <span className="text-subtle">Plan · </span>
+        buy{" "}
+        <span className="text-base font-semibold tabular text-fg">
+          {formatGp(flip?.buyPrice ?? insights.modelBuy ?? flipBuy)}
+        </span>
+        {" · "}sell{" "}
+        <span className="text-base font-semibold tabular text-fg">
+          {formatGp(flip?.sellPrice ?? insights.modelSell ?? flipSell)}
+        </span>
+        {flip && (
+          <>
+            {" · "}qty{" "}
+            <span className="text-base font-semibold tabular text-fg">
+              ≤{formatQty(flip.qty)}
+            </span>
+            {" · "}
+            <span className="text-base font-semibold tabular text-gain">
+              {formatGp(flip.profitPerHour)}/h
+            </span>
+          </>
+        )}
+      </p>
+    </footer>
+  );
+
   /* ── Sheet / compact (mobile) ── */
   if (!fullPage) {
     return (
-      <div className={cn(sheet ? "flex flex-col bg-surface" : "flex h-full min-h-0 flex-col")}>
+      <div
+        className={cn(
+          sheet
+            ? "flex min-h-0 flex-1 flex-col bg-surface"
+            : "flex h-full min-h-0 flex-col",
+        )}
+      >
         <Header
           item={item}
           watched={watched}
@@ -578,8 +618,9 @@ export function ItemDetail({
         <div
           className={cn(
             "space-y-2.5 p-3",
-            sheet ? "" : "min-h-0 flex-1 overflow-y-auto overscroll-contain",
+            "min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain",
           )}
+          style={sheet ? { WebkitOverflowScrolling: "touch" } : undefined}
         >
           {dense && (
             <>
@@ -603,6 +644,7 @@ export function ItemDetail({
             onToggle={() => watchlist.toggle(item.id)}
           />
         </div>
+        {sheet && planFooter}
       </div>
     );
   }
@@ -651,32 +693,7 @@ export function ItemDetail({
         </div>
       </div>
 
-      {/* Sticky plan footer */}
-      <footer className="shrink-0 border-t border-border bg-surface/95 px-4 py-2.5 backdrop-blur sm:px-5">
-        <p className="mx-auto max-w-[1200px] text-sm text-muted">
-          <span className="text-subtle">Plan · </span>
-          buy{" "}
-          <span className="text-base font-semibold tabular text-fg">
-            {formatGp(flip?.buyPrice ?? insights.modelBuy ?? flipBuy)}
-          </span>
-          {" · "}sell{" "}
-          <span className="text-base font-semibold tabular text-fg">
-            {formatGp(flip?.sellPrice ?? insights.modelSell ?? flipSell)}
-          </span>
-          {flip && (
-            <>
-              {" · "}qty{" "}
-              <span className="text-base font-semibold tabular text-fg">
-                ≤{formatQty(flip.qty)}
-              </span>
-              {" · "}
-              <span className="text-base font-semibold tabular text-gain">
-                {formatGp(flip.profitPerHour)}/h
-              </span>
-            </>
-          )}
-        </p>
-      </footer>
+      {planFooter}
     </div>
   );
 }
