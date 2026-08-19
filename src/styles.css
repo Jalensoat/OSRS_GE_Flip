@@ -68,7 +68,8 @@
     cursor: pointer;
   }
 
-  /* 16px inputs = no iOS focus-zoom */
+  /* 16px inputs = no iOS focus-zoom. Keep in @layer base; utilities below
+     re-assert 16px on phone so leftover text-sm cannot shrink fields. */
   input,
   textarea,
   select {
@@ -201,6 +202,15 @@
   }
   .scroll-x::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* Beat leftover text-sm on phone so iOS never focus-zooms form fields. */
+@media (max-width: 1023px) {
+  html input:not([type="checkbox"]):not([type="radio"]),
+  html textarea,
+  html select {
+    font-size: 16px !important;
   }
 }
 

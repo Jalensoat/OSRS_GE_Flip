@@ -40,11 +40,12 @@ Deep dive: `docs/research/` (10 lanes, waves of 2) + `docs/research/HIDDEN_FACTO
 
 ## User playbook (short)
 
-1. **Is the spread real?** Fresh prints + two-sided volume (min high/low vol).  
-2. **Can both legs fill?** Fill score + imbalance chip.  
-3. **Is the mid stable?** Trend range + edge vs vol.  
-4. **What binds you?** Bottleneck: limit / volume / capital.  
-5. **Size** using bankroll model; don’t assume full limit every hour on thin books.  
+1. **Set Starting GP** — Best/Hot qty and GP/h size to this cash + 4h limit + 1h trades. Empty hides those lists. Alch/Invest do not rank as flips from this number.  
+2. **Pick the job** — Best = reliable volume-weighted sits. Hot = last-trade aggressive. Alch = nature-rune downtime (3s tick). Invest = update/thesis hold. Watch = your local list. Volume = busiest tape, not a flip rank.  
+3. **Is the spread real after tax?** Fresh prints + two-sided volume. Instant last prints can be red while Best is green — sit, don’t force. Don’t merge Best and Hot.  
+4. **Can both legs fill?** Fill score + imbalance + last-5m pace (trade *count*, not 5m GP). Quiet or one-sided = stuck GP. Fill is a wiki estimate, not a timer or the GE book.  
+5. **Sit the reliable plan** — type sit-buy / sit-sell. Chart lows are often thin dumps and are not what GP/h assumes.  
+6. **What binds you?** Bottleneck: limit / volume / capital. Size from the model; verify in the GE. Start smaller if stale, quiet, or weird vs the hour.  
 
 ## Do not regress
 

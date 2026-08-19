@@ -46,12 +46,14 @@ export function FlipBoard({
   onSelect,
   bankroll,
   mode = "safe",
+  filtersActive = false,
 }: {
   flips: FlipOpportunity[];
   selectedId: number | null;
   onSelect: (id: number) => void;
   bankroll: number;
   mode?: FlipMode;
+  filtersActive?: boolean;
 }) {
   const isHot = mode === "hot";
   const [sortKey, setSortKey] = useState<FlipSortKey | null>(null);
@@ -84,12 +86,18 @@ export function FlipBoard({
     return (
       <div className="m-6 text-center">
         <p className="text-sm font-medium text-fg">
-          {isHot ? "No hot spreads right now" : "No liquid flips for this bankroll"}
+          {filtersActive
+            ? "No flips match filters"
+            : isHot
+              ? "No hot spreads right now"
+              : "No liquid flips for this bankroll"}
         </p>
         <p className="mt-1 text-xs text-muted">
-          {isHot
-            ? "Nothing with a positive last-trade margin for this bankroll. Try Safe flips or a larger bankroll."
-            : "We only list items with enough 1h trades on both sides and stable average prices — thin spike margins are filtered out."}
+          {filtersActive
+            ? "Clear or loosen min / max ranges — the table is hidden by filters, not missing prices."
+            : isHot
+              ? "Nothing with a positive last-trade margin for this bankroll. Try Safe flips or a larger bankroll."
+              : "We only list items with enough 1h trades on both sides and stable average prices — thin spike margins are filtered out."}
         </p>
       </div>
     );

@@ -6,6 +6,8 @@ import { flipBuyPrice, flipSellPrice } from "@/lib/osrs/listFilters";
 import { ItemIcon } from "./ItemIcon";
 import { cn } from "@/lib/utils";
 
+const LISTBOX_ID = "search-results";
+
 /**
  * Typeahead results for PC and mobile. Portaled + fixed so header overflow /
  * stacking never clips it on desktop.
@@ -27,6 +29,7 @@ export function SearchDropdown({
   anchorRef: React.RefObject<HTMLElement | null>;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(
     null,
   );
@@ -57,6 +60,10 @@ export function SearchDropdown({
   }, [open, query, anchorRef]);
 
   useEffect(() => {
+    setActiveIndex(0);
+  }, [query, results.length]);
+
+  useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent | TouchEvent) => {
       const t = e.target as Node;
@@ -65,7 +72,28 @@ export function SearchDropdown({
       onClose();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (!results.length) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setActiveIndex((i) => Math.min(i + 1, results.length - 1));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setActiveIndex((i) => Math.max(i - 1, 0));
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        setActiveIndex(0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        setActiveIndex(results.length - 1);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        const pick = results[Math.max(0, Math.min(activeIndex, results.length - 1))];
+        if (pick) onSelect(pick);
+      }
     };
     // pointerdown so we don't race input focus handlers
     document.addEventListener("pointerdown", onDoc, true);
@@ -74,13 +102,14 @@ export function SearchDropdown({
       document.removeEventListener("pointerdown", onDoc, true);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, onClose, anchorRef]);
+  }, [open, onClose, onSelect, anchorRef, results, activeIndex]);
 
   if (!open || !query.trim() || !box || typeof document === "undefined") return null;
 
   return createPortal(
     <div
       ref={panelRef}
+      id={LISTBOX_ID}
       role="listbox"
       aria-label="Search results"
       style={{
@@ -100,19 +129,33 @@ export function SearchDropdown({
         </div>
       ) : (
         <ul className="py-1">
-          {results.map((item) => {
+          {results.map((item, i) => {
             const buy = flipBuyPrice(item);
             const sell = flipSellPrice(item);
+            const active = i === activeIndex;
             return (
               <li key={item.id}>
                 <button
                   type="button"
+                  id={`${LISTBOX_ID}-opt-${item.id}`}
                   role="option"
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-surface-2"
+                  aria-selected={active}
+                  ref={
+                    active
+                      ? (el) => {
+                          el?.scrollIntoView({ block: "nearest" });
+                        }
+                      : undefined
+                  }
+                  className={cn(
+                    "flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors",
+                    active ? "bg-surface-2" : "hover:bg-surface-2",
+                  )}
                   onPointerDown={(e) => {
                     // Prevent input blur-before-click losing the selection
                     e.preventDefault();
                   }}
+                  onMouseEnter={() => setActiveIndex(i)}
                   onClick={() => onSelect(item)}
                 >
                   <ItemIcon icon={item.icon} name={item.name} size="sm" />

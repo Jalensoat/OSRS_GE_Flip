@@ -242,11 +242,9 @@ export const useTheme = create<ThemeState>()(
     }),
     {
       name: "osrs-ge-theme-v1",
-      onRehydrateStorage: () => (state) => {
-        if (state?.themeId && typeof document !== "undefined") {
-          applyTheme(state.themeId);
-        }
-      },
+      // Do not applyTheme here — mutating <html> before React hydrates
+      // mismatches SSR (no data-theme / inline vars) and logs a hydration warning.
+      // ThemeProvider applies after mount.
     },
   ),
 );

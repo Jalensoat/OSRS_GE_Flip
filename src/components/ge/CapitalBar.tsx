@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useBankroll } from "@/lib/osrs/bankroll";
 import { parseGpInput } from "@/lib/osrs/flip";
 import { formatGp } from "@/lib/osrs/format";
+import { STARTING_GP_GUIDE } from "@/lib/osrs/metricGuide";
 import { cn } from "@/lib/utils";
 
 const PRESETS = ["1m", "5m", "10m", "25m", "50m", "100m", "500m", "1b"];
@@ -24,10 +25,12 @@ export function CapitalBar({ className }: { className?: string }) {
             <Wallet className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" />
           </div>
           <div className="min-w-0">
-            <div className="text-sm font-medium text-fg">Starting GP</div>
-            <p className="hidden text-xs text-muted leading-snug sm:block">
-              Flips size to your bankroll, buy limit, and real 1h trade volume — spike offers are
-              ignored.
+            <div className="text-sm font-medium text-fg">{STARTING_GP_GUIDE.title}</div>
+            <p className="lg:hidden text-[11px] text-muted leading-snug">
+              {STARTING_GP_GUIDE.mobile}
+            </p>
+            <p className="hidden text-xs text-muted leading-snug lg:block">
+              {STARTING_GP_GUIDE.subtitle}
             </p>
           </div>
         </div>
@@ -64,12 +67,9 @@ export function CapitalBar({ className }: { className?: string }) {
           </div>
         </div>
       </div>
-      <div className="mt-2 hidden items-start gap-1.5 text-[11px] text-subtle sm:flex">
+      <div className="mt-2 hidden items-start gap-1.5 text-[11px] text-subtle lg:flex">
         <Info className="mt-0.5 h-3 w-3 shrink-0" />
-        <span>
-          Buy/sell levels come from multi-trade averages (not one last offer). Accepts k / m / b
-          shortcuts. 2% GE tax applied on sells.
-        </span>
+        <span>{STARTING_GP_GUIDE.footer}</span>
       </div>
     </div>
   );

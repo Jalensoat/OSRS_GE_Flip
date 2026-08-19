@@ -338,7 +338,7 @@ function TrendColumn({
         </div>
         <div className="text-xs text-muted">{sub}</div>
       </div>
-      <div className="divide-y divide-border max-h-80 overflow-y-auto">
+      <div className="divide-y divide-border lg:max-h-80 lg:overflow-y-auto">
         {picks.length === 0 ? (
           <p className="p-3 text-xs text-muted">No matches for current filters.</p>
         ) : (

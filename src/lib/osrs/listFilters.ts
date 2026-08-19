@@ -96,13 +96,15 @@ export function flipSellPrice(item: CatalogItem): number | null {
   return item.high ?? item.low;
 }
 
-/** Potential profit ≈ margin × min(buy limit, 1h volume) when margin > 0. */
+/** Potential ≈ post-tax margin × min(limit, thinner 1h side). Not raw high−low. */
 export function potentialProfit(item: CatalogItem): number | null {
   if (item.margin == null || item.margin <= 0) return item.margin === 0 ? 0 : null;
+  const twoSided = Math.min(item.volHigh1h ?? 0, item.volLow1h ?? 0);
+  const flow = twoSided > 0 ? twoSided : Math.max(item.volume1h, 1);
   const cap =
     item.limit != null && item.limit > 0
-      ? Math.min(item.limit, Math.max(item.volume1h, 1))
-      : Math.max(item.volume1h, 1);
+      ? Math.min(item.limit, Math.max(flow, 1))
+      : Math.max(flow, 1);
   return item.margin * cap;
 }
 
@@ -155,8 +157,15 @@ export function filterCatalogItems(items: CatalogItem[], f: ListFilterState): Ca
 export function filterFlips(flips: FlipOpportunity[], f: ListFilterState): FlipOpportunity[] {
   if (!filtersActive(f)) return flips;
   return flips.filter((flip) => {
-    if (!itemMatchesFilters(flip.item, f)) return false;
-    // Also allow filtering "potential" via flip profit/hour when set
+    if (f.f2pOnly && flip.item.members) return false;
+    if (!inRange(flip.item.limit ?? null, f.limitMin, f.limitMax)) return false;
+    if (!inRange(flip.buyPrice, f.buyMin, f.buyMax)) return false;
+    if (!inRange(flip.sellPrice, f.sellMin, f.sellMax)) return false;
+    if (!inRange(flip.marginPerItem, f.marginMin, f.marginMax)) return false;
+    if (!inRange(dailyVolumeEst(flip.item), f.volumeMin, f.volumeMax)) return false;
+    // Flip boards show modelled GP/h — filter potential against that, not last-print × limit
+    if (!inRange(flip.profitPerHour, f.potentialMin, f.potentialMax)) return false;
+    if (!inRange(marginTimesVolume(flip.item), f.marginVolMin, f.marginVolMax)) return false;
     return true;
   });
 }

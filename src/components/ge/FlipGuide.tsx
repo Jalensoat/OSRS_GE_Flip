@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { BookOpen, ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { KEY_DECISION_METRICS, QUICK_PLAYBOOK } from "@/lib/osrs/metricGuide";
+import {
+  DECISION_STRIP_METRICS,
+  MORE_SIGNAL_METRICS,
+  QUICK_PLAYBOOK,
+  SURFACE_JOBS,
+} from "@/lib/osrs/metricGuide";
 import { cn } from "@/lib/utils";
 
 /** Compact header control + full explainer modal. */
@@ -26,7 +31,7 @@ export function FlipGuideButton({ className }: { className?: string }) {
   );
 }
 
-/** Collapsible strip inside item detail (defaults open on full page once per session idea — here open by default on first render when expanded prop). */
+/** Collapsible strip inside item detail — playbook + act-now metrics only. */
 export function FlipGuidePanel({
   defaultOpen = false,
   className,
@@ -45,7 +50,7 @@ export function FlipGuidePanel({
       >
         <BookOpen className="h-3.5 w-3.5 shrink-0 text-accent" />
         <span className="min-w-0 flex-1 text-[11px] font-semibold text-fg">
-          How to read these metrics
+          How to act on this item
         </span>
         <ChevronDown
           className={cn("h-3.5 w-3.5 text-subtle transition-transform", open && "rotate-180")}
@@ -56,10 +61,10 @@ export function FlipGuidePanel({
           <PlaybookList compact />
           <div>
             <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-subtle">
-              Key decision factors
+              Decision strip — act on these first
             </div>
             <div className="space-y-2">
-              {KEY_DECISION_METRICS.map((m) => (
+              {DECISION_STRIP_METRICS.map((m) => (
                 <div key={m.id} className="rounded border border-border/80 bg-bg/40 px-2 py-1.5">
                   <div className="font-medium text-fg">{m.title}</div>
                   <div className="mt-0.5 text-muted">{m.why}</div>
@@ -109,7 +114,7 @@ function FlipGuideModal({ onClose }: { onClose: () => void }) {
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h2 id="flip-guide-title" className="text-sm font-semibold text-fg">
-            How to read Flip Lab metrics
+            Act in 30 seconds
           </h2>
           <Button type="button" variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close">
             <X className="h-4 w-4" />
@@ -117,9 +122,16 @@ function FlipGuideModal({ onClose }: { onClose: () => void }) {
         </div>
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-3 text-xs leading-relaxed text-muted">
           <p>
-            Rank items by <span className="text-fg">real profit you can actually complete</span>: after
-            tax, both buy and sell fills, and how fast your GP recycles — not by a big raw price gap.
-            Ringed cards and highlighted chips are stand-outs (good or risky). Hover anything for more.
+            Rank <span className="text-fg">Best</span> by profit you can actually finish: after
+            tax (sales under 100 gp have no GE tax), both legs fill, and how fast your GP
+            recycles.{" "}
+            <span className="text-fg">Hot</span> is last-print chasing — faster, faker. Ringed
+            cards and highlighted chips are stand-outs (good or risky). Hover anything for more.
+          </p>
+          <p className="rounded-md border border-border bg-bg/50 px-2.5 py-2 text-[11px]">
+            <span className="font-medium text-fg">Fill is a story, not a clock.</span> We estimate
+            from wiki trades, freshness, and two-sided volume. We never see the GE book, queues, or
+            who is offering. Glance in-game before a full limit.
           </p>
           <p className="rounded-md border border-border bg-bg/50 px-2.5 py-2 text-[11px]">
             <span className="font-medium text-fg">“Trades last 5m” is not 5 million GP.</span> It’s
@@ -129,33 +141,62 @@ function FlipGuideModal({ onClose }: { onClose: () => void }) {
           </p>
           <div>
             <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-subtle">
+              Pick a job — then a tab
+            </div>
+            <ul className="space-y-1.5">
+              {SURFACE_JOBS.map((j) => (
+                <li key={j.id} className="rounded-md border border-border bg-bg/50 px-2.5 py-1.5">
+                  <div className="text-fg">
+                    <span className="font-medium">{j.tab}</span>
+                    <span className="text-muted"> — {j.job}</span>
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-muted">{j.do}</div>
+                  <div className="text-[11px] text-subtle">{j.dont}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-subtle">
               Decision checklist
             </div>
             <PlaybookList />
           </div>
           <div>
             <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-subtle">
-              Why each factor matters
+              Decision strip — act on these first
             </div>
             <div className="space-y-2">
-              {KEY_DECISION_METRICS.map((m) => (
-                <div key={m.id} className="rounded-md border border-border bg-bg/50 px-3 py-2">
-                  <div className="text-sm font-medium text-fg">{m.title}</div>
-                  <p className="mt-1 text-muted">{m.why}</p>
-                  <p className="mt-1 text-subtle">
-                    <span className="font-medium text-fg">How to read: </span>
-                    {m.howToRead}
-                  </p>
-                </div>
+              {DECISION_STRIP_METRICS.map((m) => (
+                <MetricCard key={m.id} m={m} />
               ))}
             </div>
           </div>
-          <p className="text-[11px] text-subtle">
-            Research notes for agents live in <code className="text-muted">docs/ITEM_INTELLIGENCE.md</code>{" "}
-            and <code className="text-muted">docs/research/</code>.
-          </p>
+          <div>
+            <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-subtle">
+              More signals — chips &amp; detail
+            </div>
+            <div className="space-y-2">
+              {MORE_SIGNAL_METRICS.map((m) => (
+                <MetricCard key={m.id} m={m} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function MetricCard({ m }: { m: { id: string; title: string; why: string; howToRead: string } }) {
+  return (
+    <div className="rounded-md border border-border bg-bg/50 px-3 py-2">
+      <div className="text-sm font-medium text-fg">{m.title}</div>
+      <p className="mt-1 text-muted">{m.why}</p>
+      <p className="mt-1 text-subtle">
+        <span className="font-medium text-fg">How to read: </span>
+        {m.howToRead}
+      </p>
     </div>
   );
 }

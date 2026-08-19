@@ -137,7 +137,33 @@ export default defineConfig(({ command }) => ({
     authPopupPlugin(),
     tailwindcss(),
     tanstackStart(),
-    ...(command === "build" ? [nitro({ preset: "vercel" })] : []),
+    ...(command === "build"
+      ? [
+          nitro({
+            preset: "vercel",
+            // HTML/manifest must revalidate so iOS Home Screen is not stuck on
+            // an old shell. Hashed /assets stay immutable.
+            routeRules: {
+              "/**": {
+                headers: {
+                  "cache-control": "public, max-age=0, must-revalidate",
+                },
+              },
+              "/assets/**": {
+                headers: {
+                  "cache-control": "public, max-age=31536000, immutable",
+                },
+              },
+              "/site.webmanifest": {
+                headers: {
+                  "cache-control": "public, max-age=0, must-revalidate",
+                },
+              },
+            },
+          }),
+        ]
+      : []),
     viteReact(),
   ],
 }));
+

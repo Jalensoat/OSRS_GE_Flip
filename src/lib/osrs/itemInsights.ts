@@ -249,9 +249,11 @@ export function computeItemInsights(
 
   const highAgeSec = ageSec(item.highTime);
   const lowAgeSec = ageSec(item.lowTime);
+  const bothPrintsKnown = highAgeSec != null && lowAgeSec != null;
   const printFresh =
-    (highAgeSec == null || highAgeSec < 3600) &&
-    (lowAgeSec == null || lowAgeSec < 3600);
+    bothPrintsKnown && highAgeSec < 3600 && lowAgeSec < 3600;
+  const printStale =
+    bothPrintsKnown && (highAgeSec >= 3600 || lowAgeSec >= 3600);
 
   const volHigh1h = item.volHigh1h;
   const volLow1h = item.volLow1h;
@@ -332,7 +334,7 @@ export function computeItemInsights(
   else if (regime === "spike") fillScore += 8;
   else if (regime === "drying") fillScore -= 12;
   if (printFresh) fillScore += 10;
-  else fillScore -= 15;
+  else if (printStale) fillScore -= 15;
   if (volMin1h >= 20) fillScore += 10;
   if (volImbalance != null && Math.abs(volImbalance) > 0.55) fillScore -= 10;
   if (spikeVsAvg) fillScore -= 8;
@@ -420,7 +422,7 @@ export function computeItemInsights(
     tone: trend === "down" ? "warn" : trend === "up" ? "accent" : "muted",
     standout: trend === "down" || trend === "range",
   });
-  if (!printFresh) {
+  if (printStale) {
     chips.push({
       id: "stale",
       guideId: "fresh",
@@ -429,7 +431,7 @@ export function computeItemInsights(
       tone: "warn",
       standout: true,
     });
-  } else {
+  } else if (printFresh) {
     chips.push({
       id: "fresh",
       guideId: "fresh",
@@ -730,7 +732,7 @@ export function computeItemInsights(
     // 5) Chart context when we have history
     if (midChangePct != null) {
       return {
-        label: "24h mid move",
+        label: "Day direction",
         value: formatPercent(midChangePct),
         hint:
           trend === "down"

@@ -68,8 +68,9 @@ export function formatRelativeTime(unixSec: number | null | undefined): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-/** GE sales tax: 2%, capped at 5,000,000 gp per item. */
+/** GE sales tax: 2%, capped at 5,000,000 gp. Sales under 100 gp are exempt. */
 export function geTax(salePrice: number): number {
+  if (!Number.isFinite(salePrice) || salePrice < 100) return 0;
   return Math.min(Math.floor(salePrice * 0.02), 5_000_000);
 }
 
