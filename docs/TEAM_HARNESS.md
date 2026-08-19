@@ -118,3 +118,11 @@ Protocol: `.cursor/skills/spawn-windows/SKILL.md`.
 | Starting GP | Bankroll-aware qty / bottleneck |
 
 Live prices: `https://prices.runescape.wiki/api/v1/osrs` via `src/lib/osrs/api.ts`.
+
+## Installed Cursor MCP (do not redesign the app)
+
+Connection status and who must click **Connect**: `docs/MCP_CONNECTIONS.md`.
+
+- **Ready now:** Tldraw (UI canvases), GitHub, cursor-cloud. Sonatype tools are listed.
+- **UI locked until Connect:** Magic-patterns, Canva, Vercel (OAuth in Cursor desktop / [cursor.com/agents](https://cursor.com/agents) — cloud runs cannot open the popup).
+- **Paper** needs Paper Desktop on localhost; **Tierzero** failed live discovery (OAuth/PAT), not a Flip Lab code bug.
