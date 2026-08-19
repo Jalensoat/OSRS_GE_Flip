@@ -19,6 +19,8 @@ Flip Lab is run by **Team Lead** agents, not a UI-only shop. Charter: `docs/TEAM
 
 The Plan-mode “Ui development harness” cloud agent never shipped. This repo is the org. Every lead has **free reign** to open isolated subagent windows (`.cursor/skills/spawn-windows/SKILL.md`).
 
+**Visual corpus (core backend data):** isolated windows **cannot** see another Cursor agent’s pictures/video. The ingested stills and walkthrough live in `docs/references/visual-corpus/`, are indexed in `MANIFEST.json`, and are stored in the `visual_corpus` table (`src/lib/osrs/visualCorpus.ts`). **Read that corpus before any UI/QA/redesign work.** Rule: `.cursor/rules/visual-corpus.mdc`.
+
 Leads interpret → ask → show 2–3 implemented options → **spawn isolated windows without asking**. Shared loop: `.cursor/skills/lead-intake/SKILL.md`. Window protocol: `.cursor/skills/spawn-windows/SKILL.md`. On-demand contract writer: `/planner` (not a Team Lead). Update scans: `.cursor/skills/osrs-update-influence/SKILL.md`.
 
 ## OSRS Flip Lab — dual platform (read first for product work)

@@ -1,0 +1,24 @@
+---
+description: Visual corpus is core backend reference data — required before UI/QA/redesign work
+alwaysApply: true
+---
+
+# Visual corpus (core data)
+
+The team **cannot** see another Cursor agent’s development-environment pictures or video unless those files were ingested into this repo.
+
+**Source of truth**
+
+- Files: `docs/references/visual-corpus/`
+- Index: `docs/references/visual-corpus/MANIFEST.json`
+- Database: table `visual_corpus` (`migrations/0002_visual_corpus.sql`)
+- Server: `listVisualCorpus` / `VISUAL_CORPUS_CATALOG` in `src/lib/osrs/visualCorpus.ts`
+- How-to: `docs/references/visual-corpus/README.md`
+
+**Required**
+
+- Before UI redesign, dual-platform work, or QA of chrome: **open the corpus stills (PC and mobile)** and any walkthrough video. Do not design from memory.
+- New footage from another agent run must be **copied into this folder** and added to `MANIFEST.json` + `VISUAL_CORPUS_CATALOG`. Do not leave it only in `screenshots/` (gitignored) or on that agent’s VM.
+- After a user-visible UI ship, add new PC + mobile frames.
+
+This is the same class of data as wiki prices and flip math: backend reference, not optional attachments.
